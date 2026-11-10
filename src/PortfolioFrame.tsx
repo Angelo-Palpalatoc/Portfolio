@@ -27,6 +27,7 @@ export default function PortfolioFrame({
     let documentObserver: MutationObserver | null = null;
     let scrollContainer: HTMLElement | null = null;
     let touchStart: { screenY: number; scrollTop: number; dragging: boolean } | null = null;
+    let glideFrame = 0;
     const controller = new AbortController();
     setState('loading');
     const timer = window.setTimeout(() => {
@@ -37,9 +38,14 @@ export default function PortfolioFrame({
       window.clearTimeout(timer);
       setState('error');
     };
+    const stopGlide = () => {
+      if (glideFrame) window.cancelAnimationFrame(glideFrame);
+      glideFrame = 0;
+    };
     const onTouchStart = (event: TouchEvent) => {
       const touch = event.touches[0];
       if (!touch || !window.matchMedia('(orientation: portrait)').matches) return;
+      stopGlide();
       touchStart = {
         screenY: touch.screenY,
         scrollTop: scrollContainer?.scrollTop ?? 0,
@@ -57,16 +63,38 @@ export default function PortfolioFrame({
       // drag back onto the portfolio's normal vertical scroll axis.
       scrollContainer.scrollTop = touchStart.scrollTop - deltaY;
     };
-    const onTouchEnd = () => {
+    const onTouchEnd = (event: TouchEvent) => {
+      if (
+        event.type === 'touchend' &&
+        touchStart?.dragging &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+        scrollContainer
+      ) {
+        const startTop = scrollContainer.scrollTop;
+        const glideDistance = (startTop - touchStart.scrollTop) * 0.28;
+        if (Math.abs(glideDistance) > 1) {
+          let startedAt = 0;
+          const glide = (now: number) => {
+            if (!startedAt) startedAt = now;
+            const progress = Math.min(1, (now - startedAt) / 220);
+            const easeOut = 1 - Math.pow(1 - progress, 3);
+            scrollContainer!.scrollTop = startTop + glideDistance * easeOut;
+            if (progress < 1) glideFrame = window.requestAnimationFrame(glide);
+            else glideFrame = 0;
+          };
+          glideFrame = window.requestAnimationFrame(glide);
+        }
+      }
       touchStart = null;
     };
     const bindDocument = () => {
       contentObserver?.disconnect();
       documentObserver?.disconnect();
+      stopGlide();
       scrollContainer?.removeEventListener('touchstart', onTouchStart);
       scrollContainer?.removeEventListener('touchmove', onTouchMove);
-      doc?.removeEventListener('touchend', onTouchEnd);
-      doc?.removeEventListener('touchcancel', onTouchEnd);
+      scrollContainer?.removeEventListener('touchend', onTouchEnd);
+      scrollContainer?.removeEventListener('touchcancel', onTouchEnd);
       scrollContainer = null;
       doc?.removeEventListener('keydown', onNavigationKeyDown);
       doc = frame.contentDocument;
@@ -83,17 +111,20 @@ export default function PortfolioFrame({
         if (candidate === scrollContainer) return;
         scrollContainer?.removeEventListener('touchstart', onTouchStart);
         scrollContainer?.removeEventListener('touchmove', onTouchMove);
+        scrollContainer?.removeEventListener('touchend', onTouchEnd);
+        scrollContainer?.removeEventListener('touchcancel', onTouchEnd);
         scrollContainer = candidate ?? null;
+        scrollContainer?.style.setProperty('-webkit-overflow-scrolling', 'touch');
         scrollContainer?.addEventListener('touchstart', onTouchStart, { passive: true });
         scrollContainer?.addEventListener('touchmove', onTouchMove, { passive: false });
+        scrollContainer?.addEventListener('touchend', onTouchEnd, { passive: true });
+        scrollContainer?.addEventListener('touchcancel', onTouchEnd, { passive: true });
       };
       const bindKeys = () => doc?.addEventListener('keydown', onNavigationKeyDown);
       documentObserver = new MutationObserver(bindKeys);
       documentObserver.observe(doc, { childList: true });
       bindKeys();
       bindPhoneScroll();
-      doc.addEventListener('touchend', onTouchEnd, { passive: true });
-      doc.addEventListener('touchcancel', onTouchEnd, { passive: true });
       const checkReady = () => {
         if (!active || ready || !doc?.querySelector('#dc-root > *')) return;
         bindPhoneScroll();
@@ -125,10 +156,11 @@ export default function PortfolioFrame({
       frame.removeEventListener('error', fail);
       contentObserver?.disconnect();
       documentObserver?.disconnect();
+      stopGlide();
       scrollContainer?.removeEventListener('touchstart', onTouchStart);
       scrollContainer?.removeEventListener('touchmove', onTouchMove);
-      doc?.removeEventListener('touchend', onTouchEnd);
-      doc?.removeEventListener('touchcancel', onTouchEnd);
+      scrollContainer?.removeEventListener('touchend', onTouchEnd);
+      scrollContainer?.removeEventListener('touchcancel', onTouchEnd);
       scrollContainer = null;
       doc?.removeEventListener('keydown', onNavigationKeyDown);
     };
