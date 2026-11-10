@@ -14,7 +14,7 @@ Updated from the source on 2026-11-10. See [[Decisions]] for constraints and [[N
 5. Closing a window returns to the desktop; either shortcut can open its app.
 6. The AutoRename project entry in the Arduino portfolio opens a guided mobile demo. Visitors can try a single fictional document or a batch of three fictional documents, review suggested names, and simulate saving copies individually.
 
-Pointer movement drives the desktop approach and departure. Touch/keyboard controls provide alternate entry. Escape backs out through the views. Reduced-motion preference bypasses the camera animation. Phones have a larger reading view.
+Pointer movement drives the desktop approach and departure. Touch/keyboard controls provide alternate entry. Escape backs out through the views. Reduced-motion preference bypasses the camera animation. Phones have a larger reading view; in portrait it rotates to landscape proportions, then returns to a wide reading view when the phone is turned.
 
 ### Loading and mobile continuity (2026-11-09)
 
@@ -22,8 +22,9 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 - Room and wallpaper loads show quiet pending/error feedback with retry controls. The portfolio wrapper checks HTTP status and waits for the exported `#dc-root` to mount before revealing the iframe. The exported HTML is unchanged.
 - A load still pending after 15 seconds offers retry; it may still finish normally. No automatic reload loop is used.
 - Phone **Read larger** expands the same app iframe rather than loading a second instance. The active section/session and scroll container persist. Close/reopen still creates a fresh app session and intro.
-- Phone expansion temporarily flattens the surrounding CSS layers so the app can fill the viewport below its toolbar. Normal monitor calibration and projection are retained and restored on return, including a resize beyond the phone breakpoint.
-- Browser checks covered actual failed requests and retry, monitor fit, shared-document/scroll continuity, and 320/390 px phone layouts. Physical phones and Safari remain to be checked.
+- In portrait, the app rotates to landscape proportions within the space below the controls; turning the phone sideways keeps the expanded state and restores the regular wide layout. The controls remain upright and allow return to the monitor or desk. At the desk, a touch-friendly **Back to room** control completes the room-to-monitor route.
+- Phone expansion temporarily flattens the surrounding CSS layers so the app can fill the available viewport. Normal monitor calibration and projection are retained and restored on return, including a resize beyond the phone breakpoint.
+- Browser checks covered failed-request retry, monitor fit, shared-document/scroll continuity, phone reading rotation at 390 × 844 and 844 × 390, and return navigation to desk and room. Physical phones and Safari remain to be checked.
 
 ### Transition behavior (updated 2026-11-08)
 

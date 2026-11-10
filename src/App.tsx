@@ -12,6 +12,8 @@ const deskParallaxIntensity = 1.3;
 const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
 const deskCenter = { x: 0.575, y: 0.495 };
 const screenCenter = { x: 0.5635, y: 0.5109 };
+const phoneQuery =
+  '(max-width: 700px), (max-width: 950px) and (pointer: coarse), (max-width: 950px) and (max-height: 500px)';
 type View = 'room' | 'desk' | 'screen';
 type AppWindow = 'arduino' | 'autorename' | null;
 type CameraPose = { x: number; y: number; scale: number };
@@ -274,7 +276,7 @@ export default function App() {
     viewRef.current = 'screen';
     aimCamera(poses.current.screen, 'screen');
     setView('screen');
-    const mobile = window.matchMedia('(max-width: 700px)').matches;
+    const mobile = window.matchMedia(phoneQuery).matches;
     setStatus(
       mobile
         ? `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} open inside the monitor. Use the controls to read it larger or return to the desk.`
@@ -317,7 +319,7 @@ export default function App() {
     if (!activeApp) return;
     setMobileExpanded(true);
     setStatus(
-      `${activeApp === 'autorename' ? 'AutoRename demo' : 'Arduino portfolio'} opened in a larger, phone-friendly view.`,
+      `${activeApp === 'autorename' ? 'AutoRename demo' : 'Arduino portfolio'} opened in landscape reading view. Rotate your phone if needed.`,
     );
   };
 
@@ -363,7 +365,7 @@ export default function App() {
     // The same iframe expands; changing viewport size must also restore the
     // physical projection when leaving the phone reading layout.
     measureScene();
-    const phone = window.matchMedia('(max-width: 700px)');
+    const phone = window.matchMedia(phoneQuery);
     const restoreMonitor = () => {
       if (!phone.matches) setMobileExpanded(false);
     };
@@ -410,7 +412,7 @@ export default function App() {
 
   useLayoutEffect(() => {
     if (!interacted.current) return;
-    if (view === 'screen' && window.matchMedia('(max-width: 700px)').matches)
+    if (view === 'screen' && window.matchMedia(phoneQuery).matches)
       mobileViewRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'arduino')
       frameRef.current?.focus({ preventScroll: true });
@@ -447,7 +449,7 @@ export default function App() {
       interacted.current &&
       viewRef.current === 'screen' &&
       !mobileExpandedRef.current &&
-      !window.matchMedia('(max-width: 700px)').matches
+      !window.matchMedia(phoneQuery).matches
     )
       frameRef.current?.focus({ preventScroll: true });
   }, []);
@@ -816,6 +818,18 @@ export default function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {view === 'screen' && mobileExpanded && (
+        <div className="mobile-landscape-hint" aria-hidden="true">
+          <span>↻</span> Turn your phone sideways
+        </div>
+      )}
+
+      {view === 'desk' && (
+        <button className="mobile-room-button" type="button" onClick={leaveDesk}>
+          Back to room
+        </button>
       )}
 
       <section

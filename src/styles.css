@@ -434,7 +434,13 @@ button {
 .mobile-screen-controls {
   display: none;
 }
-@media (max-width: 700px) {
+.mobile-landscape-hint,
+.mobile-room-button {
+  display: none;
+}
+@media (max-width: 700px),
+  (max-width: 950px) and (pointer: coarse),
+  (max-width: 950px) and (max-height: 500px) {
   .arduino-window-titlebar {
     gap: 7px;
     padding-left: 8px;
@@ -531,6 +537,31 @@ button {
     background: #a9343f;
     font-size: 22px;
   }
+  .mobile-room-button {
+    position: fixed;
+    z-index: 11;
+    right: max(12px, env(safe-area-inset-right, 0px));
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border: 1px solid #00979c;
+    border-radius: 2px;
+    color: #071718;
+    background: #1bb7b6;
+    box-shadow: 0 8px 24px #0008;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .mobile-room-button:hover,
+  .mobile-room-button:focus-visible {
+    background: #57d4d1;
+    outline: 2px solid white;
+    outline-offset: 3px;
+  }
   /* Expand the existing app in place. Flatten only its containing layers so
      fixed positioning uses the viewport, without remounting the iframe. */
   .experience[data-expanded='true'] .room-stage {
@@ -562,6 +593,55 @@ button {
   }
   .experience[data-expanded='true'] .arduino-window-titlebar {
     display: none;
+  }
+}
+@media (max-width: 700px) and (orientation: portrait),
+  (max-width: 950px) and (pointer: coarse) and (orientation: portrait) {
+  .experience[data-expanded='true'] .monitor-app-window {
+    --mobile-reading-height: calc(
+      100dvh - env(safe-area-inset-top, 0px) - var(--mobile-controls-height, 87px) -
+        env(safe-area-inset-bottom, 0px)
+    );
+    top: calc(
+      env(safe-area-inset-top, 0px) + var(--mobile-controls-height, 87px) +
+        var(--mobile-reading-height) / 2
+    );
+    right: auto;
+    bottom: auto;
+    left: calc(
+      env(safe-area-inset-left, 0px) +
+        (100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 2
+    );
+    width: var(--mobile-reading-height);
+    height: calc(
+      100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)
+    );
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center;
+  }
+  .mobile-landscape-hint {
+    position: fixed;
+    z-index: 12;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 11px;
+    border: 1px solid #00979c;
+    border-radius: 2px;
+    color: #f4f7f7;
+    background: #111c1deb;
+    box-shadow: 0 8px 24px #0009;
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .mobile-landscape-hint span {
+    color: #28c6c4;
+    font-size: 18px;
+    line-height: 1;
   }
 }
 @media (max-width: 600px) {
