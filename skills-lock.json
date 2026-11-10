@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ui-design": {
+      "source": "SpellbourneDZ/ui-design-skill",
+      "sourceType": "github",
+      "skillPath": "skills/ui-design/SKILL.md",
+      "computedHash": "0f5511c2cf9e94139d409a70c133d70b5f800abf0abe1e404a0dc7720fa64a00"
+    }
+  }
+}

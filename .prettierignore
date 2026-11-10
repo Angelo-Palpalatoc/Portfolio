@@ -1,0 +1,13 @@
+# Owned by Claude Design; preserve the exported app exactly.
+public/arduino-portfolio.html
+
+# Historical originals, installed skills, and generated files.
+.archive/
+.agents/
+.codex/
+.tools/
+node_modules/
+dist/
+graphify-out/
+project-notes/Code-Map/
+project-notes/.obsidian/

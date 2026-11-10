@@ -1,0 +1,18 @@
+{
+  "files.exclude": {
+    ".archive": true,
+    ".tools": true,
+    "dist": true,
+    "graphify-out": true,
+    "node_modules": true,
+    "project-notes/Code-Map": true
+  },
+  "search.exclude": {
+    ".archive/**": true,
+    ".tools/**": true,
+    "dist/**": true,
+    "graphify-out/**": true,
+    "project-notes/Code-Map/**": true
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system"
+}

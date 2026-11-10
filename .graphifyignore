@@ -1,0 +1,17 @@
+# Keep the map focused on maintained application source and configuration.
+.tools/
+.archive/
+.agents/
+.codex/
+.git/
+node_modules/
+dist/
+graphify-out/
+project-notes/
+public/
+scripts/
+*.html
+*.png
+*.apk
+package-lock.json
+skills-lock.json

@@ -1,97 +1,856 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties, PointerEvent } from 'react';
-import roomImage from '../MyRoom.png';
-import PortfolioDesktop from './PortfolioDesktop';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import type { PointerEvent } from 'react';
+import roomImage from './assets/room.webp';
+import monitorBackground from './assets/desktop-background.webp';
+import { monitorProjection } from './monitorProjection';
+import { LoadNotice, useImageAsset } from './LoadingState';
+import PortfolioFrame from './PortfolioFrame';
+import AutoRenameDemo from './AutoRenameDemo';
+
+const ideWidth = 1280;
+const deskParallaxIntensity = 1.3;
+const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
+const deskCenter = { x: 0.575, y: 0.495 };
+const screenCenter = { x: 0.5635, y: 0.5109 };
+type View = 'room' | 'desk' | 'screen';
+type AppWindow = 'arduino' | 'autorename' | null;
+type CameraPose = { x: number; y: number; scale: number };
+const initialPose = { x: 0, y: 0, scale: 1 };
+const outside = (x: number, y: number, rect: DOMRect, margin = 0) =>
+  x < rect.left - margin ||
+  x > rect.right + margin ||
+  y < rect.top - margin ||
+  y > rect.bottom + margin;
 
 export default function App() {
-  const [view, setView] = useState<'room' | 'screen'>('room');
-  const [zoom, setZoom] = useState(1);
+  const [view, setView] = useState<View>('room');
+  const [activeApp, setActiveApp] = useState<AppWindow>('arduino');
+  const [windowMaximized, setWindowMaximized] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const roomAsset = useImageAsset(roomImage);
+  const wallpaperAsset = useImageAsset(monitorBackground);
   const [status, setStatus] = useState('');
   const stageRef = useRef<HTMLDivElement>(null);
+  const deskRef = useRef<HTMLButtonElement>(null);
   const hotspotRef = useRef<HTMLButtonElement>(null);
-  const backRef = useRef<HTMLButtonElement>(null);
+  const desktopAppRef = useRef<HTMLButtonElement>(null);
+  const autoRenameRef = useRef<HTMLButtonElement>(null);
+  const autoRenameWindowRef = useRef<HTMLElement>(null);
+  const mobileViewRef = useRef<HTMLButtonElement>(null);
+  const mobileControlsRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+  const mobileExpandedRef = useRef(mobileExpanded);
+  mobileExpandedRef.current = mobileExpanded;
   const hoverArmed = useRef(true);
   const interacted = useRef(false);
+  const viewRef = useRef<View>('room');
+  const poses = useRef<Record<View, CameraPose>>({
+    room: initialPose,
+    desk: initialPose,
+    screen: initialPose,
+  });
+  const camera = useRef({
+    current: { ...initialPose },
+    target: { ...initialPose },
+    velocity: { ...initialPose, scale: 0 },
+    frame: 0,
+    lastTime: 0,
+    frequency: 8,
+    destination: 'room' as View,
+    initialized: false,
+    ready: true,
+  });
+  const roomOffset = useRef({ x: 0, y: 0 });
+  const pointer = useRef({ x: 0, y: 0, active: false });
+  const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const deskMotion = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, blend: 0, velocity: 0 });
+  const checkHoverRef = useRef<() => void>(() => {});
 
-  const measureZoom = useCallback(() => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const screenWidth = stage.offsetWidth * 0.2105;
-    const screenHeight = stage.offsetHeight * 0.0801;
-    const maxWidth = window.innerWidth * (window.innerWidth < 600 ? 0.89 : 0.76);
-    const maxHeight = window.innerHeight * (window.innerWidth < 600 ? 0.34 : 0.57);
-    setZoom(Math.max(1, Math.min(maxWidth / screenWidth, maxHeight / screenHeight)));
+  // Camera motion and scene measurement.
+  const paintDesk = useCallback(() => {
+    const motion = deskMotion.current;
+    const intensity = motion.blend * deskParallaxIntensity;
+    // Drop the extra 3D layer once tilt has settled to keep the screen sharp.
+    stageRef.current?.toggleAttribute('data-desk-motion', motion.blend !== 0);
+    const style = stageRef.current?.style;
+    style?.setProperty('--desk-pan-x', `${-motion.x * 22 * intensity}px`);
+    style?.setProperty('--desk-pan-y', `${-motion.y * 13 * intensity}px`);
+    style?.setProperty('--desk-tilt-x', `${-motion.y * 2.4 * intensity}deg`);
+    style?.setProperty('--desk-tilt-y', `${motion.x * 3.2 * intensity}deg`);
   }, []);
 
-  const enterScreen = useCallback(() => {
-    if (view === 'screen') return;
+  const paintCamera = useCallback((pose: CameraPose) => {
+    const style = stageRef.current?.style;
+    style?.setProperty('--camera-x', `${pose.x}px`);
+    style?.setProperty('--camera-y', `${pose.y}px`);
+    style?.setProperty('--camera-scale', String(pose.scale));
+  }, []);
+
+  const tickCamera = useCallback(
+    function tick(now: number) {
+      const motion = camera.current;
+      const wasReady = motion.ready;
+      const elapsed = motion.lastTime ? Math.min((now - motion.lastTime) / 1000, 0.05) : 1 / 60;
+      motion.lastTime = now;
+      const omega = motion.frequency;
+      const decay = Math.exp(-omega * elapsed);
+      for (const key of ['x', 'y', 'scale'] as const) {
+        const displacement = motion.current[key] - motion.target[key];
+        const step = (motion.velocity[key] + omega * displacement) * elapsed;
+        motion.current[key] = motion.target[key] + (displacement + step) * decay;
+        motion.velocity[key] = (motion.velocity[key] - omega * step) * decay;
+      }
+      paintCamera(motion.current);
+      const cameraClose =
+        Math.abs(motion.current.x - motion.target.x) < 0.5 &&
+        Math.abs(motion.current.y - motion.target.y) < 0.5 &&
+        Math.abs(motion.current.scale - motion.target.scale) < 0.002 &&
+        Math.abs(motion.velocity.x) < 2 &&
+        Math.abs(motion.velocity.y) < 2;
+      if (cameraClose) {
+        motion.current = { ...motion.target };
+        motion.velocity = { x: 0, y: 0, scale: 0 };
+        paintCamera(motion.current);
+      }
+
+      // Parallax uses elapsed time; its influence follows the same spring as zoom.
+      const desk = deskMotion.current;
+      const atDesk = motion.destination === 'desk';
+      const blendTarget = atDesk ? 1 : 0;
+      const displacement = desk.blend - blendTarget;
+      const step = (desk.velocity + omega * displacement) * elapsed;
+      desk.blend = blendTarget + (displacement + step) * decay;
+      desk.velocity = (desk.velocity - omega * step) * decay;
+      const blendClose =
+        Math.abs(desk.blend - blendTarget) < 0.001 && Math.abs(desk.velocity) < 0.01;
+      if (blendClose) {
+        desk.blend = blendTarget;
+        desk.velocity = 0;
+      }
+      const targetX = atDesk ? desk.targetX : 0;
+      const targetY = atDesk ? desk.targetY : 0;
+      const follow = 1 - Math.exp(-5 * elapsed);
+      desk.x += (targetX - desk.x) * follow;
+      desk.y += (targetY - desk.y) * follow;
+      const parallaxClose =
+        Math.abs(desk.x - targetX) < 0.0005 && Math.abs(desk.y - targetY) < 0.0005;
+      if (parallaxClose) {
+        desk.x = targetX;
+        desk.y = targetY;
+      }
+      paintDesk();
+      motion.ready = cameraClose && blendClose;
+      if (motion.ready && parallaxClose) {
+        motion.frame = 0;
+        motion.lastTime = 0;
+      } else {
+        motion.frame = requestAnimationFrame(tick);
+      }
+      // A moving hotspot may arrive beneath a stationary mouse. Recheck on arrival.
+      if (motion.ready && !wasReady && motion.destination !== 'room') checkHoverRef.current();
+    },
+    [paintCamera, paintDesk],
+  );
+
+  const wakeCamera = useCallback(() => {
+    const motion = camera.current;
+    if (!motion.frame && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      motion.lastTime = 0;
+      motion.frame = requestAnimationFrame(tickCamera);
+    }
+  }, [tickCamera]);
+
+  const aimCamera = useCallback(
+    (pose: CameraPose, destination: View) => {
+      const motion = camera.current;
+      if (motion.destination !== destination) {
+        motion.velocity = { x: 0, y: 0, scale: 0 };
+        motion.destination = destination;
+      }
+      motion.target = { ...pose };
+      motion.frequency = destination === 'screen' ? 6 : 8;
+      motion.ready = false;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        if (motion.frame) cancelAnimationFrame(motion.frame);
+        motion.current = { ...pose };
+        motion.velocity = { x: 0, y: 0, scale: 0 };
+        motion.frame = 0;
+        motion.lastTime = 0;
+        motion.ready = true;
+        const desk = deskMotion.current;
+        desk.x = desk.y = desk.blend = desk.velocity = 0;
+        paintDesk();
+        paintCamera(pose);
+      } else wakeCamera();
+    },
+    [paintCamera, paintDesk, wakeCamera],
+  );
+
+  const measureScene = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const width = stage.offsetWidth;
+    const height = stage.offsetHeight;
+    const screenWidth = width * 0.213;
+    const screenHeight = height * 0.0868;
+    const screen = stage.querySelector<HTMLElement>('.monitor-screen');
+    if (screen && !mobileExpandedRef.current) {
+      const style = getComputedStyle(screen);
+      const physicalWidth = parseFloat(style.width);
+      const physicalHeight = parseFloat(style.height);
+      screen.style.setProperty('--desktop-width', `${ideWidth}px`);
+      screen.style.setProperty(
+        '--desktop-height',
+        `${(ideWidth * physicalHeight) / physicalWidth}px`,
+      );
+      screen.style.setProperty(
+        '--monitor-projection',
+        monitorProjection(physicalWidth, physicalHeight, style.clipPath, ideWidth),
+      );
+    }
+    const screenZoom = Math.max(
+      1,
+      Math.min(
+        (window.innerWidth * 0.866) / screenWidth,
+        (window.innerHeight * 0.9) / screenHeight,
+      ),
+    );
+    const deskZoom = Math.max(
+      1,
+      Math.min(
+        (window.innerWidth * 0.84) / (width * deskBounds.width),
+        (window.innerHeight * 0.86) / (height * deskBounds.height),
+      ),
+    );
+    poses.current = {
+      room: {
+        x: -width / 2 + roomOffset.current.x,
+        y: -height / 2 + roomOffset.current.y,
+        scale: 1,
+      },
+      desk: {
+        x: (-deskCenter.x - (deskZoom - 1) * (deskCenter.x - screenCenter.x)) * width,
+        y: (-deskCenter.y - (deskZoom - 1) * (deskCenter.y - screenCenter.y)) * height,
+        scale: deskZoom,
+      },
+      screen: {
+        x: -screenCenter.x * width,
+        y: -screenCenter.y * height + window.innerHeight * 0.005,
+        scale: screenZoom,
+      },
+    };
+    if (!camera.current.initialized) {
+      camera.current.current = { ...poses.current.room };
+      camera.current.target = { ...poses.current.room };
+      camera.current.initialized = true;
+      paintCamera(camera.current.current);
+    } else {
+      aimCamera(poses.current[viewRef.current], viewRef.current);
+    }
+  }, [aimCamera, paintCamera]);
+
+  // View and desktop-window actions.
+  const clearExitTimer = useCallback(() => {
+    if (exitTimer.current) clearTimeout(exitTimer.current);
+    exitTimer.current = null;
+  }, []);
+
+  const enterDesk = () => {
+    if (viewRef.current !== 'room') return;
     interacted.current = true;
-    measureZoom();
+    clearExitTimer();
+    measureScene();
+    viewRef.current = 'desk';
+    aimCamera(poses.current.desk, 'desk');
+    setView('desk');
+    setStatus('At the desk. Hover over the monitor to use the desktop and apps.');
+  };
+
+  const enterScreen = () => {
+    if (viewRef.current !== 'desk') return;
+    interacted.current = true;
+    clearExitTimer();
+    measureScene();
+    viewRef.current = 'screen';
+    aimCamera(poses.current.screen, 'screen');
     setView('screen');
-    setStatus('Projects window open. Press Escape or use Back to room to return.');
-  }, [measureZoom, view]);
+    const mobile = window.matchMedia('(max-width: 700px)').matches;
+    setStatus(
+      mobile
+        ? `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} open inside the monitor. Use the controls to read it larger or return to the desk.`
+        : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'AutoRename' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
+    );
+  };
+
+  const closeApp = () => {
+    const name = activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE';
+    setActiveApp(null);
+    setWindowMaximized(false);
+    setMobileExpanded(false);
+    setStatus(`${name} closed. Choose a desktop icon to open an app.`);
+  };
+
+  const minimizeApp = () => {
+    setActiveApp(null);
+    setWindowMaximized(false);
+    setStatus(
+      `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} minimized to the desktop.`,
+    );
+  };
+
+  const openApp = (app: Exclude<AppWindow, null> = 'arduino') => {
+    setActiveApp(app);
+    setWindowMaximized(false);
+    setStatus(`${app === 'autorename' ? 'AutoRename' : 'Arduino IDE'} opened.`);
+  };
+
+  const toggleMaximize = () => setWindowMaximized((value) => !value);
+
+  const toggleMobilePortfolio = () => {
+    if (mobileExpanded) {
+      setMobileExpanded(false);
+      setStatus(
+        `${activeApp === 'autorename' ? 'AutoRename demo' : 'Arduino portfolio'} returned to the monitor.`,
+      );
+      return;
+    }
+    if (!activeApp) return;
+    setMobileExpanded(true);
+    setStatus(
+      `${activeApp === 'autorename' ? 'AutoRename demo' : 'Arduino portfolio'} opened in a larger, phone-friendly view.`,
+    );
+  };
 
   const leaveScreen = useCallback(() => {
-    if (view === 'room') return;
+    if (viewRef.current !== 'screen') return;
     interacted.current = true;
+    clearExitTimer();
     hoverArmed.current = false;
+    setMobileExpanded(false);
+    viewRef.current = 'desk';
+    aimCamera(poses.current.desk, 'desk');
+    setView('desk');
+    setStatus('Back at the desk. Move away to see the room.');
+  }, [aimCamera, clearExitTimer]);
+
+  const leaveDesk = useCallback(() => {
+    if (viewRef.current !== 'desk') return;
+    interacted.current = true;
+    clearExitTimer();
+    viewRef.current = 'room';
+    aimCamera(poses.current.room, 'room');
     setView('room');
-    setStatus('Back in the room. Focus the main monitor and press Enter to explore.');
-  }, [view]);
+    setStatus('Back in the room. Explore the computer setup to approach the desk.');
+  }, [aimCamera, clearExitTimer]);
 
-  useEffect(() => {
-    measureZoom();
-    window.addEventListener('resize', measureZoom);
-    return () => window.removeEventListener('resize', measureZoom);
-  }, [measureZoom]);
+  const onNavigationKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      // Keyboard navigation remains stable until the mouse is deliberately moved.
+      pointer.current.active = false;
+      clearExitTimer();
+      if (event.key !== 'Escape') return;
+      if (viewRef.current === 'screen' && mobileExpandedRef.current) {
+        setMobileExpanded(false);
+        setStatus('App returned to the monitor.');
+      } else if (viewRef.current === 'screen') leaveScreen();
+      else if (viewRef.current === 'desk') leaveDesk();
+    },
+    [leaveScreen, leaveDesk, clearExitTimer],
+  );
 
-  useEffect(() => {
-    if (!interacted.current) return;
-    const frame = requestAnimationFrame(() => {
-      if (view === 'screen') backRef.current?.focus({ preventScroll: true });
-      else hotspotRef.current?.focus({ preventScroll: true });
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [view]);
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') leaveScreen();
+  // Responsive measurements, keyboard navigation, and focus management.
+  useLayoutEffect(() => {
+    // The same iframe expands; changing viewport size must also restore the
+    // physical projection when leaving the phone reading layout.
+    measureScene();
+    const phone = window.matchMedia('(max-width: 700px)');
+    const restoreMonitor = () => {
+      if (!phone.matches) setMobileExpanded(false);
     };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [leaveScreen]);
+    phone.addEventListener('change', restoreMonitor);
+    window.addEventListener('resize', restoreMonitor);
+    return () => {
+      phone.removeEventListener('change', restoreMonitor);
+      window.removeEventListener('resize', restoreMonitor);
+    };
+  }, [mobileExpanded, measureScene]);
 
-  const onHotspotEnter = (event: PointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType === 'mouse' && hoverArmed.current) enterScreen();
+  useLayoutEffect(() => {
+    const controls = mobileControlsRef.current;
+    if (!controls) return;
+    const measureControls = () =>
+      controls.parentElement?.style.setProperty(
+        '--mobile-controls-height',
+        `${controls.getBoundingClientRect().height}px`,
+      );
+    measureControls();
+    const observer = new ResizeObserver(measureControls);
+    observer.observe(controls);
+    window.addEventListener('resize', measureControls);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measureControls);
+    };
+  }, [view, mobileExpanded, activeApp]);
+
+  useLayoutEffect(() => {
+    measureScene();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotion.addEventListener('change', measureScene);
+    window.addEventListener('resize', measureScene);
+    return () => {
+      reducedMotion.removeEventListener('change', measureScene);
+      window.removeEventListener('resize', measureScene);
+      clearExitTimer();
+      if (camera.current.frame) cancelAnimationFrame(camera.current.frame);
+      camera.current.frame = 0;
+      camera.current.lastTime = 0;
+    };
+  }, [measureScene, clearExitTimer]);
+
+  useLayoutEffect(() => {
+    if (!interacted.current) return;
+    if (view === 'screen' && window.matchMedia('(max-width: 700px)').matches)
+      mobileViewRef.current?.focus({ preventScroll: true });
+    else if (view === 'screen' && activeApp === 'arduino')
+      frameRef.current?.focus({ preventScroll: true });
+    else if (view === 'screen' && activeApp === 'autorename')
+      autoRenameWindowRef.current?.focus({ preventScroll: true });
+    else if (view === 'screen') desktopAppRef.current?.focus({ preventScroll: true });
+    else if (view === 'desk') hotspotRef.current?.focus({ preventScroll: true });
+    else deskRef.current?.focus({ preventScroll: true });
+  }, [view, activeApp, mobileExpanded]);
+
+  useLayoutEffect(() => {
+    window.addEventListener('keydown', onNavigationKeyDown);
+    return () => window.removeEventListener('keydown', onNavigationKeyDown);
+  }, [onNavigationKeyDown]);
+
+  useLayoutEffect(() => {
+    const openDemoFromPortfolio = (event: MessageEvent) => {
+      if (
+        event.origin !== window.location.origin ||
+        event.source !== frameRef.current?.contentWindow ||
+        event.data?.type !== 'open-autorenamer-demo'
+      )
+        return;
+      setActiveApp('autorename');
+      setWindowMaximized(false);
+      setStatus('AutoRename mobile demo opened.');
+    };
+    window.addEventListener('message', openDemoFromPortfolio);
+    return () => window.removeEventListener('message', openDemoFromPortfolio);
+  }, []);
+
+  const onPortfolioReady = useCallback(() => {
+    if (
+      interacted.current &&
+      viewRef.current === 'screen' &&
+      !mobileExpandedRef.current &&
+      !window.matchMedia('(max-width: 700px)').matches
+    )
+      frameRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  // Pointer navigation between the room, desk, and monitor.
+  const scheduleExit = (from: 'desk' | 'screen') => {
+    if (exitTimer.current) return;
+    exitTimer.current = setTimeout(
+      () => {
+        exitTimer.current = null;
+        if (
+          viewRef.current !== from ||
+          !camera.current.ready ||
+          !pointer.current.active ||
+          mobileExpandedRef.current
+        )
+          return;
+        const bounds =
+          from === 'screen'
+            ? stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect()
+            : deskRef.current?.getBoundingClientRect();
+        if (bounds && outside(pointer.current.x, pointer.current.y, bounds, 10)) {
+          if (from === 'screen') leaveScreen();
+          else leaveDesk();
+        }
+      },
+      from === 'screen' ? 110 : 150,
+    );
+  };
+
+  const onMonitorLeave = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || !pointer.current.active) return;
+    pointer.current.x = event.clientX;
+    pointer.current.y = event.clientY;
+    if (viewRef.current === 'screen' && camera.current.ready && !mobileExpandedRef.current)
+      scheduleExit('screen');
+  };
+
+  const checkHover = () => {
+    if (!pointer.current.active || !camera.current.ready || mobileExpandedRef.current) {
+      clearExitTimer();
+      return;
+    }
+    const { x, y } = pointer.current;
+    if (viewRef.current === 'screen') {
+      const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
+      if (screen && outside(x, y, screen, 10)) scheduleExit('screen');
+      else clearExitTimer();
+      return;
+    }
+    if (viewRef.current === 'desk') {
+      const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
+      if (screen && outside(x, y, screen)) hoverArmed.current = true;
+      if (hoverArmed.current && screen && !outside(x, y, screen)) {
+        enterScreen();
+        return;
+      }
+      const desk = deskRef.current?.getBoundingClientRect();
+      if (desk && outside(x, y, desk, 10)) scheduleExit('desk');
+      else clearExitTimer();
+    }
+  };
+  checkHoverRef.current = checkHover;
+
+  const followCursor = (event: PointerEvent<HTMLElement>) => {
+    if (roomAsset.state !== 'ready') return;
+    if (event.pointerType !== 'mouse') {
+      pointer.current.active = false;
+      clearExitTimer();
+      return;
+    }
+    pointer.current = { x: event.clientX, y: event.clientY, active: true };
+    if (viewRef.current === 'desk') {
+      deskMotion.current.targetX = Math.max(
+        -1,
+        Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2),
+      );
+      deskMotion.current.targetY = Math.max(
+        -1,
+        Math.min(1, (event.clientY / window.innerHeight - 0.5) * 2),
+      );
+      wakeCamera();
+    }
+    if (viewRef.current !== 'room') {
+      checkHover();
+      return;
+    }
+    const desk = deskRef.current?.getBoundingClientRect();
+    if (
+      camera.current.current.scale < 1.05 &&
+      desk &&
+      !outside(event.clientX, event.clientY, desk)
+    ) {
+      enterDesk();
+      return;
+    }
+    roomOffset.current.x = (event.clientX / window.innerWidth - 0.5) * -24;
+    roomOffset.current.y = (event.clientY / window.innerHeight - 0.5) * -16;
+    const stage = stageRef.current;
+    if (!stage) return;
+    poses.current.room = {
+      x: -stage.offsetWidth / 2 + roomOffset.current.x,
+      y: -stage.offsetHeight / 2 + roomOffset.current.y,
+      scale: 1,
+    };
+    aimCamera(poses.current.room, 'room');
   };
 
   return (
-    <main className="experience" data-view={view} style={{ '--zoom': zoom } as CSSProperties}>
-      <div className="room-stage" ref={stageRef}>
-        <img className="room-image" src={roomImage} alt="A compact loft workspace with two monitors beneath a bed" draggable={false} />
-        <div className="monitor-screen" id="monitorScreen">
-          <div className="portfolio-mount" aria-hidden={view !== 'screen'} inert={view !== 'screen'}>
-            <PortfolioDesktop />
+    <main
+      className="experience"
+      data-view={view}
+      data-expanded={mobileExpanded}
+      onPointerMove={followCursor}
+    >
+      <div
+        className="room-stage"
+        ref={stageRef}
+        inert={roomAsset.state !== 'ready'}
+        aria-hidden={roomAsset.state !== 'ready'}
+      >
+        <div className="desk-camera">
+          <img
+            className="room-image"
+            src={roomAsset.url}
+            alt="A compact loft workspace with a monitor, desk, and chair"
+            draggable={false}
+            fetchPriority="high"
+          />
+          <div className="monitor-screen" onPointerLeave={onMonitorLeave}>
+            <div className="monitor-surface">
+              <div
+                className="monitor-desktop"
+                style={{ backgroundImage: `url("${wallpaperAsset.url}")` }}
+                aria-label="Desktop background"
+                aria-hidden={view !== 'screen' || mobileExpanded}
+                inert={view !== 'screen' || mobileExpanded}
+              >
+                {activeApp === null && (
+                  <div className="desktop-shortcuts" aria-label="Desktop apps">
+                    <button
+                      className="desktop-shortcut"
+                      ref={desktopAppRef}
+                      type="button"
+                      onClick={() => openApp('arduino')}
+                    >
+                      <img
+                        className="desktop-shortcut-icon"
+                        src="/portfolio-logo.webp"
+                        alt=""
+                        draggable={false}
+                      />
+                      <span className="desktop-shortcut-label">Portfolio</span>
+                    </button>
+                    <button
+                      className="desktop-shortcut"
+                      ref={autoRenameRef}
+                      type="button"
+                      onClick={() => openApp('autorename')}
+                    >
+                      <img
+                        className="desktop-shortcut-icon"
+                        src="/autorenamer-icon.svg"
+                        alt=""
+                        draggable={false}
+                      />
+                      <span className="desktop-shortcut-label">AutoRename</span>
+                    </button>
+                  </div>
+                )}
+                {wallpaperAsset.state !== 'ready' && (
+                  <div className="wallpaper-loading">
+                    <LoadNotice
+                      state={wallpaperAsset.state}
+                      subject="desktop background"
+                      onRetry={wallpaperAsset.retry}
+                    />
+                  </div>
+                )}
+              </div>
+              {activeApp === 'arduino' && (
+                <section
+                  className={`arduino-window monitor-app-window${windowMaximized ? ' window-maximized' : ''}`}
+                  id="portfolio-window"
+                  aria-label="Angelo's Arduino IDE portfolio"
+                  aria-hidden={view !== 'screen'}
+                  inert={view !== 'screen'}
+                >
+                  <header className="arduino-window-titlebar">
+                    <span className="arduino-app-mark" aria-hidden="true">
+                      ∞
+                    </span>
+                    <span className="window-title">
+                      Portfolio.ino <span>— Arduino IDE 2.3.10 · Angelo Palpalatoc</span>
+                    </span>
+                    <div className="window-controls" aria-label="Arduino IDE window controls">
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={minimizeApp}
+                        aria-label="Minimize Arduino IDE"
+                      >
+                        —
+                      </button>
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={toggleMaximize}
+                        aria-label={
+                          windowMaximized ? 'Restore Arduino IDE' : 'Maximize Arduino IDE'
+                        }
+                      >
+                        {windowMaximized ? '▢' : '□'}
+                      </button>
+                      <button
+                        className="window-control window-close"
+                        type="button"
+                        onClick={closeApp}
+                        aria-label="Close Arduino IDE"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </header>
+                  <PortfolioFrame
+                    frameRef={frameRef}
+                    onNavigationKeyDown={onNavigationKeyDown}
+                    onReady={onPortfolioReady}
+                  />
+                </section>
+              )}
+              {activeApp === 'autorename' && (
+                <section
+                  ref={autoRenameWindowRef}
+                  tabIndex={-1}
+                  className={`autorename-window monitor-app-window${windowMaximized ? ' window-maximized' : ''}`}
+                  id="autorenamer-window"
+                  aria-label="AutoRename interactive mobile demo"
+                  aria-hidden={view !== 'screen'}
+                  inert={view !== 'screen'}
+                >
+                  <header className="arduino-window-titlebar">
+                    <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
+                    <span className="window-title">
+                      AutoRename <span>— interactive mobile demo</span>
+                    </span>
+                    <button
+                      className="rename-return-button"
+                      type="button"
+                      onClick={() => openApp('arduino')}
+                    >
+                      Back to Portfolio
+                    </button>
+                    <div className="window-controls" aria-label="AutoRename window controls">
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={minimizeApp}
+                        aria-label="Minimize AutoRename"
+                      >
+                        —
+                      </button>
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={toggleMaximize}
+                        aria-label={windowMaximized ? 'Restore AutoRename' : 'Maximize AutoRename'}
+                      >
+                        {windowMaximized ? '▢' : '□'}
+                      </button>
+                      <button
+                        className="window-control window-close"
+                        type="button"
+                        onClick={closeApp}
+                        aria-label="Close AutoRename"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </header>
+                  <AutoRenameDemo />
+                </section>
+              )}
+            </div>
+            {view === 'desk' && (
+              <button
+                className="screen-hotspot"
+                ref={hotspotRef}
+                type="button"
+                aria-label="View the desktop apps on the monitor"
+                onClick={() => {
+                  pointer.current.active = false;
+                  enterScreen();
+                }}
+              />
+            )}
           </div>
-          {view === 'room' && (
-            <button className="screen-hotspot" ref={hotspotRef} type="button" aria-label="Enter the main monitor to explore projects"
-              onPointerEnter={onHotspotEnter} onPointerLeave={() => { hoverArmed.current = true; }} onClick={enterScreen}>
-              <span className="hotspot-label">OPEN <span aria-hidden="true">↗</span></span>
-            </button>
-          )}
+          <button
+            className="desk-hotspot"
+            ref={deskRef}
+            type="button"
+            aria-label="Approach the computer desk"
+            aria-hidden={view !== 'room'}
+            tabIndex={view === 'room' ? 0 : -1}
+            onClick={() => {
+              pointer.current.active = false;
+              enterDesk();
+            }}
+          />
         </div>
       </div>
-      <section className="room-caption" aria-hidden={view === 'screen'} inert={view === 'screen'} aria-label="Explore the main monitor">
-        <span className="caption-kicker"><span className="caption-line" /> 01 / MAIN MONITOR</span>
-        <span className="caption-title">Projects are on screen.</span>
-        <span className="caption-hint">Hover over the monitor, or open it here.</span>
-        <button className="caption-action" type="button" onClick={enterScreen}>Open projects <span aria-hidden="true">↗</span></button>
+
+      {view === 'screen' && (
+        <div
+          ref={mobileControlsRef}
+          className={`mobile-screen-controls${mobileExpanded ? ' is-expanded' : ''}`}
+          role="group"
+          aria-label="Monitor viewing controls"
+        >
+          <span className="mobile-controls-brand">
+            {activeApp === 'autorename' ? (
+              <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
+            ) : (
+              <span className="arduino-app-mark" aria-hidden="true">
+                ∞
+              </span>
+            )}
+            <span>
+              {activeApp === 'autorename' ? 'AutoRename' : activeApp ? 'Arduino IDE' : 'Desktop'}
+            </span>
+          </span>
+          <div className="mobile-controls-actions">
+            <button
+              ref={mobileViewRef}
+              className="mobile-view-button"
+              type="button"
+              onClick={activeApp ? toggleMobilePortfolio : () => openApp('arduino')}
+              aria-expanded={activeApp ? mobileExpanded : undefined}
+              aria-controls={
+                activeApp === 'autorename'
+                  ? 'autorenamer-window'
+                  : activeApp
+                    ? 'portfolio-window'
+                    : undefined
+              }
+            >
+              {activeApp
+                ? mobileExpanded
+                  ? 'Return to monitor'
+                  : 'Read larger'
+                : 'Open Portfolio'}
+            </button>
+            {mobileExpanded && (
+              <button
+                className="mobile-close-button"
+                type="button"
+                onClick={closeApp}
+                aria-label={`Close ${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'}`}
+              >
+                ×
+              </button>
+            )}
+            <button className="mobile-back-button" type="button" onClick={leaveScreen}>
+              Back to desk
+            </button>
+          </div>
+        </div>
+      )}
+
+      <section
+        className="room-caption"
+        aria-hidden={view !== 'room' || roomAsset.state !== 'ready'}
+        inert={view !== 'room' || roomAsset.state !== 'ready'}
+        aria-label="Explore the computer setup"
+      >
+        <span className="caption-kicker">
+          <span className="caption-line" /> 01 / COMPUTER SETUP
+        </span>
+        <span className="caption-title">Come on in. My work is on screen.</span>
+        <span className="caption-hint">
+          Explore the desk, then open the monitor to see my portfolio.
+        </span>
+        <button
+          className="caption-action"
+          type="button"
+          onClick={() => {
+            pointer.current.active = false;
+            enterDesk();
+          }}
+        >
+          Explore desk <span aria-hidden="true">↗</span>
+        </button>
       </section>
-      <button className="back-control" ref={backRef} type="button" onClick={leaveScreen} aria-hidden={view !== 'screen'} tabIndex={view === 'screen' ? 0 : -1}>
-        <span aria-hidden="true">←</span> Back to room <kbd>ESC</kbd>
-      </button>
-      <p className="sr-only" role="status" aria-live="polite">{status}</p>
+
+      {roomAsset.state !== 'ready' && (
+        <div className="room-loading">
+          <LoadNotice state={roomAsset.state} subject="room" onRetry={roomAsset.retry} />
+        </div>
+      )}
+
+      <p className="sr-only" role="status" aria-live="polite">
+        {status}
+      </p>
     </main>
   );
 }

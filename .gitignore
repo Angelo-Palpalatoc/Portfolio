@@ -1,3 +1,14 @@
 node_modules/
 dist/
 .preview-*.png
+
+# Local development tools and generated code maps
+.archive/
+.tools/
+graphify-out/
+project-notes/Code-Map/
+project-notes/.obsidian/workspace.json
+project-notes/.obsidian/workspace-mobile.json
+project-notes/.obsidian/workspaces.json
+project-notes/.obsidian/cache/
+project-notes/.trash/
