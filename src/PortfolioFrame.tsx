@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import { LoadNotice } from './LoadingState';
 import type { LoadState } from './LoadingState';
 
-// The exported document remains untouched. Its unpacker replaces the document
+// The exported document is self-contained. Its unpacker replaces the document
 // before mounting the app, so the iframe load event alone isn't a ready signal.
 export default function PortfolioFrame({
   frameRef,
@@ -25,6 +25,8 @@ export default function PortfolioFrame({
     let doc: Document | null = null;
     let contentObserver: MutationObserver | null = null;
     let documentObserver: MutationObserver | null = null;
+    let scrollContainer: HTMLElement | null = null;
+    let touchStart: { screenY: number; scrollTop: number; dragging: boolean } | null = null;
     const controller = new AbortController();
     setState('loading');
     const timer = window.setTimeout(() => {
@@ -35,18 +37,66 @@ export default function PortfolioFrame({
       window.clearTimeout(timer);
       setState('error');
     };
+    const onTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch || !window.matchMedia('(orientation: portrait)').matches) return;
+      touchStart = {
+        screenY: touch.screenY,
+        scrollTop: scrollContainer?.scrollTop ?? 0,
+        dragging: false,
+      };
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch || !touchStart || !scrollContainer) return;
+      const deltaY = touch.screenY - touchStart.screenY;
+      if (!touchStart.dragging && Math.abs(deltaY) < 6) return;
+      touchStart.dragging = true;
+      event.preventDefault();
+      // In portrait, the app is rotated 90 degrees; map a vertical finger
+      // drag back onto the portfolio's normal vertical scroll axis.
+      scrollContainer.scrollTop = touchStart.scrollTop - deltaY;
+    };
+    const onTouchEnd = () => {
+      touchStart = null;
+    };
     const bindDocument = () => {
       contentObserver?.disconnect();
       documentObserver?.disconnect();
+      scrollContainer?.removeEventListener('touchstart', onTouchStart);
+      scrollContainer?.removeEventListener('touchmove', onTouchMove);
+      doc?.removeEventListener('touchend', onTouchEnd);
+      doc?.removeEventListener('touchcancel', onTouchEnd);
+      scrollContainer = null;
       doc?.removeEventListener('keydown', onNavigationKeyDown);
       doc = frame.contentDocument;
       if (!doc) return;
+      const bindPhoneScroll = () => {
+        const candidate = [...(doc?.querySelectorAll<HTMLElement>('*') ?? [])].find((element) => {
+          const style = doc?.defaultView?.getComputedStyle(element);
+          return (
+            !!style &&
+            /auto|scroll/.test(style.overflowY) &&
+            element.scrollHeight > element.clientHeight
+          );
+        });
+        if (candidate === scrollContainer) return;
+        scrollContainer?.removeEventListener('touchstart', onTouchStart);
+        scrollContainer?.removeEventListener('touchmove', onTouchMove);
+        scrollContainer = candidate ?? null;
+        scrollContainer?.addEventListener('touchstart', onTouchStart, { passive: true });
+        scrollContainer?.addEventListener('touchmove', onTouchMove, { passive: false });
+      };
       const bindKeys = () => doc?.addEventListener('keydown', onNavigationKeyDown);
       documentObserver = new MutationObserver(bindKeys);
       documentObserver.observe(doc, { childList: true });
       bindKeys();
+      bindPhoneScroll();
+      doc.addEventListener('touchend', onTouchEnd, { passive: true });
+      doc.addEventListener('touchcancel', onTouchEnd, { passive: true });
       const checkReady = () => {
         if (!active || ready || !doc?.querySelector('#dc-root > *')) return;
+        bindPhoneScroll();
         ready = true;
         window.clearTimeout(timer);
         contentObserver?.disconnect();
@@ -75,6 +125,11 @@ export default function PortfolioFrame({
       frame.removeEventListener('error', fail);
       contentObserver?.disconnect();
       documentObserver?.disconnect();
+      scrollContainer?.removeEventListener('touchstart', onTouchStart);
+      scrollContainer?.removeEventListener('touchmove', onTouchMove);
+      doc?.removeEventListener('touchend', onTouchEnd);
+      doc?.removeEventListener('touchcancel', onTouchEnd);
+      scrollContainer = null;
       doc?.removeEventListener('keydown', onNavigationKeyDown);
     };
   }, [attempt, frameRef, onNavigationKeyDown]);

@@ -19,12 +19,14 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 ### Loading and mobile continuity (2026-11-09)
 
 - The three live images use lossless WebP, reducing their combined file size from 6,136,874 bytes to 3,222,032 bytes (47.5%). Dimensions and all decoded RGBA bytes match the original PNGs. Originals remain locally in `.archive/source-assets/`.
-- Room and wallpaper loads show quiet pending/error feedback with retry controls. The portfolio wrapper checks HTTP status and waits for the exported `#dc-root` to mount before revealing the iframe. The exported HTML is unchanged.
+- Room and wallpaper loads show quiet pending/error feedback with retry controls. The portfolio wrapper checks HTTP status and waits for the exported `#dc-root` to mount before revealing the iframe. Portfolio content in the export remains unchanged; its Serial Monitor now starts collapsed.
 - A load still pending after 15 seconds offers retry; it may still finish normally. No automatic reload loop is used.
-- On phones, entering the monitor opens the existing app directly in the full-screen reading view; no separate control strip or orientation prompt takes space. In portrait, the app rotates to landscape proportions, and turning the phone sideways keeps the expanded state and restores the regular wide layout.
-- A compact, upright **Back** control overlays the expanded app: AutoRename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The Arduino iframe remains mounted during its full-screen reading view, preserving its active section and scroll position.
+- On phones, entering the monitor opens the existing app directly in the full-screen reading view; no separate control strip or orientation prompt takes space. In portrait, the app rotates to landscape proportions, and turning the phone sideways keeps the expanded state and restores the regular wide layout. Vertical touch drags in portrait map to the portfolio content scroller.
+- A compact, upright **Back** control overlays the expanded app with a transparent fill: it sits at the top-right in landscape and bottom-left in portrait. AutoRename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The Arduino iframe remains mounted during its full-screen reading view, preserving its active section and scroll position.
+- The boot screen no longer shows a **Skip** button, so it cannot overlap the phone Back control; the boot sequence continues automatically.
+- The Arduino IDE Serial Monitor starts collapsed; users can still open it from the IDE toolbar.
 - Phone expansion temporarily flattens the surrounding CSS layers so the app can fill the available viewport. Normal monitor calibration and projection are retained and restored on return, including a resize beyond the phone breakpoint.
-- Browser checks covered failed-request retry, monitor fit, shared-document/scroll continuity, phone reading rotation at 390 × 844 and 844 × 390, and return navigation to desk and room. Physical phones and Safari remain to be checked.
+- Browser checks covered failed-request retry, monitor fit, shared-document/scroll continuity, phone reading rotation at 390 × 844 and 844 × 390, simulated portrait touch scrolling, and return navigation to desk and room. Physical phones and Safari remain to be checked.
 
 ### Transition behavior (updated 2026-11-08)
 
@@ -35,7 +37,7 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 - The animation loop stops when the camera and parallax settle, and resumes for movement or a new camera target.
 - Reduced motion snaps the camera and disables desk tilt. Escape still returns through expanded reading view, monitor, desk, and room.
 
-Browser checks covered controlled 60/144 Hz animation, boundary cancellation, idle loop completion, keyboard focus, and phone controls at 390 px and 320 px widths. These are functional checks, not a physical-device performance benchmark. Monitor calibration and the exported Arduino portfolio were preserved.
+Browser checks covered controlled 60/144 Hz animation, boundary cancellation, idle loop completion, keyboard focus, and phone controls at 390 px and 320 px widths. These are functional checks, not a physical-device performance benchmark. Monitor calibration and Arduino portfolio content were preserved.
 
 ## Source map
 
@@ -70,4 +72,4 @@ npm.cmd run build
 
 The root README describes the active folder structure and commands. Historical screenshots, uploaded references, the original export, the APK, and the superseded milestone are preserved locally under `.archive/`, outside the active source tree and ignored by Git. Generated folders are hidden in the project Explorer; Obsidian still reads its generated code map normally.
 
-Cleanup consolidated the stylesheet, removed unused screen-scaling state, organized live images under `src/assets`, and kept the Arduino export unchanged. Knip checks unused source/dependencies, and Prettier handles formatting; see [[Tooling]].
+Cleanup consolidated the stylesheet, removed unused screen-scaling state, and organized live images under `src/assets`. The Arduino export's portfolio content remains Claude Design-owned; the Serial Monitor's default open/closed state is configured in that export. Knip checks unused source/dependencies, and Prettier handles formatting; see [[Tooling]].
