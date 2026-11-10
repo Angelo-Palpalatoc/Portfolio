@@ -38,8 +38,7 @@ export default function App() {
   const desktopAppRef = useRef<HTMLButtonElement>(null);
   const autoRenameRef = useRef<HTMLButtonElement>(null);
   const autoRenameWindowRef = useRef<HTMLElement>(null);
-  const mobileViewRef = useRef<HTMLButtonElement>(null);
-  const mobileControlsRef = useRef<HTMLDivElement>(null);
+  const mobileBackRef = useRef<HTMLButtonElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const mobileExpandedRef = useRef(mobileExpanded);
   mobileExpandedRef.current = mobileExpanded;
@@ -277,9 +276,10 @@ export default function App() {
     aimCamera(poses.current.screen, 'screen');
     setView('screen');
     const mobile = window.matchMedia(phoneQuery).matches;
+    setMobileExpanded(mobile);
     setStatus(
       mobile
-        ? `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} open inside the monitor. Use the controls to read it larger or return to the desk.`
+        ? `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} open in phone reading view.`
         : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'AutoRename' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
     );
   };
@@ -300,28 +300,13 @@ export default function App() {
     );
   };
 
-  const openApp = (app: Exclude<AppWindow, null> = 'arduino') => {
+  const openApp = useCallback((app: Exclude<AppWindow, null> = 'arduino') => {
     setActiveApp(app);
     setWindowMaximized(false);
     setStatus(`${app === 'autorename' ? 'AutoRename' : 'Arduino IDE'} opened.`);
-  };
+  }, []);
 
   const toggleMaximize = () => setWindowMaximized((value) => !value);
-
-  const toggleMobilePortfolio = () => {
-    if (mobileExpanded) {
-      setMobileExpanded(false);
-      setStatus(
-        `${activeApp === 'autorename' ? 'AutoRename demo' : 'Arduino portfolio'} returned to the monitor.`,
-      );
-      return;
-    }
-    if (!activeApp) return;
-    setMobileExpanded(true);
-    setStatus(
-      `${activeApp === 'autorename' ? 'AutoRename demo' : 'Arduino portfolio'} opened in landscape reading view. Rotate your phone if needed.`,
-    );
-  };
 
   const leaveScreen = useCallback(() => {
     if (viewRef.current !== 'screen') return;
@@ -334,6 +319,14 @@ export default function App() {
     setView('desk');
     setStatus('Back at the desk. Move away to see the room.');
   }, [aimCamera, clearExitTimer]);
+
+  const handlePhoneBack = () => {
+    if (activeApp === 'autorename') {
+      openApp('arduino');
+      return;
+    }
+    leaveScreen();
+  };
 
   const leaveDesk = useCallback(() => {
     if (viewRef.current !== 'desk') return;
@@ -352,12 +345,12 @@ export default function App() {
       clearExitTimer();
       if (event.key !== 'Escape') return;
       if (viewRef.current === 'screen' && mobileExpandedRef.current) {
-        setMobileExpanded(false);
-        setStatus('App returned to the monitor.');
+        if (activeApp === 'autorename') openApp('arduino');
+        else leaveScreen();
       } else if (viewRef.current === 'screen') leaveScreen();
       else if (viewRef.current === 'desk') leaveDesk();
     },
-    [leaveScreen, leaveDesk, clearExitTimer],
+    [activeApp, openApp, leaveScreen, leaveDesk, clearExitTimer],
   );
 
   // Responsive measurements, keyboard navigation, and focus management.
@@ -378,24 +371,6 @@ export default function App() {
   }, [mobileExpanded, measureScene]);
 
   useLayoutEffect(() => {
-    const controls = mobileControlsRef.current;
-    if (!controls) return;
-    const measureControls = () =>
-      controls.parentElement?.style.setProperty(
-        '--mobile-controls-height',
-        `${controls.getBoundingClientRect().height}px`,
-      );
-    measureControls();
-    const observer = new ResizeObserver(measureControls);
-    observer.observe(controls);
-    window.addEventListener('resize', measureControls);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measureControls);
-    };
-  }, [view, mobileExpanded, activeApp]);
-
-  useLayoutEffect(() => {
     measureScene();
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     reducedMotion.addEventListener('change', measureScene);
@@ -413,7 +388,7 @@ export default function App() {
   useLayoutEffect(() => {
     if (!interacted.current) return;
     if (view === 'screen' && window.matchMedia(phoneQuery).matches)
-      mobileViewRef.current?.focus({ preventScroll: true });
+      mobileBackRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'arduino')
       frameRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'autorename')
@@ -765,67 +740,20 @@ export default function App() {
         </div>
       </div>
 
-      {view === 'screen' && (
-        <div
-          ref={mobileControlsRef}
-          className={`mobile-screen-controls${mobileExpanded ? ' is-expanded' : ''}`}
-          role="group"
-          aria-label="Monitor viewing controls"
-        >
-          <span className="mobile-controls-brand">
-            {activeApp === 'autorename' ? (
-              <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
-            ) : (
-              <img className="arduino-app-mark" src="/portfolio-logo.webp" alt="" />
-            )}
-            <span>
-              {activeApp === 'autorename' ? 'AutoRename' : activeApp ? 'Arduino IDE' : 'Desktop'}
-            </span>
-          </span>
-          <div className="mobile-controls-actions">
-            <button
-              ref={mobileViewRef}
-              className="mobile-view-button"
-              type="button"
-              onClick={activeApp ? toggleMobilePortfolio : () => openApp('arduino')}
-              aria-expanded={activeApp ? mobileExpanded : undefined}
-              aria-controls={
-                activeApp === 'autorename'
-                  ? 'autorenamer-window'
-                  : activeApp
-                    ? 'portfolio-window'
-                    : undefined
-              }
-            >
-              {activeApp
-                ? mobileExpanded
-                  ? 'Return to monitor'
-                  : 'Read larger'
-                : 'Open Portfolio'}
-            </button>
-            {mobileExpanded && (
-              <button
-                className="mobile-close-button"
-                type="button"
-                onClick={closeApp}
-                aria-label={`Close ${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'}`}
-              >
-                ×
-              </button>
-            )}
-            <button className="mobile-back-button" type="button" onClick={leaveScreen}>
-              Back to desk
-            </button>
-          </div>
-        </div>
-      )}
-
       {view === 'screen' && mobileExpanded && (
-        <div className="mobile-landscape-hint" aria-hidden="true">
-          <span>↻</span> Turn your phone sideways
-        </div>
+        <button
+          ref={mobileBackRef}
+          className="mobile-portfolio-back"
+          type="button"
+          onClick={handlePhoneBack}
+          aria-label={activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'}
+        >
+          <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+            <path d="M8 4 2.5 10 8 16M3 10h14" />
+          </svg>
+          <span>{activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
+        </button>
       )}
-
       {view === 'desk' && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>
           Back to room

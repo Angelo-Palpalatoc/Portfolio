@@ -430,12 +430,8 @@ button {
   font-size: clamp(12px, 1.1vw, 15px);
 }
 
-/* Phone reading controls */
-.mobile-screen-controls {
-  display: none;
-}
-.mobile-landscape-hint,
-.mobile-room-button {
+/* Phone reading view */
+.mobile-portfolio-back {
   display: none;
 }
 @media (max-width: 700px),
@@ -459,83 +455,69 @@ button {
   .window-close {
     width: 38px;
   }
-  .mobile-screen-controls {
+  /* Expand the existing app in place; no extra control strip reserves space. */
+  .experience[data-expanded='true'] .room-stage {
+    transform: none !important;
+    will-change: auto;
+  }
+  .experience[data-expanded='true'] .desk-camera {
+    transform: none;
+  }
+  .experience[data-expanded='true'] .monitor-screen {
+    clip-path: none;
+    container-type: normal;
+  }
+  .experience[data-expanded='true'] .monitor-surface {
+    transform: none;
+    container-type: normal;
+  }
+  .experience[data-expanded='true'] .monitor-app-window {
     position: fixed;
-    z-index: 11;
-    top: env(safe-area-inset-top, 0px);
-    right: 0;
-    left: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    min-height: 56px;
-    padding: 6px 8px;
-    border-bottom: 1px solid #482750;
-    color: #f4edf7;
-    background: #250d2b;
+    z-index: 10;
+    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    width: auto;
+    height: auto;
+    transform: none;
+    border: 0;
   }
-  .mobile-controls-brand {
-    display: flex;
-    min-width: 0;
-    flex: 1 1 auto;
-    align-items: center;
-    gap: 7px;
-    overflow: hidden;
-    font-size: 12px;
-    font-weight: 650;
-    white-space: nowrap;
+  .experience[data-expanded='true'] .arduino-window-titlebar {
+    display: none;
   }
-  .mobile-controls-brand .arduino-app-mark {
-    width: 22px;
-    height: 22px;
-    font-size: 16px;
-  }
-  .mobile-controls-actions {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 5px;
-    min-width: 0;
-  }
-  .mobile-controls-actions button {
+  .mobile-portfolio-back {
+    position: fixed;
+    z-index: 13;
+    top: max(12px, env(safe-area-inset-top, 0px));
+    left: max(12px, env(safe-area-inset-left, 0px));
     display: inline-flex;
-    flex-shrink: 0;
-    min-width: 44px;
+    min-width: 68px;
     min-height: 44px;
     align-items: center;
     justify-content: center;
-    padding: 0 9px;
-    border: 1px solid #667276;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid #00979c;
     border-radius: 2px;
-    color: #f5f3ed;
-    background: #252526;
+    color: #f4f7f7;
+    background: #250d2bf2;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 650;
-    white-space: nowrap;
   }
-  .mobile-controls-actions button:hover,
-  .mobile-controls-actions button:focus-visible {
-    border-color: #28c6c4;
+  .mobile-portfolio-back svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #28c6c4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+  .mobile-portfolio-back:hover,
+  .mobile-portfolio-back:focus-visible {
+    background: #49354f;
     outline: 2px solid #28c6c4;
-    outline-offset: 1px;
-  }
-  .mobile-controls-actions .mobile-view-button {
-    border-color: #00979c;
-    color: #071718;
-    background: #1bb7b6;
-  }
-  .mobile-controls-actions .mobile-back-button {
-    border-color: #9c7da6;
-  }
-  .mobile-controls-actions .mobile-close-button {
-    width: 44px;
-    padding: 0;
-    color: #fff;
-    background: #a9343f;
-    font-size: 22px;
+    outline-offset: 2px;
   }
   .mobile-room-button {
     position: fixed;
@@ -562,50 +544,14 @@ button {
     outline: 2px solid white;
     outline-offset: 3px;
   }
-  /* Expand the existing app in place. Flatten only its containing layers so
-     fixed positioning uses the viewport, without remounting the iframe. */
-  .experience[data-expanded='true'] .room-stage {
-    transform: none !important;
-    will-change: auto;
-  }
-  .experience[data-expanded='true'] .desk-camera {
-    transform: none;
-  }
-  .experience[data-expanded='true'] .monitor-screen {
-    clip-path: none;
-    container-type: normal;
-  }
-  .experience[data-expanded='true'] .monitor-surface {
-    transform: none;
-    container-type: normal;
-  }
-  .experience[data-expanded='true'] .monitor-app-window {
-    position: fixed;
-    z-index: 10;
-    top: var(--mobile-controls-height, calc(env(safe-area-inset-top, 0px) + 56px));
-    right: 0;
-    bottom: env(safe-area-inset-bottom, 0px);
-    left: 0;
-    width: auto;
-    height: auto;
-    transform: none;
-    border: 0;
-  }
-  .experience[data-expanded='true'] .arduino-window-titlebar {
-    display: none;
-  }
 }
 @media (max-width: 700px) and (orientation: portrait),
   (max-width: 950px) and (pointer: coarse) and (orientation: portrait) {
   .experience[data-expanded='true'] .monitor-app-window {
     --mobile-reading-height: calc(
-      100dvh - env(safe-area-inset-top, 0px) - var(--mobile-controls-height, 87px) -
-        env(safe-area-inset-bottom, 0px)
+      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
     );
-    top: calc(
-      env(safe-area-inset-top, 0px) + var(--mobile-controls-height, 87px) +
-        var(--mobile-reading-height) / 2
-    );
+    top: calc(env(safe-area-inset-top, 0px) + var(--mobile-reading-height) / 2);
     right: auto;
     bottom: auto;
     left: calc(
@@ -613,35 +559,9 @@ button {
         (100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 2
     );
     width: var(--mobile-reading-height);
-    height: calc(
-      100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)
-    );
+    height: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     transform: translate(-50%, -50%) rotate(90deg);
     transform-origin: center;
-  }
-  .mobile-landscape-hint {
-    position: fixed;
-    z-index: 12;
-    right: 12px;
-    bottom: max(12px, env(safe-area-inset-bottom, 0px));
-    display: inline-flex;
-    min-height: 36px;
-    align-items: center;
-    gap: 8px;
-    padding: 0 11px;
-    border: 1px solid #00979c;
-    border-radius: 2px;
-    color: #f4f7f7;
-    background: #111c1deb;
-    box-shadow: 0 8px 24px #0009;
-    font-size: 11px;
-    font-weight: 700;
-    pointer-events: none;
-  }
-  .mobile-landscape-hint span {
-    color: #28c6c4;
-    font-size: 18px;
-    line-height: 1;
   }
 }
 @media (max-width: 600px) {
@@ -660,16 +580,6 @@ button {
     line-height: 1.35;
   }
 }
-@media (max-width: 420px) {
-  .mobile-screen-controls.is-expanded .mobile-controls-brand {
-    flex-basis: 100%;
-  }
-  .mobile-screen-controls.is-expanded .mobile-controls-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-}
-
 /* Accessibility and motion preferences */
 .sr-only {
   position: absolute;
