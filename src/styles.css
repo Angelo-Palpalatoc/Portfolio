@@ -230,19 +230,12 @@ button {
     sans-serif;
 }
 .arduino-app-mark {
-  display: inline-grid;
+  display: block;
   flex: 0 0 auto;
   width: 20px;
   height: 20px;
-  place-items: center;
   border-radius: 3px;
-  color: #071718;
-  background: #00979c;
-  font:
-    800 16px/1 Inter,
-    ui-sans-serif,
-    system-ui,
-    sans-serif;
+  object-fit: contain;
 }
 .window-title {
   min-width: 0;
@@ -415,7 +408,7 @@ button {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #f5d266;
+  color: #00979c;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -423,8 +416,8 @@ button {
 .caption-line {
   width: 24px;
   height: 2px;
-  background: #f1c542;
-  box-shadow: 0 0 10px #f1c54280;
+  background: #00979c;
+  box-shadow: 0 0 10px #00979c80;
 }
 .caption-title {
   font-size: clamp(22px, 2.7vw, 36px);
@@ -435,36 +428,6 @@ button {
 .caption-hint {
   color: #e4d6bf;
   font-size: clamp(12px, 1.1vw, 15px);
-}
-.caption-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 34px;
-  min-height: 44px;
-  margin-top: 10px;
-  padding: 10px 14px;
-  border: 1px solid #c9a545;
-  border-left: 4px solid #f1c542;
-  border-radius: 1px;
-  color: #f8e6ae;
-  background: #151610ed;
-  box-shadow: 0 8px 22px #0007;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 750;
-  text-shadow: none;
-}
-.caption-action:hover,
-.caption-action:focus-visible {
-  color: #141411;
-  background: #f1c542;
-  outline: 2px solid #f8e6ae;
-  outline-offset: 3px;
-}
-.caption-action span {
-  font-size: 19px;
-  line-height: 1;
 }
 
 /* Phone reading controls */
@@ -615,10 +578,6 @@ button {
   .caption-hint {
     max-width: 290px;
     line-height: 1.35;
-  }
-  .caption-action {
-    min-height: 46px;
-    margin-top: 7px;
   }
 }
 @media (max-width: 420px) {

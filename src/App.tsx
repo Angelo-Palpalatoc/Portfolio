@@ -637,9 +637,12 @@ export default function App() {
                   inert={view !== 'screen'}
                 >
                   <header className="arduino-window-titlebar">
-                    <span className="arduino-app-mark" aria-hidden="true">
-                      ∞
-                    </span>
+                    <img
+                      className="arduino-app-mark"
+                      src="/portfolio-logo.webp"
+                      alt=""
+                      aria-hidden="true"
+                    />
                     <span className="window-title">
                       Portfolio.ino <span>— Arduino IDE 2.3.10 · Angelo Palpalatoc</span>
                     </span>
@@ -771,9 +774,7 @@ export default function App() {
             {activeApp === 'autorename' ? (
               <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
             ) : (
-              <span className="arduino-app-mark" aria-hidden="true">
-                ∞
-              </span>
+              <img className="arduino-app-mark" src="/portfolio-logo.webp" alt="" />
             )}
             <span>
               {activeApp === 'autorename' ? 'AutoRename' : activeApp ? 'Arduino IDE' : 'Desktop'}
@@ -830,16 +831,6 @@ export default function App() {
         <span className="caption-hint">
           Explore the desk, then open the monitor to see my portfolio.
         </span>
-        <button
-          className="caption-action"
-          type="button"
-          onClick={() => {
-            pointer.current.active = false;
-            enterDesk();
-          }}
-        >
-          Explore desk <span aria-hidden="true">↗</span>
-        </button>
       </section>
 
       {roomAsset.state !== 'ready' && (
