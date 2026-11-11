@@ -23,6 +23,9 @@ type AppWindow = AppName | null;
 type CameraPose = { x: number; y: number; scale: number };
 type MotionStatus =
   'hidden' | 'prompt' | 'requesting' | 'calibrating' | 'active' | 'denied' | 'unavailable' | 'off';
+type OrientationEventConstructor = typeof DeviceOrientationEvent & {
+  requestPermission?: () => Promise<'granted' | 'denied'>;
+};
 const initialPose = { x: 0, y: 0, scale: 1 };
 const outside = (x: number, y: number, rect: DOMRect, margin = 0) =>
   x < rect.left - margin ||
@@ -569,9 +572,7 @@ export default function App() {
     }
     setMotionStatus('requesting');
     try {
-      const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
-        requestPermission?: () => Promise<'granted' | 'denied'>;
-      };
+      const OrientationEvent = window.DeviceOrientationEvent as OrientationEventConstructor;
       const result = OrientationEvent.requestPermission
         ? await OrientationEvent.requestPermission()
         : 'granted';
@@ -601,7 +602,20 @@ export default function App() {
         if (motionStatus !== 'off') setMotionStatus('off');
         resetMotionPose();
       } else if (motionStatus === 'hidden') {
-        setMotionStatus('prompt');
+        if (!window.isSecureContext || !('DeviceOrientationEvent' in window)) {
+          setMotionStatus('unavailable');
+          setStatus('Motion sensors are unavailable here. Touch movement remains available.');
+          return;
+        }
+        const OrientationEvent = window.DeviceOrientationEvent as OrientationEventConstructor;
+        if (typeof OrientationEvent.requestPermission === 'function') {
+          setMotionStatus('prompt');
+          return;
+        }
+        orientationBaseline.current = null;
+        orientationSamples.current = 0;
+        setMotionStatus('calibrating');
+        setStatus('Motion view is starting automatically. Hold your phone comfortably.');
       }
     };
     syncMotionPrompt();
@@ -669,7 +683,11 @@ export default function App() {
     };
   }, [motionStatus, resetMotionPose, updateRoomPose, wakeCamera]);
 
-  // Pointer navigation between the room, desk, and monitor.
+  // Pointer navigation between the room, desk, and monitor. The short grace
+  // periods prevent the irregular projected edges from feeling like traps
+  // while keeping deliberate exits responsive.
+  const monitorExitDelay = 280;
+  const deskExitDelay = 180;
   const scheduleExit = (from: 'desk' | 'screen') => {
     if (exitTimer.current) return;
     exitTimer.current = setTimeout(
@@ -691,7 +709,7 @@ export default function App() {
           else leaveDesk();
         }
       },
-      from === 'screen' ? 110 : 150,
+      from === 'screen' ? monitorExitDelay : deskExitDelay,
     );
   };
 

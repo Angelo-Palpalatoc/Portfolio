@@ -55,7 +55,7 @@
 .rename-demo-reset:focus-visible,
 .rename-phone button:focus-visible,
 .rename-phone input:focus-visible {
-  outline: 3px solid #e1b62e;
+  outline: 3px solid #00979c;
   outline-offset: 2px;
 }
 .rename-phone {

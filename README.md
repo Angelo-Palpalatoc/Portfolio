@@ -58,7 +58,7 @@ Project configuration lives in the root: [package.json](./package.json), [tsconf
 - Phones enter a full-screen reading view from the monitor. Phone orientation changes keep the same iframe and app session, while closing and reopening starts a fresh session.
 - The room, wallpaper, and logo use lossless WebP with unchanged dimensions and pixels. Their original PNGs are preserved locally in `.archive/source-assets/`.
 - Room and portfolio loading failures have retry controls. Loads still pending after 15 seconds offer a retry without cancelling the original request.
-- Desk parallax is **30% above its original intensity**. Optional phone motion confirms sensor readings before activation and provides recenter, off, and touch fallback controls. Reduced motion disables the animated camera approach and desk tilt.
+- Desk parallax is **30% above its original intensity**. Optional phone motion starts automatically where the browser permits it, requests a tap only where browser consent is required, confirms sensor readings before activation, and provides recenter, off, and touch fallback controls. Reduced motion disables the animated camera approach and desk tilt.
 - The shared desktop is rendered at **1280 logical pixels wide** before projection to preserve sharpness.
 - The monitor's calibrated polygon lives in one `.monitor-screen` rule in [styles.css](./src/styles.css). Preserve it unless a fit adjustment is requested.
 - Leave [the Arduino export](./public/arduino-portfolio.html) unchanged unless explicitly requested. Formatting commands exclude it.

@@ -87,8 +87,7 @@ button {
   cursor: zoom-in;
 }
 .desk-hotspot:focus-visible {
-  outline: 2px solid #f3c54c;
-  outline-offset: 2px;
+  outline: none;
 }
 .experience[data-view='desk'] .desk-hotspot,
 .experience[data-view='screen'] .desk-hotspot {
@@ -119,6 +118,8 @@ button {
 .monitor-desktop {
   position: absolute;
   inset: 0;
+  --desktop-icon-size: clamp(38px, 3.5cqw, 45px);
+  --taskbar-icon-size: clamp(20px, 2.6cqw, 32px);
   background-size: cover;
   background-position: center;
 }
@@ -137,8 +138,7 @@ button {
   cursor: zoom-in;
 }
 .screen-hotspot:focus-visible {
-  outline: 2px solid #f3c54c;
-  outline-offset: -2px;
+  outline: none;
 }
 .desktop-shortcuts {
   position: absolute;
@@ -151,19 +151,19 @@ button {
 }
 .desktop-shortcut {
   display: grid;
-  width: 4.1cqw;
-  min-height: 5.4cqw;
-  grid-template-rows: 3.52cqw auto;
+  width: calc(var(--desktop-icon-size) * 1.7);
+  min-height: calc(var(--desktop-icon-size) * 1.55);
+  grid-template-rows: var(--desktop-icon-size) auto;
   justify-items: center;
   align-items: center;
   align-content: start;
-  gap: 0.4cqw;
-  padding: 0.22cqw;
+  gap: 5px;
+  padding: 3px;
   border: 0;
   color: #fff;
   background: transparent;
   cursor: pointer;
-  font-size: 0.8cqw;
+  font-size: clamp(10px, 0.8cqw, 12px);
   line-height: 1.15;
   text-align: center;
   text-shadow:
@@ -177,8 +177,8 @@ button {
 }
 .desktop-shortcut-icon {
   display: block;
-  width: 3.52cqw;
-  height: 3.52cqw;
+  width: var(--desktop-icon-size);
+  height: var(--desktop-icon-size);
   object-fit: contain;
 }
 .desktop-shortcut-label {
@@ -262,8 +262,8 @@ button {
 }
 .taskbar-app img {
   display: block;
-  width: 2.6cqw;
-  height: 2.6cqw;
+  width: var(--taskbar-icon-size);
+  height: var(--taskbar-icon-size);
   min-width: 17px;
   min-height: 17px;
   object-fit: contain;
@@ -600,8 +600,10 @@ button {
   align-items: flex-start;
   gap: 7px;
   max-width: min(360px, 80vw);
-  color: #f3ecdd;
-  text-shadow: 0 2px 12px #000;
+  color: #fff;
+  text-shadow:
+    0 2px 3px #000,
+    0 0 14px #000;
   transition: opacity 500ms ease;
 }
 .experience[data-view='desk'] .room-caption,
@@ -613,7 +615,7 @@ button {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #00979c;
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -621,8 +623,8 @@ button {
 .caption-line {
   width: 24px;
   height: 2px;
-  background: #00979c;
-  box-shadow: 0 0 10px #00979c80;
+  background: #fff;
+  box-shadow: 0 1px 4px #000;
 }
 .caption-title {
   font-size: clamp(22px, 2.7vw, 36px);
@@ -631,7 +633,7 @@ button {
   letter-spacing: -0.035em;
 }
 .caption-hint {
-  color: #e4d6bf;
+  color: #fff;
   font-size: clamp(12px, 1.1vw, 15px);
 }
 
@@ -646,14 +648,14 @@ button {
   gap: 8px;
   margin: 0 auto;
   padding: 14px 16px;
-  border: 1px solid #f3c54c88;
-  color: #f7eee3;
-  background: #191715e8;
+  border: 1px solid #00979c;
+  color: #fff;
+  background: #0b1112eb;
   box-shadow: 0 12px 30px #0008;
   backdrop-filter: blur(8px);
 }
 .motion-prompt-kicker {
-  color: #f3c54c;
+  color: #28c6c4;
   font:
     700 10px/1.2 'JetBrains Mono',
     monospace;
@@ -666,21 +668,21 @@ button {
 }
 .motion-prompt button {
   min-height: 42px;
-  border: 1px solid #f3c54c;
-  color: #1b170e;
-  background: #f3c54c;
+  border: 1px solid #00979c;
+  color: #071718;
+  background: #28c6c4;
   cursor: pointer;
   font-size: 12px;
   font-weight: 750;
 }
 .motion-prompt button:hover,
 .motion-prompt button:focus-visible {
-  background: #ffe18a;
+  background: #fff;
   outline: 2px solid #fff;
   outline-offset: 2px;
 }
 .motion-prompt-hint {
-  color: #cdbfae;
+  color: #d9e7e7;
   font-size: 11px;
 }
 .motion-toolbar {
@@ -810,8 +812,9 @@ button {
     padding: 0 11px;
     border: 1px solid #00979c;
     border-radius: 2px;
-    color: #00979c;
-    background: transparent;
+    color: #fff;
+    background: #0b1112e6;
+    box-shadow: 0 6px 18px #0008;
     cursor: pointer;
     font-size: 13px;
     font-weight: 650;
@@ -820,16 +823,21 @@ button {
     width: 18px;
     height: 18px;
     fill: none;
-    stroke: #00979c;
+    stroke: #fff;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 1.8;
   }
   .mobile-portfolio-back:hover,
   .mobile-portfolio-back:focus-visible {
-    background: #00979c14;
+    color: #071718;
+    background: #28c6c4;
     outline: 2px solid #28c6c4;
     outline-offset: 2px;
+  }
+  .mobile-portfolio-back:hover svg,
+  .mobile-portfolio-back:focus-visible svg {
+    stroke: #071718;
   }
   .mobile-room-button {
     position: fixed;

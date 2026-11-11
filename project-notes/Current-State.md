@@ -23,7 +23,9 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 
 ### Reliability and recruiter access (2026-11-12)
 
-- Phone motion now distinguishes permission, calibration, active, denied, unavailable, and off states. Motion becomes active only after usable orientation samples arrive; a three-second no-data timeout returns visitors to the touch fallback.
+- The room invitation now uses white type and a compact dark shadow so its section label, title, and instruction remain readable over the grey floor. Motion prompts and mobile Back controls use the shared Arduino teal, white, and dark-shell palette; the Back control has a dark translucent surface so it remains legible over both the dark portfolio and light AutoRename demo.
+- Monitor shortcuts use one shared logical icon box and label cell for Portfolio and AutoRename, while taskbar icons use a smaller shared box that follows desktop taskbar proportions. Asset artwork cannot change either layout's dimensions.
+- Phone motion distinguishes permission, calibration, active, denied, unavailable, and off states. Browsers that expose orientation without a permission gesture begin calibration automatically; browsers that require consent retain the explicit enable control. Motion becomes active only after usable orientation samples arrive, and a three-second no-data timeout returns visitors to the touch fallback.
 - Device orientation uses the current screen rotation, shortest-angle deltas, a two-degree neutral zone, and explicit **Recenter** and **Turn off** controls. Touch movement stops competing with the sensor while motion is calibrating or active.
 - Portrait portfolio scrolling chooses the nearest visible scrollable ancestor under the visitor's finger. The fallback considers visible scroll area as well as scroll range. Its short glide is based on recent swipe velocity.
 - Minimized apps remain mounted. Restoring Portfolio or AutoRename from the taskbar preserves the current section, scroll position, and demo state; closing still starts a fresh app session.
@@ -78,6 +80,8 @@ Browser checks covered controlled 60/144 Hz animation, boundary cancellation, id
 The wallpaper, shortcut, and app share a projected monitor surface. Preserve that common coordinate system when adjusting alignment.
 
 The shared surface is laid out at 1280 logical pixels wide, with height derived from the physical screen's aspect ratio, before projection. This avoids enlarging a tiny desktop raster in close-up. The projection still targets the same calibrated physical corners. The extra desk perspective layer is removed once its tilt returns to zero.
+
+Pointer exits use short hysteresis delays: 280 ms from the monitor and 180 ms from the desk. Returning inside the active bounds cancels the pending exit.
 
 ## Run locally
 
