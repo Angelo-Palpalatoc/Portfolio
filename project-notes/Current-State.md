@@ -14,6 +14,9 @@ Updated from the source on 2026-11-10. See [[Decisions]] for constraints and [[N
 5. Closing a window returns to the desktop; either shortcut can open its app.
 6. The AutoRename project entry in the Arduino portfolio opens a guided mobile demo. Visitors can try a single fictional document or a batch of three fictional documents, review suggested names, and simulate saving copies individually.
 
+The Lighthouse project entry now presents a recruiter-facing system architecture overview: React/TypeScript web app, Portal API, PostgreSQL/object storage, AI extraction with retrieval context, and an LLM assistant with streaming chat. Internal decision and orchestration layers are intentionally omitted from the public portfolio view.
+The AutoRename and Room Portfolio project entries now include compact, technology-based architecture overviews. AutoRename shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, the persistent iframe runtime, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
+
 Pointer movement drives the desktop approach and departure. Touch/keyboard controls provide alternate entry. Escape backs out through the views. Reduced-motion preference bypasses the camera animation. Phones have a larger reading view; in portrait it rotates to landscape proportions, then returns to a wide reading view when the phone is turned.
 
 ### Loading and mobile continuity (2026-11-09)
