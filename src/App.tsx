@@ -12,7 +12,8 @@ const deskParallaxIntensity = 1.3;
 const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
 const deskCenter = { x: 0.575, y: 0.495 };
 const screenCenter = { x: 0.5635, y: 0.5109 };
-const mobileRoomParallaxScale = 0.55;
+const mobileRoomParallaxScale = 0.8;
+const mobileRoomTiltRange = 18;
 const phoneQuery =
   '(max-width: 700px), (max-width: 950px) and (pointer: coarse), (max-width: 950px) and (max-height: 500px)';
 type View = 'room' | 'desk' | 'screen';
@@ -540,8 +541,8 @@ export default function App() {
       }
       const deltaGamma = event.gamma - orientationBaseline.current.gamma;
       const deltaBeta = event.beta - orientationBaseline.current.beta;
-      const normalizedX = Math.max(-1, Math.min(1, deltaGamma / 25));
-      const normalizedY = Math.max(-1, Math.min(1, deltaBeta / 25));
+      const normalizedX = Math.max(-1, Math.min(1, deltaGamma / mobileRoomTiltRange));
+      const normalizedY = Math.max(-1, Math.min(1, deltaBeta / mobileRoomTiltRange));
       updateRoomPose(
         -normalizedX * 36 * mobileRoomParallaxScale,
         -normalizedY * 24 * mobileRoomParallaxScale,
