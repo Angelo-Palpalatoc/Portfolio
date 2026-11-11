@@ -533,6 +533,22 @@ export default function App() {
     aimCamera(poses.current.room, 'room');
   };
 
+  const mobileBackButton =
+    view === 'screen' && mobileExpanded ? (
+      <button
+        ref={mobileBackRef}
+        className="mobile-portfolio-back"
+        type="button"
+        onClick={handlePhoneBack}
+        aria-label={activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'}
+      >
+        <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+          <path d="M8 4 2.5 10 8 16M3 10h14" />
+        </svg>
+        <span>{activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
+      </button>
+    ) : null;
+
   return (
     <main
       className="experience"
@@ -657,6 +673,7 @@ export default function App() {
                     onNavigationKeyDown={onNavigationKeyDown}
                     onReady={onPortfolioReady}
                   />
+                  {mobileBackButton}
                 </section>
               )}
               {activeApp === 'autorename' && (
@@ -709,6 +726,7 @@ export default function App() {
                     </div>
                   </header>
                   <AutoRenameDemo />
+                  {mobileBackButton}
                 </section>
               )}
             </div>
@@ -740,20 +758,6 @@ export default function App() {
         </div>
       </div>
 
-      {view === 'screen' && mobileExpanded && (
-        <button
-          ref={mobileBackRef}
-          className="mobile-portfolio-back"
-          type="button"
-          onClick={handlePhoneBack}
-          aria-label={activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'}
-        >
-          <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
-            <path d="M8 4 2.5 10 8 16M3 10h14" />
-          </svg>
-          <span>{activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
-        </button>
-      )}
       {view === 'desk' && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>
           Back to room

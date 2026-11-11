@@ -488,7 +488,7 @@ button {
     display: none;
   }
   .mobile-portfolio-back {
-    position: fixed;
+    position: absolute;
     z-index: 13;
     top: max(12px, env(safe-area-inset-top, 0px));
     right: max(12px, env(safe-area-inset-right, 0px));
@@ -550,12 +550,6 @@ button {
 }
 @media (max-width: 700px) and (orientation: portrait),
   (max-width: 950px) and (pointer: coarse) and (orientation: portrait) {
-  .mobile-portfolio-back {
-    top: max(12px, env(safe-area-inset-top, 0px));
-    right: max(12px, env(safe-area-inset-right, 0px));
-    bottom: auto;
-    left: auto;
-  }
   .experience[data-expanded='true'] .monitor-app-window {
     --mobile-reading-height: calc(
       100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
@@ -571,14 +565,6 @@ button {
     height: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     transform: translate(-50%, -50%) rotate(90deg);
     transform-origin: center;
-  }
-}
-@media (max-width: 950px) and (orientation: landscape) {
-  .mobile-portfolio-back {
-    top: max(12px, env(safe-area-inset-top, 0px));
-    right: max(12px, env(safe-area-inset-right, 0px));
-    bottom: auto;
-    left: auto;
   }
 }
 @media (max-width: 600px) {
