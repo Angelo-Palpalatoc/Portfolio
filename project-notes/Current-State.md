@@ -22,11 +22,13 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 - Room and wallpaper loads show quiet pending/error feedback with retry controls. The portfolio wrapper checks HTTP status and waits for the exported `#dc-root` to mount before revealing the iframe. Portfolio content in the export remains unchanged; its Serial Monitor now starts collapsed.
 - A load still pending after 15 seconds offers retry; it may still finish normally. No automatic reload loop is used.
 - On phones, entering the monitor opens the existing app directly in the full-screen reading view; no separate control strip or orientation prompt takes space. In portrait, the app rotates to landscape proportions, and turning the phone sideways keeps the expanded state and restores the regular wide layout. Vertical touch drags in portrait map to the portfolio content scroller with a short ease-out glide; landscape uses native touch scrolling.
-- A compact, upright **Back** control overlays the expanded app with a transparent fill: it sits at the top-right in landscape and bottom-left in portrait. AutoRename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The Arduino iframe remains mounted during its full-screen reading view, preserving its active section and scroll position.
+- A compact, upright **Back** control overlays the expanded app with a transparent fill at the top-right in both portrait and landscape. AutoRename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The Arduino iframe remains mounted during its full-screen reading view, preserving its active section and scroll position.
 - The boot screen no longer shows a **Skip** button, so it cannot overlap the phone Back control; the boot sequence continues automatically.
 - The Arduino IDE Serial Monitor starts collapsed; users can still open it from the IDE toolbar.
 - Phone expansion temporarily flattens the surrounding CSS layers so the app can fill the available viewport. Normal monitor calibration and projection are retained and restored on return, including a resize beyond the phone breakpoint.
 - Browser checks covered failed-request retry, monitor fit, shared-document/scroll continuity, phone reading rotation at 390 × 844 and 844 × 390, simulated portrait touch scrolling, and return navigation to desk and room. Physical phones and Safari remain to be checked.
+
+Responsive check 2026-11-11: touch-sized landscape viewports now remove the desktop 450px minimum scene height, preventing page overflow below short phone screens. Verified 320 × 568, 390 × 844, and 844 × 390 expanded reading views with the app and Back control inside the viewport.
 
 ### Transition behavior (updated 2026-11-08)
 
