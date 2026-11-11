@@ -501,7 +501,7 @@ button {
     padding: 0 11px;
     border: 1px solid #00979c;
     border-radius: 2px;
-    color: #f4f7f7;
+    color: #00979c;
     background: transparent;
     cursor: pointer;
     font-size: 13px;
@@ -511,14 +511,14 @@ button {
     width: 18px;
     height: 18px;
     fill: none;
-    stroke: #28c6c4;
+    stroke: #00979c;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 1.8;
   }
   .mobile-portfolio-back:hover,
   .mobile-portfolio-back:focus-visible {
-    background: #250d2b80;
+    background: #00979c14;
     outline: 2px solid #28c6c4;
     outline-offset: 2px;
   }
@@ -565,6 +565,18 @@ button {
     height: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     transform: translate(-50%, -50%) rotate(90deg);
     transform-origin: center;
+  }
+
+  /* AutoRename is a phone app; keep its demo upright instead of using the
+     landscape reading canvas reserved for the Arduino portfolio. */
+  .experience[data-expanded='true'] #autorenamer-window {
+    top: env(safe-area-inset-top, 0px);
+    right: env(safe-area-inset-right, 0px);
+    bottom: env(safe-area-inset-bottom, 0px);
+    left: env(safe-area-inset-left, 0px);
+    width: auto;
+    height: auto;
+    transform: none;
   }
 }
 @media (max-width: 600px) {
