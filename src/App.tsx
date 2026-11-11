@@ -29,6 +29,7 @@ export default function App() {
   const [activeApp, setActiveApp] = useState<AppWindow>('arduino');
   const [windowMaximized, setWindowMaximized] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
+  const [startMenuOpen, setStartMenuOpen] = useState(false);
   const roomAsset = useImageAsset(roomImage);
   const wallpaperAsset = useImageAsset(monitorBackground);
   const [status, setStatus] = useState('');
@@ -260,6 +261,7 @@ export default function App() {
     if (viewRef.current !== 'room') return;
     interacted.current = true;
     clearExitTimer();
+    setStartMenuOpen(false);
     measureScene();
     viewRef.current = 'desk';
     aimCamera(poses.current.desk, 'desk');
@@ -288,6 +290,7 @@ export default function App() {
     const name = activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE';
     setActiveApp(null);
     setWindowMaximized(false);
+    setStartMenuOpen(false);
     setMobileExpanded(false);
     setStatus(`${name} closed. Choose a desktop icon to open an app.`);
   };
@@ -295,6 +298,7 @@ export default function App() {
   const minimizeApp = () => {
     setActiveApp(null);
     setWindowMaximized(false);
+    setStartMenuOpen(false);
     setStatus(
       `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} minimized to the desktop.`,
     );
@@ -303,6 +307,7 @@ export default function App() {
   const openApp = useCallback((app: Exclude<AppWindow, null> = 'arduino') => {
     setActiveApp(app);
     setWindowMaximized(false);
+    setStartMenuOpen(false);
     setStatus(`${app === 'autorename' ? 'AutoRename' : 'Arduino IDE'} opened.`);
   }, []);
 
@@ -312,6 +317,7 @@ export default function App() {
     if (viewRef.current !== 'screen') return;
     interacted.current = true;
     clearExitTimer();
+    setStartMenuOpen(false);
     hoverArmed.current = false;
     setMobileExpanded(false);
     viewRef.current = 'desk';
@@ -332,6 +338,7 @@ export default function App() {
     if (viewRef.current !== 'desk') return;
     interacted.current = true;
     clearExitTimer();
+    setStartMenuOpen(false);
     viewRef.current = 'room';
     aimCamera(poses.current.room, 'room');
     setView('room');
@@ -343,6 +350,25 @@ export default function App() {
       // Keyboard navigation remains stable until the mouse is deliberately moved.
       pointer.current.active = false;
       clearExitTimer();
+      if (event.key === 'Meta' || event.key === 'OS') {
+        if (viewRef.current === 'screen' && !mobileExpandedRef.current) {
+          event.preventDefault();
+          setStartMenuOpen((value) => !value);
+        }
+        return;
+      }
+      if (event.altKey && event.key === 'Tab') {
+        if (viewRef.current === 'screen' && !mobileExpandedRef.current) {
+          event.preventDefault();
+          openApp(activeApp === 'arduino' ? 'autorename' : 'arduino');
+        }
+        return;
+      }
+      if (startMenuOpen && event.key === 'Escape') {
+        event.preventDefault();
+        setStartMenuOpen(false);
+        return;
+      }
       if (event.key !== 'Escape') return;
       if (viewRef.current === 'screen' && mobileExpandedRef.current) {
         if (activeApp === 'autorename') openApp('arduino');
@@ -350,7 +376,7 @@ export default function App() {
       } else if (viewRef.current === 'screen') leaveScreen();
       else if (viewRef.current === 'desk') leaveDesk();
     },
-    [activeApp, openApp, leaveScreen, leaveDesk, clearExitTimer],
+    [activeApp, openApp, leaveScreen, leaveDesk, clearExitTimer, startMenuOpen],
   );
 
   // Responsive measurements, keyboard navigation, and focus management.
@@ -521,8 +547,8 @@ export default function App() {
       enterDesk();
       return;
     }
-    roomOffset.current.x = (event.clientX / window.innerWidth - 0.5) * -24;
-    roomOffset.current.y = (event.clientY / window.innerHeight - 0.5) * -16;
+    roomOffset.current.x = (event.clientX / window.innerWidth - 0.5) * -36;
+    roomOffset.current.y = (event.clientY / window.innerHeight - 0.5) * -24;
     const stage = stageRef.current;
     if (!stage) return;
     poses.current.room = {
@@ -548,6 +574,13 @@ export default function App() {
         <span>{activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
       </button>
     ) : null;
+
+  const handleDesktopPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!startMenuOpen) return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.closest('.desktop-start-menu, .taskbar-start'))
+      setStartMenuOpen(false);
+  };
 
   return (
     <main
@@ -578,6 +611,7 @@ export default function App() {
                 aria-label="Desktop background"
                 aria-hidden={view !== 'screen' || mobileExpanded}
                 inert={view !== 'screen' || mobileExpanded}
+                onPointerDown={handleDesktopPointerDown}
               >
                 {activeApp === null && (
                   <div className="desktop-shortcuts" aria-label="Desktop apps">
@@ -608,6 +642,82 @@ export default function App() {
                         draggable={false}
                       />
                       <span className="desktop-shortcut-label">AutoRename</span>
+                    </button>
+                  </div>
+                )}
+                <div
+                  className={`desktop-taskbar${startMenuOpen ? ' is-open' : ''}`}
+                  aria-label="Taskbar; move the pointer to the bottom edge to reveal"
+                >
+                  <button
+                    className="taskbar-start"
+                    type="button"
+                    aria-label="Open Start menu"
+                    aria-expanded={startMenuOpen}
+                    onClick={() => setStartMenuOpen((value) => !value)}
+                  >
+                    <svg className="windows-logo" aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M2 3.8 10.7 2.5v8.8H2V3.8Z" />
+                      <path d="M12.3 2.25 22 1v10.3h-9.7V2.25Z" />
+                      <path d="M2 12.7h8.7v8.8L2 20.2v-7.5Z" />
+                      <path d="M12.3 12.7H22V23l-9.7-1.25v-9.05Z" />
+                    </svg>
+                  </button>
+                  <div className="taskbar-apps" aria-label="Available apps">
+                    <button
+                      className={`taskbar-app${activeApp === 'arduino' ? ' is-active' : ''}`}
+                      type="button"
+                      aria-label="Open Portfolio"
+                      aria-pressed={activeApp === 'arduino'}
+                      onClick={() => openApp('arduino')}
+                    >
+                      <img src="/portfolio-logo.webp" alt="" draggable={false} />
+                      <span className="taskbar-tooltip">Portfolio</span>
+                    </button>
+                    <button
+                      className={`taskbar-app${activeApp === 'autorename' ? ' is-active' : ''}`}
+                      type="button"
+                      aria-label="Open AutoRename"
+                      aria-pressed={activeApp === 'autorename'}
+                      onClick={() => openApp('autorename')}
+                    >
+                      <img src="/autorenamer-icon.svg" alt="" draggable={false} />
+                      <span className="taskbar-tooltip">AutoRename</span>
+                    </button>
+                  </div>
+                </div>
+                {startMenuOpen && (
+                  <div className="desktop-start-menu" role="menu" aria-label="Start menu">
+                    <div className="start-menu-topline">
+                      <span className="start-menu-hamburger" aria-hidden="true">
+                        ☰
+                      </span>
+                      <span>Recently added</span>
+                    </div>
+                    <div className="start-menu-heading">PORTFOLIO APPS</div>
+                    <button
+                      className="start-menu-app"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => openApp('arduino')}
+                    >
+                      <img src="/portfolio-logo.webp" alt="" draggable={false} />
+                      <span>
+                        <strong>Portfolio</strong>
+                        <small>Arduino IDE workspace</small>
+                      </span>
+                    </button>
+                    <button
+                      className="start-menu-app"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => openApp('autorename')}
+                    >
+                      <img src="/autorenamer-icon.svg" alt="" draggable={false} />
+                      <span>
+                        <strong>AutoRename</strong>
+                        <small>Mobile app demo</small>
+                      </span>
                     </button>
                   </div>
                 )}

@@ -13,6 +13,7 @@ Updated from the source on 2026-11-10. See [[Decisions]] for constraints and [[N
 4. A Windows-style desktop contains **Portfolio** and **AutoRename** shortcuts. The Arduino-style portfolio opens by default.
 5. Closing a window returns to the desktop; either shortcut can open its app.
 6. The AutoRename project entry in the Arduino portfolio opens a guided mobile demo. Visitors can try a single fictional document or a batch of three fictional documents, review suggested names, and simulate saving copies individually.
+7. The monitor desktop includes a simulated Windows taskbar and Start menu for the Portfolio and AutoRename apps. Taskbar indicators, minimize/restore behavior, outside-click dismissal, Escape, and Windows-key menu toggling are handled by the room shell; Lighthouse is not exposed as a runnable app.
 
 The Lighthouse project entry now presents a recruiter-facing system architecture overview: React/TypeScript web app, Portal API, PostgreSQL/object storage, AI extraction with retrieval context, and an LLM assistant with streaming chat. Internal decision and orchestration layers are intentionally omitted from the public portfolio view.
 The AutoRename and Room Portfolio project entries now include compact, technology-based architecture overviews. AutoRename shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, the persistent iframe runtime, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
@@ -37,6 +38,7 @@ Responsive check 2026-11-11: touch-sized landscape viewports now remove the desk
 ### Transition behavior (updated 2026-11-08)
 
 - Camera zoom and desk tilt share one animation loop. Desk parallax uses elapsed time so its response remains consistent across display refresh rates.
+- Room POV tracking now pans up to ±18/±12 scene pixels (horizontal/vertical) for a more noticeable cursor-following camera response without changing the room zoom.
 - Desk parallax intensity is 1.3 times the original: pan up to ±28.6/±16.9 scene pixels (horizontal/vertical), and tilt up to ±4.16°/±3.12° (left-right/up-down). Cursor smoothing is unchanged.
 - Automatic exits wait for camera arrival, then allow a 150 ms desk grace period or 110 ms monitor grace period, with a 10 px boundary margin. Returning inside cancels the pending exit.
 - On camera arrival, hover is rechecked for a stationary mouse. Keyboard and explicit click/touch entry remain stable until deliberate mouse movement resumes.

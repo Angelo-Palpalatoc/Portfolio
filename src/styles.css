@@ -187,6 +187,200 @@ button {
   white-space: nowrap;
 }
 
+/* Simulated Windows taskbar; the wallpaper supplies the underlying desktop chrome. */
+.desktop-taskbar {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  height: 5.5%;
+  min-height: 30px;
+  align-items: center;
+  gap: 0.35cqw;
+  padding: 0 0.85cqw;
+  border-top: 1px solid #ffffff22;
+  background: #10181dcc;
+  backdrop-filter: blur(2px);
+  opacity: 0.28;
+  pointer-events: auto;
+  transform: translateY(calc(100% - 4px));
+  transition:
+    opacity 140ms ease,
+    transform 180ms ease;
+}
+.desktop-taskbar:hover,
+.desktop-taskbar:focus-within,
+.desktop-taskbar.is-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+.taskbar-start,
+.taskbar-app {
+  position: relative;
+  display: grid;
+  height: 4.2cqw;
+  min-height: 27px;
+  place-items: center;
+  border: 0;
+  color: #f2f2f2;
+  background: transparent;
+  cursor: pointer;
+}
+.taskbar-start {
+  width: 4.2cqw;
+  min-width: 27px;
+}
+.taskbar-start:hover,
+.taskbar-start:focus-visible,
+.taskbar-app:hover,
+.taskbar-app:focus-visible {
+  background: #ffffff20;
+  outline: 1px solid #ffffff70;
+  outline-offset: -1px;
+}
+.windows-logo {
+  display: block;
+  width: 2.05cqw;
+  height: 2.05cqw;
+  min-width: 14px;
+  min-height: 14px;
+}
+.windows-logo path {
+  fill: #e6f2f4;
+}
+.taskbar-apps {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 0.2cqw;
+}
+.taskbar-app {
+  width: 4.2cqw;
+  min-width: 27px;
+}
+.taskbar-app img {
+  display: block;
+  width: 2.6cqw;
+  height: 2.6cqw;
+  min-width: 17px;
+  min-height: 17px;
+  object-fit: contain;
+}
+.taskbar-app.is-active::after {
+  position: absolute;
+  right: 22%;
+  bottom: 0;
+  left: 22%;
+  height: 2px;
+  background: #28c6c4;
+  content: '';
+}
+.taskbar-tooltip {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  padding: 5px 8px;
+  border: 1px solid #3d3d3d;
+  color: #f2f2f2;
+  background: #1e1e1ef2;
+  font:
+    11px/1.2 'JetBrains Mono',
+    monospace;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(3px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  white-space: nowrap;
+}
+.taskbar-app:hover .taskbar-tooltip,
+.taskbar-app:focus-visible .taskbar-tooltip {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+.desktop-start-menu {
+  position: absolute;
+  z-index: 3;
+  bottom: 5.5%;
+  left: 0.85cqw;
+  display: flex;
+  width: min(29cqw, 320px);
+  min-width: 220px;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #536165;
+  color: #f2f2f2;
+  background: #172024f5;
+  box-shadow: 0 10px 24px #0008;
+  backdrop-filter: blur(8px);
+}
+.start-menu-topline {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 8px 12px;
+  border-bottom: 1px solid #ffffff1c;
+  color: #dbe7e9;
+  font-size: 12px;
+}
+.start-menu-hamburger {
+  color: #9fb2b5;
+  font-size: 15px;
+  line-height: 1;
+}
+.start-menu-heading {
+  padding: 9px 8px 4px;
+  color: #28c6c4;
+  font:
+    700 10px/1.2 'JetBrains Mono',
+    monospace;
+  letter-spacing: 0.14em;
+}
+.start-menu-app {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  color: #f2f2f2;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.start-menu-app:hover,
+.start-menu-app:focus-visible {
+  border-color: #28c6c4;
+  background: #28c6c41c;
+  outline: none;
+}
+.start-menu-app img {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+.start-menu-app span {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+.start-menu-app strong {
+  font-size: 13px;
+  font-weight: 650;
+}
+.start-menu-app small {
+  color: #9fb2b5;
+  font:
+    11px/1.2 'JetBrains Mono',
+    monospace;
+}
+
 /* Arduino window shell; portfolio content belongs to the embedded export */
 .monitor-app-window {
   position: absolute;
@@ -609,7 +803,8 @@ button {
 }
 @media (prefers-reduced-motion: reduce) {
   .room-stage,
-  .room-caption {
+  .room-caption,
+  .desktop-taskbar {
     transition-duration: 0ms !important;
     transition-delay: 0ms !important;
   }
