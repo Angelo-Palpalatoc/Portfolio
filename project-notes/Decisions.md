@@ -1,6 +1,7 @@
 ---
 tags: [portfolio, decisions]
 ---
+
 # Decisions
 
 Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's confirmed direction; they are not new feature approvals.
@@ -12,7 +13,8 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 - The Arduino-style portfolio is the actual portfolio. The separate web portfolio was removed.
 - Keep the desktop wallpaper and an app that can close and reopen. Open the Arduino portfolio by default.
 - Use the supplied ACP icon with **Portfolio** below it, like a desktop shortcut.
-- Keep one portfolio iframe when switching phone reading size; keep app state while resizing, and reset it on close/reopen. On portrait phones, **Read larger** presents the app sideways in landscape proportions beneath the mobile controls; turning the phone to landscape restores a conventional wide reading view.
+- Keep one portfolio iframe when switching phone reading size; preserve app state while resizing or minimizing, and reset it on close/reopen. On portrait phones, entering the monitor presents the app sideways in landscape proportions; turning the phone to landscape restores a conventional wide reading view.
+- Phone motion is optional. Confirm actual sensor readings before treating it as active, provide touch fallback plus recenter/off controls, and respect reduced-motion preference.
 - Serve lossless WebP versions of the room, wallpaper, and icon; preserve the original image dimensions and decoded pixels.
 - Keep the existing Lighthouse project content unchanged. Its interactive demo remains withdrawn because it is company property.
 - Add AutoRename as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.

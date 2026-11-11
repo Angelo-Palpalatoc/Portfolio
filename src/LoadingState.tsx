@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 
 export type LoadState = 'loading' | 'slow' | 'ready' | 'error';
 
-export function useImageAsset(source: string) {
+export function useImageAsset(source: string, enabled = true) {
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<LoadState>('loading');
   const url = attempt ? `${source}?retry=${attempt}` : source;
 
   useEffect(() => {
+    if (!enabled) return;
     let active = true;
     const image = new Image();
     setState('loading');
@@ -27,7 +28,7 @@ export function useImageAsset(source: string) {
       window.clearTimeout(timer);
       image.onload = image.onerror = null;
     };
-  }, [url]);
+  }, [enabled, url]);
 
   const retry = () => {
     setState('loading');

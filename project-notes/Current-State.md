@@ -1,9 +1,10 @@
 ---
 tags: [portfolio, architecture]
 ---
+
 # Current state
 
-Updated from the source on 2026-11-10. See [[Decisions]] for constraints and [[Next-Steps]] for pending ideas.
+Updated from the source on 2026-11-12. See [[Decisions]] for constraints and [[Next-Steps]] for pending ideas.
 
 ## Visitor experience
 
@@ -11,7 +12,7 @@ Updated from the source on 2026-11-10. See [[Decisions]] for constraints and [[N
 2. Entering the computer setup approaches the desk.
 3. Entering the landscape monitor approaches the screen.
 4. A Windows-style desktop contains **Portfolio** and **AutoRename** shortcuts. The Arduino-style portfolio opens by default.
-5. Closing a window returns to the desktop; either shortcut can open its app.
+5. Minimizing a window keeps it mounted and preserves its state; closing it resets that app. Taskbar indicators distinguish running and active apps.
 6. The AutoRename project entry in the Arduino portfolio opens a guided mobile demo. Visitors can try a single fictional document or a batch of three fictional documents, review suggested names, and simulate saving copies individually.
 7. The monitor desktop includes a simulated Windows taskbar and Start menu for the Portfolio and AutoRename apps. Taskbar indicators, minimize/restore behavior, outside-click dismissal, Escape, and Windows-key menu toggling are handled by the room shell; Lighthouse is not exposed as a runnable app.
 
@@ -19,6 +20,17 @@ The Lighthouse project entry now presents a recruiter-facing system architecture
 The AutoRename and Room Portfolio project entries now include compact, technology-based architecture overviews. AutoRename shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, the persistent iframe runtime, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
 
 Pointer movement drives the desktop approach and departure. Touch/keyboard controls provide alternate entry. Escape backs out through the views. Reduced-motion preference bypasses the camera animation. Phones have a larger reading view; in portrait it rotates to landscape proportions, then returns to a wide reading view when the phone is turned.
+
+### Reliability and recruiter access (2026-11-12)
+
+- Phone motion now distinguishes permission, calibration, active, denied, unavailable, and off states. Motion becomes active only after usable orientation samples arrive; a three-second no-data timeout returns visitors to the touch fallback.
+- Device orientation uses the current screen rotation, shortest-angle deltas, a two-degree neutral zone, and explicit **Recenter** and **Turn off** controls. Touch movement stops competing with the sensor while motion is calibrating or active.
+- Portrait portfolio scrolling chooses the nearest visible scrollable ancestor under the visitor's finger. The fallback considers visible scroll area as well as scroll range. Its short glide is based on recent swipe velocity.
+- Minimized apps remain mounted. Restoring Portfolio or AutoRename from the taskbar preserves the current section, scroll position, and demo state; closing still starts a fresh app session.
+- Start menu focus enters the first item when opened. Arrow keys, Home, End, and Escape work within the menu, and Escape returns focus to Start. The taskbar remains visible on touch-sized screens.
+- The desktop wallpaper begins loading after the room image is ready so it does not compete with the initial room image. The deployed page now includes canonical, favicon, Open Graph, Twitter card, robots, and sitemap metadata.
+- GitHub Actions runs the existing project checks and production build for pushes to `main` and pull requests.
+- Browser verification covered desktop minimize/restore state, the unchanged calibrated polygon, Start-menu focus, 390 × 844 expanded reading bounds, simulated portrait scrolling with momentum, and simulated orientation events. Real sensor behavior still requires physical Android/iOS testing.
 
 ### Loading and mobile continuity (2026-11-09)
 
@@ -39,7 +51,7 @@ Responsive check 2026-11-11: touch-sized landscape viewports now remove the desk
 
 - Camera zoom and desk tilt share one animation loop. Desk parallax uses elapsed time so its response remains consistent across display refresh rates.
 - Room POV tracking now pans up to ±18/±12 scene pixels (horizontal/vertical) for a more noticeable cursor-following camera response without changing the room zoom.
-- On supported phones, an optional Device Orientation view maps calibrated beta/gamma tilt to room movement at 80% scale, reaching full response around 18° of tilt. Desk tilt uses a gentler 0.65 scale, while touch movement remains the fallback and motion pauses when an app is open.
+- On supported phones, an optional Device Orientation view maps calibrated beta/gamma tilt to room movement with a 0.8 multiplier, reaching full response after the neutral zone near 18° of tilt. Desk tilt uses a gentler 0.65 multiplier, while touch movement remains the fallback and motion pauses when an app is open.
 - Desk parallax intensity is 1.3 times the original: pan up to ±28.6/±16.9 scene pixels (horizontal/vertical), and tilt up to ±4.16°/±3.12° (left-right/up-down). Cursor smoothing is unchanged.
 - Automatic exits wait for camera arrival, then allow a 150 ms desk grace period or 110 ms monitor grace period, with a 10 px boundary margin. Returning inside cancels the pending exit.
 - On camera arrival, hover is rechecked for a stationary mouse. Keyboard and explicit click/touch entry remain stable until deliberate mouse movement resumes.
@@ -50,18 +62,18 @@ Browser checks covered controlled 60/144 Hz animation, boundary cancellation, id
 
 ## Source map
 
-| Resource | Responsibility |
-| --- | --- |
-| [App.tsx](../src/App.tsx) | Camera state, room/desk/screen views, app window, focus, mobile controls |
-| [LoadingState.tsx](../src/LoadingState.tsx) | Image loading state and reusable loading/retry notice |
-| [PortfolioFrame.tsx](../src/PortfolioFrame.tsx) | Persistent iframe, export readiness, recovery, and embedded keyboard events |
-| [AutoRenameDemo.tsx](../src/AutoRenameDemo.tsx) | Guided, UI-only mobile app demo with fictional single and batch samples |
-| [styles.css](../src/styles.css) | Scene geometry, calibrated screen corners, desktop/window styling, responsive layout |
-| [monitorProjection.ts](../src/monitorProjection.ts) | Projective transform from the shared rectangle to four screen corners |
-| [main.tsx](../src/main.tsx) | React entry point |
-| [assets](../src/assets/) | Live room photograph and desktop wallpaper |
-| [Arduino export](../public/arduino-portfolio.html) | Actual portfolio content; owned by Claude Design |
-| [package.json](../package.json) | React, TypeScript, Vite, development/build commands |
+| Resource                                            | Responsibility                                                                       |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [App.tsx](../src/App.tsx)                           | Camera state, room/desk/screen views, app window, focus, mobile controls             |
+| [LoadingState.tsx](../src/LoadingState.tsx)         | Image loading state and reusable loading/retry notice                                |
+| [PortfolioFrame.tsx](../src/PortfolioFrame.tsx)     | Persistent iframe, export readiness, recovery, and embedded keyboard events          |
+| [AutoRenameDemo.tsx](../src/AutoRenameDemo.tsx)     | Guided, UI-only mobile app demo with fictional single and batch samples              |
+| [styles.css](../src/styles.css)                     | Scene geometry, calibrated screen corners, desktop/window styling, responsive layout |
+| [monitorProjection.ts](../src/monitorProjection.ts) | Projective transform from the shared rectangle to four screen corners                |
+| [main.tsx](../src/main.tsx)                         | React entry point                                                                    |
+| [assets](../src/assets/)                            | Live room photograph and desktop wallpaper                                           |
+| [Arduino export](../public/arduino-portfolio.html)  | Actual portfolio content; owned by Claude Design                                     |
+| [package.json](../package.json)                     | React, TypeScript, Vite, development/build commands                                  |
 
 The wallpaper, shortcut, and app share a projected monitor surface. Preserve that common coordinate system when adjusting alignment.
 

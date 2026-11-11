@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://angelo-palpalatoc.vercel.app/sitemap.xml

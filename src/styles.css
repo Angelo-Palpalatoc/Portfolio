@@ -268,7 +268,7 @@ button {
   min-height: 17px;
   object-fit: contain;
 }
-.taskbar-app.is-active::after {
+.taskbar-app.is-running::after {
   position: absolute;
   right: 22%;
   bottom: 0;
@@ -276,6 +276,14 @@ button {
   height: 2px;
   background: #28c6c4;
   content: '';
+}
+.taskbar-app.is-running:not(.is-active)::after {
+  background: #8b9a9c;
+}
+.taskbar-app.is-active::after {
+  right: 16%;
+  left: 16%;
+  height: 3px;
 }
 .taskbar-tooltip {
   position: absolute;
@@ -404,6 +412,9 @@ button {
   left: 0;
   top: 0;
   transform: scale(1);
+}
+.monitor-app-window.is-minimized {
+  display: none;
 }
 .arduino-window-titlebar {
   position: relative;
@@ -672,6 +683,57 @@ button {
   color: #cdbfae;
   font-size: 11px;
 }
+.motion-toolbar {
+  position: absolute;
+  z-index: 4;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  border: 1px solid #00979c66;
+  color: #e9f5f5;
+  background: #111918e8;
+  box-shadow: 0 8px 24px #0007;
+  backdrop-filter: blur(8px);
+}
+.motion-toolbar-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 7px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.motion-toolbar-status > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #28c6c4;
+  box-shadow: 0 0 8px #28c6c4aa;
+}
+.motion-toolbar-status > span.is-off {
+  background: #89989a;
+  box-shadow: none;
+}
+.motion-toolbar button {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  color: #bfe7e6;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+}
+.motion-toolbar button:hover,
+.motion-toolbar button:focus-visible {
+  border-color: #28c6c4;
+  background: #28c6c41c;
+  outline: 2px solid #28c6c4;
+  outline-offset: 1px;
+}
 
 /* Phone reading view */
 .mobile-portfolio-back {
@@ -682,6 +744,10 @@ button {
   (max-width: 950px) and (max-height: 500px) {
   .experience {
     min-height: 0;
+  }
+  .desktop-taskbar {
+    opacity: 1;
+    transform: translateY(0);
   }
   .arduino-window-titlebar {
     gap: 7px;

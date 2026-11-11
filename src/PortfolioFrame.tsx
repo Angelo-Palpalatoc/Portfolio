@@ -32,6 +32,8 @@ export default function PortfolioFrame({
       scrollTop: number;
       dragging: boolean;
       axis: 'x' | 'y' | null;
+      lastTime: number;
+      velocity: number;
     } | null = null;
     let glideFrame = 0;
     const controller = new AbortController();
@@ -48,16 +50,58 @@ export default function PortfolioFrame({
       if (glideFrame) window.cancelAnimationFrame(glideFrame);
       glideFrame = 0;
     };
+    const isScrollable = (element: HTMLElement) => {
+      const style = doc?.defaultView?.getComputedStyle(element);
+      const bounds = element.getBoundingClientRect();
+      return (
+        !!style &&
+        /auto|scroll/.test(style.overflowY) &&
+        element.scrollHeight - element.clientHeight > 2 &&
+        bounds.width > 0 &&
+        bounds.height > 0 &&
+        style.visibility !== 'hidden' &&
+        style.display !== 'none'
+      );
+    };
+    const findScrollContainer = (target: EventTarget | null) => {
+      let element =
+        target && typeof target === 'object' && 'nodeType' in target && target.nodeType === 1
+          ? (target as HTMLElement)
+          : null;
+      while (element && element !== doc?.documentElement) {
+        if (isScrollable(element)) return element;
+        element = element.parentElement;
+      }
+      return (
+        [...(doc?.querySelectorAll<HTMLElement>('*') ?? [])]
+          .filter(isScrollable)
+          .sort((left, right) => {
+            const leftBounds = left.getBoundingClientRect();
+            const rightBounds = right.getBoundingClientRect();
+            const leftScore =
+              (left.scrollHeight - left.clientHeight) * leftBounds.width * leftBounds.height;
+            const rightScore =
+              (right.scrollHeight - right.clientHeight) * rightBounds.width * rightBounds.height;
+            return rightScore - leftScore;
+          })[0] ?? null
+      );
+    };
     const onTouchStart = (event: TouchEvent) => {
       const touch = event.touches[0];
       if (!touch || !window.matchMedia('(orientation: portrait)').matches) return;
       stopGlide();
+      scrollContainer = findScrollContainer(event.target);
+      if (!scrollContainer) return;
+      scrollContainer.style.setProperty('-webkit-overflow-scrolling', 'touch');
+      scrollContainer.style.setProperty('overscroll-behavior', 'contain');
       touchStart = {
         screenX: touch.screenX,
         screenY: touch.screenY,
-        scrollTop: scrollContainer?.scrollTop ?? 0,
+        scrollTop: scrollContainer.scrollTop,
         dragging: false,
         axis: null,
+        lastTime: performance.now(),
+        velocity: 0,
       };
     };
     const onTouchMove = (event: TouchEvent) => {
@@ -76,7 +120,13 @@ export default function PortfolioFrame({
         window.matchMedia('(orientation: portrait)').matches && touchStart.axis === 'x'
           ? deltaX
           : -deltaY;
+      const previousTop = scrollContainer.scrollTop;
       scrollContainer.scrollTop = touchStart.scrollTop + scrollDelta;
+      const now = performance.now();
+      const elapsed = Math.max(8, now - touchStart.lastTime);
+      const instantaneousVelocity = (scrollContainer.scrollTop - previousTop) / elapsed;
+      touchStart.velocity = touchStart.velocity * 0.45 + instantaneousVelocity * 0.55;
+      touchStart.lastTime = now;
     };
     const onTouchEnd = (event: TouchEvent) => {
       if (
@@ -86,7 +136,7 @@ export default function PortfolioFrame({
         scrollContainer
       ) {
         const startTop = scrollContainer.scrollTop;
-        const glideDistance = (startTop - touchStart.scrollTop) * 0.28;
+        const glideDistance = Math.max(-180, Math.min(180, touchStart.velocity * 180));
         if (Math.abs(glideDistance) > 1) {
           let startedAt = 0;
           const glide = (now: number) => {
@@ -102,54 +152,33 @@ export default function PortfolioFrame({
       }
       touchStart = null;
     };
+    const detachDocument = () => {
+      doc?.removeEventListener('keydown', onNavigationKeyDown);
+      doc?.removeEventListener('touchstart', onTouchStart);
+      doc?.removeEventListener('touchmove', onTouchMove);
+      doc?.removeEventListener('touchend', onTouchEnd);
+      doc?.removeEventListener('touchcancel', onTouchEnd);
+    };
     const bindDocument = () => {
       contentObserver?.disconnect();
       documentObserver?.disconnect();
       stopGlide();
-      scrollContainer?.removeEventListener('touchstart', onTouchStart);
-      scrollContainer?.removeEventListener('touchmove', onTouchMove);
-      scrollContainer?.removeEventListener('touchend', onTouchEnd);
-      scrollContainer?.removeEventListener('touchcancel', onTouchEnd);
+      detachDocument();
       scrollContainer = null;
-      doc?.removeEventListener('keydown', onNavigationKeyDown);
       doc = frame.contentDocument;
       if (!doc) return;
-      const bindPhoneScroll = () => {
-        const candidates = [...(doc?.querySelectorAll<HTMLElement>('*') ?? [])].filter(
-          (element) => {
-            const style = doc?.defaultView?.getComputedStyle(element);
-            return (
-              !!style &&
-              /auto|scroll/.test(style.overflowY) &&
-              element.scrollHeight > element.clientHeight
-            );
-          },
-        );
-        const candidate =
-          candidates.sort(
-            (left, right) =>
-              right.scrollHeight - right.clientHeight - (left.scrollHeight - left.clientHeight),
-          )[0] ?? null;
-        if (candidate === scrollContainer) return;
-        scrollContainer?.removeEventListener('touchstart', onTouchStart);
-        scrollContainer?.removeEventListener('touchmove', onTouchMove);
-        scrollContainer?.removeEventListener('touchend', onTouchEnd);
-        scrollContainer?.removeEventListener('touchcancel', onTouchEnd);
-        scrollContainer = candidate ?? null;
-        scrollContainer?.style.setProperty('-webkit-overflow-scrolling', 'touch');
-        scrollContainer?.addEventListener('touchstart', onTouchStart, { passive: true });
-        scrollContainer?.addEventListener('touchmove', onTouchMove, { passive: false });
-        scrollContainer?.addEventListener('touchend', onTouchEnd, { passive: true });
-        scrollContainer?.addEventListener('touchcancel', onTouchEnd, { passive: true });
+      const bindInteractions = () => {
+        doc?.addEventListener('keydown', onNavigationKeyDown);
+        doc?.addEventListener('touchstart', onTouchStart, { passive: true });
+        doc?.addEventListener('touchmove', onTouchMove, { passive: false });
+        doc?.addEventListener('touchend', onTouchEnd, { passive: true });
+        doc?.addEventListener('touchcancel', onTouchEnd, { passive: true });
       };
-      const bindKeys = () => doc?.addEventListener('keydown', onNavigationKeyDown);
-      documentObserver = new MutationObserver(bindKeys);
+      documentObserver = new MutationObserver(bindInteractions);
       documentObserver.observe(doc, { childList: true });
-      bindKeys();
-      bindPhoneScroll();
+      bindInteractions();
       const checkReady = () => {
         if (!active || ready || !doc?.querySelector('#dc-root > *')) return;
-        bindPhoneScroll();
         ready = true;
         window.clearTimeout(timer);
         contentObserver?.disconnect();
@@ -179,12 +208,8 @@ export default function PortfolioFrame({
       contentObserver?.disconnect();
       documentObserver?.disconnect();
       stopGlide();
-      scrollContainer?.removeEventListener('touchstart', onTouchStart);
-      scrollContainer?.removeEventListener('touchmove', onTouchMove);
-      scrollContainer?.removeEventListener('touchend', onTouchEnd);
-      scrollContainer?.removeEventListener('touchcancel', onTouchEnd);
+      detachDocument();
       scrollContainer = null;
-      doc?.removeEventListener('keydown', onNavigationKeyDown);
     };
   }, [attempt, frameRef, onNavigationKeyDown]);
 

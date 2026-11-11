@@ -18,25 +18,46 @@ const mobileDeskParallaxScale = 0.65;
 const phoneQuery =
   '(max-width: 700px), (max-width: 950px) and (pointer: coarse), (max-width: 950px) and (max-height: 500px)';
 type View = 'room' | 'desk' | 'screen';
-type AppWindow = 'arduino' | 'autorename' | null;
+type AppName = 'arduino' | 'autorename';
+type AppWindow = AppName | null;
 type CameraPose = { x: number; y: number; scale: number };
-type MotionPermission = 'hidden' | 'prompt' | 'granted' | 'denied' | 'unsupported';
+type MotionStatus =
+  'hidden' | 'prompt' | 'requesting' | 'calibrating' | 'active' | 'denied' | 'unavailable' | 'off';
 const initialPose = { x: 0, y: 0, scale: 1 };
 const outside = (x: number, y: number, rect: DOMRect, margin = 0) =>
   x < rect.left - margin ||
   x > rect.right + margin ||
   y < rect.top - margin ||
   y > rect.bottom + margin;
+const shortestAngleDelta = (value: number, baseline: number) =>
+  ((((value - baseline + 180) % 360) + 360) % 360) - 180;
+const normalizeTilt = (value: number) => {
+  const deadZone = 2;
+  const magnitude = Math.abs(value);
+  if (magnitude <= deadZone) return 0;
+  return Math.sign(value) * Math.min(1, (magnitude - deadZone) / (mobileRoomTiltRange - deadZone));
+};
+const screenRelativeTilt = (beta: number, gamma: number) => {
+  const angle = Math.round((window.screen.orientation?.angle ?? 0) / 90) * 90;
+  if (angle === 90) return { x: beta, y: -gamma };
+  if (angle === 180 || angle === -180) return { x: -gamma, y: -beta };
+  if (angle === 270 || angle === -90) return { x: -beta, y: gamma };
+  return { x: gamma, y: beta };
+};
 
 export default function App() {
   const [view, setView] = useState<View>('room');
   const [activeApp, setActiveApp] = useState<AppWindow>('arduino');
+  const [openApps, setOpenApps] = useState<Record<AppName, boolean>>({
+    arduino: true,
+    autorename: false,
+  });
   const [windowMaximized, setWindowMaximized] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
-  const [motionPermission, setMotionPermission] = useState<MotionPermission>('hidden');
+  const [motionStatus, setMotionStatus] = useState<MotionStatus>('hidden');
   const roomAsset = useImageAsset(roomImage);
-  const wallpaperAsset = useImageAsset(monitorBackground);
+  const wallpaperAsset = useImageAsset(monitorBackground, roomAsset.state === 'ready');
   const [status, setStatus] = useState('');
   const stageRef = useRef<HTMLDivElement>(null);
   const deskRef = useRef<HTMLButtonElement>(null);
@@ -44,6 +65,8 @@ export default function App() {
   const desktopAppRef = useRef<HTMLButtonElement>(null);
   const autoRenameRef = useRef<HTMLButtonElement>(null);
   const autoRenameWindowRef = useRef<HTMLElement>(null);
+  const startButtonRef = useRef<HTMLButtonElement>(null);
+  const startMenuRef = useRef<HTMLDivElement>(null);
   const mobileBackRef = useRef<HTMLButtonElement>(null);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const mobileExpandedRef = useRef(mobileExpanded);
@@ -69,6 +92,7 @@ export default function App() {
   });
   const roomOffset = useRef({ x: 0, y: 0 });
   const orientationBaseline = useRef<{ beta: number; gamma: number } | null>(null);
+  const orientationSamples = useRef(0);
   const pointer = useRef({ x: 0, y: 0, active: false });
   const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deskMotion = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, blend: 0, velocity: 0 });
@@ -309,8 +333,9 @@ export default function App() {
     );
   };
 
-  const closeApp = () => {
-    const name = activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE';
+  const closeApp = (app: AppName) => {
+    const name = app === 'autorename' ? 'AutoRename' : 'Arduino IDE';
+    setOpenApps((current) => ({ ...current, [app]: false }));
     setActiveApp(null);
     setWindowMaximized(false);
     setStartMenuOpen(false);
@@ -319,20 +344,25 @@ export default function App() {
   };
 
   const minimizeApp = () => {
+    if (!activeApp) return;
+    const name = activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE';
     setActiveApp(null);
-    setWindowMaximized(false);
     setStartMenuOpen(false);
-    setStatus(
-      `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} minimized to the desktop.`,
-    );
+    setStatus(`${name} minimized to the taskbar. Its current state is preserved.`);
   };
 
-  const openApp = useCallback((app: Exclude<AppWindow, null> = 'arduino') => {
+  const openApp = useCallback((app: AppName = 'arduino') => {
+    setOpenApps((current) => ({ ...current, [app]: true }));
     setActiveApp(app);
     setWindowMaximized(false);
     setStartMenuOpen(false);
     setStatus(`${app === 'autorename' ? 'AutoRename' : 'Arduino IDE'} opened.`);
   }, []);
+
+  const activateTaskbarApp = (app: AppName) => {
+    if (activeApp === app) minimizeApp();
+    else openApp(app);
+  };
 
   const toggleMaximize = () => setWindowMaximized((value) => !value);
 
@@ -341,6 +371,8 @@ export default function App() {
     interacted.current = true;
     clearExitTimer();
     setStartMenuOpen(false);
+    orientationBaseline.current = null;
+    orientationSamples.current = 0;
     hoverArmed.current = false;
     setMobileExpanded(false);
     viewRef.current = 'desk';
@@ -391,6 +423,25 @@ export default function App() {
       if (startMenuOpen && event.key === 'Escape') {
         event.preventDefault();
         setStartMenuOpen(false);
+        startButtonRef.current?.focus({ preventScroll: true });
+        return;
+      }
+      if (startMenuOpen && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        const items = Array.from(
+          startMenuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [],
+        );
+        if (!items.length) return;
+        event.preventDefault();
+        const current = items.indexOf(document.activeElement as HTMLButtonElement);
+        const next =
+          event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? items.length - 1
+              : event.key === 'ArrowDown'
+                ? (current + 1 + items.length) % items.length
+                : (current - 1 + items.length) % items.length;
+        items[next]?.focus({ preventScroll: true });
         return;
       }
       if (event.key !== 'Escape') return;
@@ -449,6 +500,13 @@ export default function App() {
   }, [view, activeApp, mobileExpanded]);
 
   useLayoutEffect(() => {
+    if (startMenuOpen)
+      startMenuRef.current
+        ?.querySelector<HTMLButtonElement>('[role="menuitem"]')
+        ?.focus({ preventScroll: true });
+  }, [startMenuOpen]);
+
+  useLayoutEffect(() => {
     window.addEventListener('keydown', onNavigationKeyDown);
     return () => window.removeEventListener('keydown', onNavigationKeyDown);
   }, [onNavigationKeyDown]);
@@ -461,13 +519,11 @@ export default function App() {
         event.data?.type !== 'open-autorenamer-demo'
       )
         return;
-      setActiveApp('autorename');
-      setWindowMaximized(false);
-      setStatus('AutoRename mobile demo opened.');
+      openApp('autorename');
     };
     window.addEventListener('message', openDemoFromPortfolio);
     return () => window.removeEventListener('message', openDemoFromPortfolio);
-  }, []);
+  }, [openApp]);
 
   const onPortfolioReady = useCallback(() => {
     if (
@@ -479,15 +535,39 @@ export default function App() {
       frameRef.current?.focus({ preventScroll: true });
   }, []);
 
+  const resetMotionPose = useCallback(() => {
+    orientationBaseline.current = null;
+    orientationSamples.current = 0;
+    deskMotion.current.targetX = 0;
+    deskMotion.current.targetY = 0;
+    if (viewRef.current === 'room') updateRoomPose(0, 0);
+    else if (viewRef.current === 'desk') wakeCamera();
+  }, [updateRoomPose, wakeCamera]);
+
+  const disableMotion = useCallback(() => {
+    resetMotionPose();
+    setMotionStatus('off');
+    setStatus('Motion view turned off. Touch movement remains available.');
+  }, [resetMotionPose]);
+
+  const recenterMotion = useCallback(() => {
+    resetMotionPose();
+    setMotionStatus('calibrating');
+    setStatus('Motion view is recalibrating. Hold your phone comfortably.');
+  }, [resetMotionPose]);
+
   const requestMotionPermission = useCallback(async () => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setMotionPermission('unsupported');
+      setMotionStatus('off');
+      setStatus('Motion view is off because reduced motion is enabled.');
       return;
     }
-    if (!('DeviceOrientationEvent' in window)) {
-      setMotionPermission('unsupported');
+    if (!window.isSecureContext || !('DeviceOrientationEvent' in window)) {
+      setMotionStatus('unavailable');
+      setStatus('Motion sensors are unavailable here. Touch movement remains available.');
       return;
     }
+    setMotionStatus('requesting');
     try {
       const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
         requestPermission?: () => Promise<'granted' | 'denied'>;
@@ -496,13 +576,17 @@ export default function App() {
         ? await OrientationEvent.requestPermission()
         : 'granted';
       if (result !== 'granted') {
-        setMotionPermission('denied');
+        setMotionStatus('denied');
+        setStatus('Motion permission was not granted. Touch movement remains available.');
         return;
       }
       orientationBaseline.current = null;
-      setMotionPermission('granted');
+      orientationSamples.current = 0;
+      setMotionStatus('calibrating');
+      setStatus('Motion permission granted. Hold your phone comfortably while it calibrates.');
     } catch {
-      setMotionPermission('denied');
+      setMotionStatus('denied');
+      setStatus('Motion permission could not be enabled. Touch movement remains available.');
     }
   }, []);
 
@@ -510,16 +594,14 @@ export default function App() {
     const phone = window.matchMedia(phoneQuery);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const syncMotionPrompt = () => {
-      if (
-        phone.matches &&
-        !reducedMotion.matches &&
-        'DeviceOrientationEvent' in window &&
-        motionPermission === 'hidden'
-      ) {
-        setMotionPermission('prompt');
-      } else if (!phone.matches && motionPermission !== 'hidden') {
-        setMotionPermission('hidden');
-        orientationBaseline.current = null;
+      if (!phone.matches) {
+        if (motionStatus !== 'hidden') setMotionStatus('hidden');
+        resetMotionPose();
+      } else if (reducedMotion.matches) {
+        if (motionStatus !== 'off') setMotionStatus('off');
+        resetMotionPose();
+      } else if (motionStatus === 'hidden') {
+        setMotionStatus('prompt');
       }
     };
     syncMotionPrompt();
@@ -529,21 +611,38 @@ export default function App() {
       phone.removeEventListener('change', syncMotionPrompt);
       reducedMotion.removeEventListener('change', syncMotionPrompt);
     };
-  }, [motionPermission]);
+  }, [motionStatus, resetMotionPose]);
 
   useLayoutEffect(() => {
-    if (motionPermission !== 'granted') return;
+    if (motionStatus !== 'calibrating' && motionStatus !== 'active') return;
+    const calibrationTimer =
+      motionStatus === 'calibrating'
+        ? window.setTimeout(() => {
+            setMotionStatus('unavailable');
+            resetMotionPose();
+            setStatus('No motion readings were received. Touch movement remains available.');
+          }, 3000)
+        : 0;
     const onOrientation = (event: DeviceOrientationEvent) => {
+      if (document.visibilityState !== 'visible') return;
       if (viewRef.current === 'screen' || mobileExpandedRef.current) return;
       if (event.beta == null || event.gamma == null) return;
       if (!orientationBaseline.current) {
         orientationBaseline.current = { beta: event.beta, gamma: event.gamma };
+        orientationSamples.current = 1;
         return;
       }
-      const deltaGamma = event.gamma - orientationBaseline.current.gamma;
-      const deltaBeta = event.beta - orientationBaseline.current.beta;
-      const normalizedX = Math.max(-1, Math.min(1, deltaGamma / mobileRoomTiltRange));
-      const normalizedY = Math.max(-1, Math.min(1, deltaBeta / mobileRoomTiltRange));
+      orientationSamples.current += 1;
+      if (motionStatus === 'calibrating' && orientationSamples.current >= 2) {
+        setMotionStatus('active');
+        setStatus('Motion view enabled. Tilt your phone gently to look around.');
+      }
+      const rawTilt = screenRelativeTilt(
+        shortestAngleDelta(event.beta, orientationBaseline.current.beta),
+        shortestAngleDelta(event.gamma, orientationBaseline.current.gamma),
+      );
+      const normalizedX = normalizeTilt(rawTilt.x);
+      const normalizedY = normalizeTilt(rawTilt.y);
       if (viewRef.current === 'room') {
         updateRoomPose(
           -normalizedX * 36 * mobileRoomParallaxScale,
@@ -555,9 +654,20 @@ export default function App() {
         wakeCamera();
       }
     };
+    const resetBaseline = () => {
+      orientationBaseline.current = null;
+      orientationSamples.current = 0;
+    };
     window.addEventListener('deviceorientation', onOrientation, { passive: true });
-    return () => window.removeEventListener('deviceorientation', onOrientation);
-  }, [motionPermission, updateRoomPose, wakeCamera]);
+    window.screen.orientation?.addEventListener('change', resetBaseline);
+    document.addEventListener('visibilitychange', resetBaseline);
+    return () => {
+      if (calibrationTimer) window.clearTimeout(calibrationTimer);
+      window.removeEventListener('deviceorientation', onOrientation);
+      window.screen.orientation?.removeEventListener('change', resetBaseline);
+      document.removeEventListener('visibilitychange', resetBaseline);
+    };
+  }, [motionStatus, resetMotionPose, updateRoomPose, wakeCamera]);
 
   // Pointer navigation between the room, desk, and monitor.
   const scheduleExit = (from: 'desk' | 'screen') => {
@@ -627,13 +737,20 @@ export default function App() {
       if (
         event.pointerType === 'touch' &&
         viewRef.current === 'room' &&
-        !mobileExpandedRef.current
+        !mobileExpandedRef.current &&
+        motionStatus !== 'active' &&
+        motionStatus !== 'calibrating'
       ) {
         updateRoomPose(
           (event.clientX / window.innerWidth - 0.5) * -36 * mobileRoomParallaxScale,
           (event.clientY / window.innerHeight - 0.5) * -24 * mobileRoomParallaxScale,
         );
-      } else if (event.pointerType === 'touch' && viewRef.current === 'desk') {
+      } else if (
+        event.pointerType === 'touch' &&
+        viewRef.current === 'desk' &&
+        motionStatus !== 'active' &&
+        motionStatus !== 'calibrating'
+      ) {
         deskMotion.current.targetX =
           (event.clientX / window.innerWidth - 0.5) * 2 * mobileDeskParallaxScale;
         deskMotion.current.targetY =
@@ -721,7 +838,10 @@ export default function App() {
             <div className="monitor-surface">
               <div
                 className="monitor-desktop"
-                style={{ backgroundImage: `url("${wallpaperAsset.url}")` }}
+                style={{
+                  backgroundImage:
+                    wallpaperAsset.state === 'ready' ? `url("${wallpaperAsset.url}")` : 'none',
+                }}
                 aria-label="Desktop background"
                 aria-hidden={view !== 'screen' || mobileExpanded}
                 inert={view !== 'screen' || mobileExpanded}
@@ -764,6 +884,7 @@ export default function App() {
                   aria-label="Taskbar; move the pointer to the bottom edge to reveal"
                 >
                   <button
+                    ref={startButtonRef}
                     className="taskbar-start"
                     type="button"
                     aria-label="Open Start menu"
@@ -779,21 +900,23 @@ export default function App() {
                   </button>
                   <div className="taskbar-apps" aria-label="Available apps">
                     <button
-                      className={`taskbar-app${activeApp === 'arduino' ? ' is-active' : ''}`}
+                      className={`taskbar-app${openApps.arduino ? ' is-running' : ''}${activeApp === 'arduino' ? ' is-active' : ''}`}
                       type="button"
-                      aria-label="Open Portfolio"
+                      aria-label={activeApp === 'arduino' ? 'Minimize Portfolio' : 'Open Portfolio'}
                       aria-pressed={activeApp === 'arduino'}
-                      onClick={() => openApp('arduino')}
+                      onClick={() => activateTaskbarApp('arduino')}
                     >
                       <img src="/portfolio-logo.webp" alt="" draggable={false} />
                       <span className="taskbar-tooltip">Portfolio</span>
                     </button>
                     <button
-                      className={`taskbar-app${activeApp === 'autorename' ? ' is-active' : ''}`}
+                      className={`taskbar-app${openApps.autorename ? ' is-running' : ''}${activeApp === 'autorename' ? ' is-active' : ''}`}
                       type="button"
-                      aria-label="Open AutoRename"
+                      aria-label={
+                        activeApp === 'autorename' ? 'Minimize AutoRename' : 'Open AutoRename'
+                      }
                       aria-pressed={activeApp === 'autorename'}
-                      onClick={() => openApp('autorename')}
+                      onClick={() => activateTaskbarApp('autorename')}
                     >
                       <img src="/autorenamer-icon.svg" alt="" draggable={false} />
                       <span className="taskbar-tooltip">AutoRename</span>
@@ -801,7 +924,12 @@ export default function App() {
                   </div>
                 </div>
                 {startMenuOpen && (
-                  <div className="desktop-start-menu" role="menu" aria-label="Start menu">
+                  <div
+                    ref={startMenuRef}
+                    className="desktop-start-menu"
+                    role="menu"
+                    aria-label="Start menu"
+                  >
                     <div className="start-menu-topline">
                       <span className="start-menu-hamburger" aria-hidden="true">
                         ☰
@@ -845,13 +973,13 @@ export default function App() {
                   </div>
                 )}
               </div>
-              {activeApp === 'arduino' && (
+              {openApps.arduino && (
                 <section
-                  className={`arduino-window monitor-app-window${windowMaximized ? ' window-maximized' : ''}`}
+                  className={`arduino-window monitor-app-window${windowMaximized && activeApp === 'arduino' ? ' window-maximized' : ''}${activeApp !== 'arduino' ? ' is-minimized' : ''}`}
                   id="portfolio-window"
                   aria-label="Angelo's Arduino IDE portfolio"
-                  aria-hidden={view !== 'screen'}
-                  inert={view !== 'screen'}
+                  aria-hidden={view !== 'screen' || activeApp !== 'arduino'}
+                  inert={view !== 'screen' || activeApp !== 'arduino'}
                 >
                   <header className="arduino-window-titlebar">
                     <img
@@ -885,7 +1013,7 @@ export default function App() {
                       <button
                         className="window-control window-close"
                         type="button"
-                        onClick={closeApp}
+                        onClick={() => closeApp('arduino')}
                         aria-label="Close Arduino IDE"
                       >
                         ×
@@ -897,18 +1025,18 @@ export default function App() {
                     onNavigationKeyDown={onNavigationKeyDown}
                     onReady={onPortfolioReady}
                   />
-                  {mobileBackButton}
+                  {activeApp === 'arduino' ? mobileBackButton : null}
                 </section>
               )}
-              {activeApp === 'autorename' && (
+              {openApps.autorename && (
                 <section
                   ref={autoRenameWindowRef}
                   tabIndex={-1}
-                  className={`autorename-window monitor-app-window${windowMaximized ? ' window-maximized' : ''}`}
+                  className={`autorename-window monitor-app-window${windowMaximized && activeApp === 'autorename' ? ' window-maximized' : ''}${activeApp !== 'autorename' ? ' is-minimized' : ''}`}
                   id="autorenamer-window"
                   aria-label="AutoRename interactive mobile demo"
-                  aria-hidden={view !== 'screen'}
-                  inert={view !== 'screen'}
+                  aria-hidden={view !== 'screen' || activeApp !== 'autorename'}
+                  inert={view !== 'screen' || activeApp !== 'autorename'}
                 >
                   <header className="arduino-window-titlebar">
                     <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
@@ -942,7 +1070,7 @@ export default function App() {
                       <button
                         className="window-control window-close"
                         type="button"
-                        onClick={closeApp}
+                        onClick={() => closeApp('autorename')}
                         aria-label="Close AutoRename"
                       >
                         ×
@@ -950,7 +1078,7 @@ export default function App() {
                     </div>
                   </header>
                   <AutoRenameDemo />
-                  {mobileBackButton}
+                  {activeApp === 'autorename' ? mobileBackButton : null}
                 </section>
               )}
             </div>
@@ -982,16 +1110,57 @@ export default function App() {
         </div>
       </div>
 
-      {view === 'room' && motionPermission === 'prompt' && (
-        <aside className="motion-prompt" aria-label="Motion view setup">
-          <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
-          <p>Tilt your phone to look around the room.</p>
-          <button type="button" onClick={requestMotionPermission}>
-            Enable motion view
-          </button>
-          <span className="motion-prompt-hint">You can still explore with touch.</span>
-        </aside>
-      )}
+      {view === 'room' &&
+        ['prompt', 'requesting', 'calibrating', 'denied', 'unavailable'].includes(motionStatus) && (
+          <aside className="motion-prompt" aria-label="Motion view setup" aria-live="polite">
+            <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
+            <p>
+              {motionStatus === 'requesting'
+                ? 'Waiting for motion permission…'
+                : motionStatus === 'calibrating'
+                  ? 'Hold your phone comfortably while motion calibrates…'
+                  : motionStatus === 'denied'
+                    ? 'Motion permission was not granted.'
+                    : motionStatus === 'unavailable'
+                      ? 'No motion readings were detected.'
+                      : 'Tilt your phone to look around the room.'}
+            </p>
+            {motionStatus === 'prompt' ? (
+              <button type="button" onClick={requestMotionPermission}>
+                Enable motion view
+              </button>
+            ) : motionStatus === 'denied' || motionStatus === 'unavailable' ? (
+              <button type="button" onClick={disableMotion}>
+                Continue with touch
+              </button>
+            ) : null}
+            <span className="motion-prompt-hint">Touch movement is always available.</span>
+          </aside>
+        )}
+
+      {(view === 'room' || view === 'desk') &&
+        (motionStatus === 'active' || motionStatus === 'off') && (
+          <div className="motion-toolbar" role="group" aria-label="Motion view controls">
+            <span className="motion-toolbar-status">
+              <span aria-hidden="true" className={motionStatus === 'off' ? 'is-off' : ''} />
+              {motionStatus === 'active' ? 'Motion on' : 'Motion off'}
+            </span>
+            {motionStatus === 'active' ? (
+              <>
+                <button type="button" onClick={recenterMotion}>
+                  Recenter
+                </button>
+                <button type="button" onClick={disableMotion}>
+                  Turn off
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={requestMotionPermission}>
+                Enable
+              </button>
+            )}
+          </div>
+        )}
 
       {view === 'desk' && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>

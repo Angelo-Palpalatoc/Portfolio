@@ -54,11 +54,11 @@ Project configuration lives in the root: [package.json](./package.json), [tsconf
 
 - Move into the computer setup to approach the desk, then into the monitor to use the portfolio. Buttons support click, touch, and keyboard entry.
 - Escape returns through the expanded phone view, monitor, desk, and room.
-- The portfolio window can minimize, maximize, close, and reopen from the Portfolio shortcut. Phones have a **Read larger** control.
-- Phone reading size changes keep the same iframe, app session, and scroll container. Closing and reopening still starts a fresh portfolio session.
+- The portfolio window can minimize, maximize, close, and reopen from the Portfolio shortcut. Minimize keeps the app mounted; close resets it.
+- Phones enter a full-screen reading view from the monitor. Phone orientation changes keep the same iframe and app session, while closing and reopening starts a fresh session.
 - The room, wallpaper, and logo use lossless WebP with unchanged dimensions and pixels. Their original PNGs are preserved locally in `.archive/source-assets/`.
 - Room and portfolio loading failures have retry controls. Loads still pending after 15 seconds offer a retry without cancelling the original request.
-- Desk parallax is **30% above its original intensity**. Reduced motion disables the animated camera approach and desk tilt.
+- Desk parallax is **30% above its original intensity**. Optional phone motion confirms sensor readings before activation and provides recenter, off, and touch fallback controls. Reduced motion disables the animated camera approach and desk tilt.
 - The shared desktop is rendered at **1280 logical pixels wide** before projection to preserve sharpness.
 - The monitor's calibrated polygon lives in one `.monitor-screen` rule in [styles.css](./src/styles.css). Preserve it unless a fit adjustment is requested.
 - Leave [the Arduino export](./public/arduino-portfolio.html) unchanged unless explicitly requested. Formatting commands exclude it.
@@ -78,7 +78,7 @@ Graphify uses local code-only extraction; no model API is configured. Generated 
 
 Dependencies, build output, Graphify output, and its local Python environment are generated and ignored by Git. Project Explorer settings hide these folders so the active source stays easy to navigate.
 
-Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The mobile showcase remains a future content decision.
+Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The public AutoRename showcase uses only fictional, predefined data.
 
 ## Cleanup tools
 
