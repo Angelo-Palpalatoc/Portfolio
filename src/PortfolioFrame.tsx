@@ -26,7 +26,13 @@ export default function PortfolioFrame({
     let contentObserver: MutationObserver | null = null;
     let documentObserver: MutationObserver | null = null;
     let scrollContainer: HTMLElement | null = null;
-    let touchStart: { screenY: number; scrollTop: number; dragging: boolean } | null = null;
+    let touchStart: {
+      screenX: number;
+      screenY: number;
+      scrollTop: number;
+      dragging: boolean;
+      axis: 'x' | 'y' | null;
+    } | null = null;
     let glideFrame = 0;
     const controller = new AbortController();
     setState('loading');
@@ -47,21 +53,30 @@ export default function PortfolioFrame({
       if (!touch || !window.matchMedia('(orientation: portrait)').matches) return;
       stopGlide();
       touchStart = {
+        screenX: touch.screenX,
         screenY: touch.screenY,
         scrollTop: scrollContainer?.scrollTop ?? 0,
         dragging: false,
+        axis: null,
       };
     };
     const onTouchMove = (event: TouchEvent) => {
       const touch = event.touches[0];
       if (!touch || !touchStart || !scrollContainer) return;
+      const deltaX = touch.screenX - touchStart.screenX;
       const deltaY = touch.screenY - touchStart.screenY;
-      if (!touchStart.dragging && Math.abs(deltaY) < 6) return;
+      if (!touchStart.dragging && Math.max(Math.abs(deltaX), Math.abs(deltaY)) < 6) return;
       touchStart.dragging = true;
+      touchStart.axis ??= Math.abs(deltaX) > Math.abs(deltaY) ? 'x' : 'y';
       event.preventDefault();
-      // In portrait, the app is rotated 90 degrees; map a vertical finger
-      // drag back onto the portfolio's normal vertical scroll axis.
-      scrollContainer.scrollTop = touchStart.scrollTop - deltaY;
+      // In portrait, the app is rotated 90 degrees; map a horizontal finger
+      // drag back onto the portfolio's normal vertical scroll axis. A vertical
+      // drag remains supported for visitors who swipe against the rotation.
+      const scrollDelta =
+        window.matchMedia('(orientation: portrait)').matches && touchStart.axis === 'x'
+          ? deltaX
+          : -deltaY;
+      scrollContainer.scrollTop = touchStart.scrollTop + scrollDelta;
     };
     const onTouchEnd = (event: TouchEvent) => {
       if (
@@ -100,14 +115,21 @@ export default function PortfolioFrame({
       doc = frame.contentDocument;
       if (!doc) return;
       const bindPhoneScroll = () => {
-        const candidate = [...(doc?.querySelectorAll<HTMLElement>('*') ?? [])].find((element) => {
-          const style = doc?.defaultView?.getComputedStyle(element);
-          return (
-            !!style &&
-            /auto|scroll/.test(style.overflowY) &&
-            element.scrollHeight > element.clientHeight
-          );
-        });
+        const candidates = [...(doc?.querySelectorAll<HTMLElement>('*') ?? [])].filter(
+          (element) => {
+            const style = doc?.defaultView?.getComputedStyle(element);
+            return (
+              !!style &&
+              /auto|scroll/.test(style.overflowY) &&
+              element.scrollHeight > element.clientHeight
+            );
+          },
+        );
+        const candidate =
+          candidates.sort(
+            (left, right) =>
+              right.scrollHeight - right.clientHeight - (left.scrollHeight - left.clientHeight),
+          )[0] ?? null;
         if (candidate === scrollContainer) return;
         scrollContainer?.removeEventListener('touchstart', onTouchStart);
         scrollContainer?.removeEventListener('touchmove', onTouchMove);
