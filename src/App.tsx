@@ -14,6 +14,7 @@ const deskCenter = { x: 0.575, y: 0.495 };
 const screenCenter = { x: 0.5635, y: 0.5109 };
 const mobileRoomParallaxScale = 0.8;
 const mobileRoomTiltRange = 18;
+const mobileDeskParallaxScale = 0.65;
 const phoneQuery =
   '(max-width: 700px), (max-width: 950px) and (pointer: coarse), (max-width: 950px) and (max-height: 500px)';
 type View = 'room' | 'desk' | 'screen';
@@ -533,7 +534,7 @@ export default function App() {
   useLayoutEffect(() => {
     if (motionPermission !== 'granted') return;
     const onOrientation = (event: DeviceOrientationEvent) => {
-      if (viewRef.current !== 'room' || mobileExpandedRef.current) return;
+      if (viewRef.current === 'screen' || mobileExpandedRef.current) return;
       if (event.beta == null || event.gamma == null) return;
       if (!orientationBaseline.current) {
         orientationBaseline.current = { beta: event.beta, gamma: event.gamma };
@@ -543,14 +544,20 @@ export default function App() {
       const deltaBeta = event.beta - orientationBaseline.current.beta;
       const normalizedX = Math.max(-1, Math.min(1, deltaGamma / mobileRoomTiltRange));
       const normalizedY = Math.max(-1, Math.min(1, deltaBeta / mobileRoomTiltRange));
-      updateRoomPose(
-        -normalizedX * 36 * mobileRoomParallaxScale,
-        -normalizedY * 24 * mobileRoomParallaxScale,
-      );
+      if (viewRef.current === 'room') {
+        updateRoomPose(
+          -normalizedX * 36 * mobileRoomParallaxScale,
+          -normalizedY * 24 * mobileRoomParallaxScale,
+        );
+      } else if (viewRef.current === 'desk') {
+        deskMotion.current.targetX = normalizedX * mobileDeskParallaxScale;
+        deskMotion.current.targetY = normalizedY * mobileDeskParallaxScale;
+        wakeCamera();
+      }
     };
     window.addEventListener('deviceorientation', onOrientation, { passive: true });
     return () => window.removeEventListener('deviceorientation', onOrientation);
-  }, [motionPermission, updateRoomPose]);
+  }, [motionPermission, updateRoomPose, wakeCamera]);
 
   // Pointer navigation between the room, desk, and monitor.
   const scheduleExit = (from: 'desk' | 'screen') => {
@@ -626,6 +633,12 @@ export default function App() {
           (event.clientX / window.innerWidth - 0.5) * -36 * mobileRoomParallaxScale,
           (event.clientY / window.innerHeight - 0.5) * -24 * mobileRoomParallaxScale,
         );
+      } else if (event.pointerType === 'touch' && viewRef.current === 'desk') {
+        deskMotion.current.targetX =
+          (event.clientX / window.innerWidth - 0.5) * 2 * mobileDeskParallaxScale;
+        deskMotion.current.targetY =
+          (event.clientY / window.innerHeight - 0.5) * 2 * mobileDeskParallaxScale;
+        wakeCamera();
       }
       return;
     }
@@ -654,8 +667,6 @@ export default function App() {
       enterDesk();
       return;
     }
-    roomOffset.current.x = (event.clientX / window.innerWidth - 0.5) * -36;
-    roomOffset.current.y = (event.clientY / window.innerHeight - 0.5) * -24;
     updateRoomPose(
       (event.clientX / window.innerWidth - 0.5) * -36,
       (event.clientY / window.innerHeight - 0.5) * -24,
