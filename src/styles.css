@@ -624,6 +624,55 @@ button {
   font-size: clamp(12px, 1.1vw, 15px);
 }
 
+.motion-prompt {
+  position: absolute;
+  z-index: 4;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  display: grid;
+  max-width: 360px;
+  gap: 8px;
+  margin: 0 auto;
+  padding: 14px 16px;
+  border: 1px solid #f3c54c88;
+  color: #f7eee3;
+  background: #191715e8;
+  box-shadow: 0 12px 30px #0008;
+  backdrop-filter: blur(8px);
+}
+.motion-prompt-kicker {
+  color: #f3c54c;
+  font:
+    700 10px/1.2 'JetBrains Mono',
+    monospace;
+  letter-spacing: 0.12em;
+}
+.motion-prompt p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.motion-prompt button {
+  min-height: 42px;
+  border: 1px solid #f3c54c;
+  color: #1b170e;
+  background: #f3c54c;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 750;
+}
+.motion-prompt button:hover,
+.motion-prompt button:focus-visible {
+  background: #ffe18a;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.motion-prompt-hint {
+  color: #cdbfae;
+  font-size: 11px;
+}
+
 /* Phone reading view */
 .mobile-portfolio-back {
   display: none;

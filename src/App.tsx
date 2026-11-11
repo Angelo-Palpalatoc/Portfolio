@@ -12,11 +12,13 @@ const deskParallaxIntensity = 1.3;
 const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
 const deskCenter = { x: 0.575, y: 0.495 };
 const screenCenter = { x: 0.5635, y: 0.5109 };
+const mobileRoomParallaxScale = 0.55;
 const phoneQuery =
   '(max-width: 700px), (max-width: 950px) and (pointer: coarse), (max-width: 950px) and (max-height: 500px)';
 type View = 'room' | 'desk' | 'screen';
 type AppWindow = 'arduino' | 'autorename' | null;
 type CameraPose = { x: number; y: number; scale: number };
+type MotionPermission = 'hidden' | 'prompt' | 'granted' | 'denied' | 'unsupported';
 const initialPose = { x: 0, y: 0, scale: 1 };
 const outside = (x: number, y: number, rect: DOMRect, margin = 0) =>
   x < rect.left - margin ||
@@ -30,6 +32,7 @@ export default function App() {
   const [windowMaximized, setWindowMaximized] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
+  const [motionPermission, setMotionPermission] = useState<MotionPermission>('hidden');
   const roomAsset = useImageAsset(roomImage);
   const wallpaperAsset = useImageAsset(monitorBackground);
   const [status, setStatus] = useState('');
@@ -63,6 +66,7 @@ export default function App() {
     ready: true,
   });
   const roomOffset = useRef({ x: 0, y: 0 });
+  const orientationBaseline = useRef<{ beta: number; gamma: number } | null>(null);
   const pointer = useRef({ x: 0, y: 0, active: false });
   const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deskMotion = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, blend: 0, velocity: 0 });
@@ -188,6 +192,22 @@ export default function App() {
     [paintCamera, paintDesk, wakeCamera],
   );
 
+  const updateRoomPose = useCallback(
+    (x: number, y: number) => {
+      const stage = stageRef.current;
+      if (!stage || viewRef.current !== 'room') return;
+      roomOffset.current.x = x;
+      roomOffset.current.y = y;
+      poses.current.room = {
+        x: -stage.offsetWidth / 2 + x,
+        y: -stage.offsetHeight / 2 + y,
+        scale: 1,
+      };
+      aimCamera(poses.current.room, 'room');
+    },
+    [aimCamera],
+  );
+
   const measureScene = useCallback(() => {
     const stage = stageRef.current;
     if (!stage) return;
@@ -261,6 +281,7 @@ export default function App() {
     if (viewRef.current !== 'room') return;
     interacted.current = true;
     clearExitTimer();
+    orientationBaseline.current = null;
     setStartMenuOpen(false);
     measureScene();
     viewRef.current = 'desk';
@@ -338,6 +359,7 @@ export default function App() {
     if (viewRef.current !== 'desk') return;
     interacted.current = true;
     clearExitTimer();
+    orientationBaseline.current = null;
     setStartMenuOpen(false);
     viewRef.current = 'room';
     aimCamera(poses.current.room, 'room');
@@ -455,6 +477,80 @@ export default function App() {
       frameRef.current?.focus({ preventScroll: true });
   }, []);
 
+  const requestMotionPermission = useCallback(async () => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setMotionPermission('unsupported');
+      return;
+    }
+    if (!('DeviceOrientationEvent' in window)) {
+      setMotionPermission('unsupported');
+      return;
+    }
+    try {
+      const OrientationEvent = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+        requestPermission?: () => Promise<'granted' | 'denied'>;
+      };
+      const result = OrientationEvent.requestPermission
+        ? await OrientationEvent.requestPermission()
+        : 'granted';
+      if (result !== 'granted') {
+        setMotionPermission('denied');
+        return;
+      }
+      orientationBaseline.current = null;
+      setMotionPermission('granted');
+    } catch {
+      setMotionPermission('denied');
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    const phone = window.matchMedia(phoneQuery);
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncMotionPrompt = () => {
+      if (
+        phone.matches &&
+        !reducedMotion.matches &&
+        'DeviceOrientationEvent' in window &&
+        motionPermission === 'hidden'
+      ) {
+        setMotionPermission('prompt');
+      } else if (!phone.matches && motionPermission !== 'hidden') {
+        setMotionPermission('hidden');
+        orientationBaseline.current = null;
+      }
+    };
+    syncMotionPrompt();
+    phone.addEventListener('change', syncMotionPrompt);
+    reducedMotion.addEventListener('change', syncMotionPrompt);
+    return () => {
+      phone.removeEventListener('change', syncMotionPrompt);
+      reducedMotion.removeEventListener('change', syncMotionPrompt);
+    };
+  }, [motionPermission]);
+
+  useLayoutEffect(() => {
+    if (motionPermission !== 'granted') return;
+    const onOrientation = (event: DeviceOrientationEvent) => {
+      if (viewRef.current !== 'room' || mobileExpandedRef.current) return;
+      if (event.beta == null || event.gamma == null) return;
+      if (!orientationBaseline.current) {
+        orientationBaseline.current = { beta: event.beta, gamma: event.gamma };
+        return;
+      }
+      const deltaGamma = event.gamma - orientationBaseline.current.gamma;
+      const deltaBeta = event.beta - orientationBaseline.current.beta;
+      const normalizedX = Math.max(-1, Math.min(1, deltaGamma / 25));
+      const normalizedY = Math.max(-1, Math.min(1, deltaBeta / 25));
+      updateRoomPose(
+        -normalizedX * 36 * mobileRoomParallaxScale,
+        -normalizedY * 24 * mobileRoomParallaxScale,
+      );
+    };
+    window.addEventListener('deviceorientation', onOrientation, { passive: true });
+    return () => window.removeEventListener('deviceorientation', onOrientation);
+  }, [motionPermission, updateRoomPose]);
+
   // Pointer navigation between the room, desk, and monitor.
   const scheduleExit = (from: 'desk' | 'screen') => {
     if (exitTimer.current) return;
@@ -520,6 +616,16 @@ export default function App() {
     if (event.pointerType !== 'mouse') {
       pointer.current.active = false;
       clearExitTimer();
+      if (
+        event.pointerType === 'touch' &&
+        viewRef.current === 'room' &&
+        !mobileExpandedRef.current
+      ) {
+        updateRoomPose(
+          (event.clientX / window.innerWidth - 0.5) * -36 * mobileRoomParallaxScale,
+          (event.clientY / window.innerHeight - 0.5) * -24 * mobileRoomParallaxScale,
+        );
+      }
       return;
     }
     pointer.current = { x: event.clientX, y: event.clientY, active: true };
@@ -549,14 +655,10 @@ export default function App() {
     }
     roomOffset.current.x = (event.clientX / window.innerWidth - 0.5) * -36;
     roomOffset.current.y = (event.clientY / window.innerHeight - 0.5) * -24;
-    const stage = stageRef.current;
-    if (!stage) return;
-    poses.current.room = {
-      x: -stage.offsetWidth / 2 + roomOffset.current.x,
-      y: -stage.offsetHeight / 2 + roomOffset.current.y,
-      scale: 1,
-    };
-    aimCamera(poses.current.room, 'room');
+    updateRoomPose(
+      (event.clientX / window.innerWidth - 0.5) * -36,
+      (event.clientY / window.innerHeight - 0.5) * -24,
+    );
   };
 
   const mobileBackButton =
@@ -867,6 +969,17 @@ export default function App() {
           />
         </div>
       </div>
+
+      {view === 'room' && motionPermission === 'prompt' && (
+        <aside className="motion-prompt" aria-label="Motion view setup">
+          <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
+          <p>Tilt your phone to look around the room.</p>
+          <button type="button" onClick={requestMotionPermission}>
+            Enable motion view
+          </button>
+          <span className="motion-prompt-hint">You can still explore with touch.</span>
+        </aside>
+      )}
 
       {view === 'desk' && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>

@@ -39,6 +39,7 @@ Responsive check 2026-11-11: touch-sized landscape viewports now remove the desk
 
 - Camera zoom and desk tilt share one animation loop. Desk parallax uses elapsed time so its response remains consistent across display refresh rates.
 - Room POV tracking now pans up to ±18/±12 scene pixels (horizontal/vertical) for a more noticeable cursor-following camera response without changing the room zoom.
+- On supported phones, an optional Device Orientation view maps calibrated beta/gamma tilt to room movement at 55% of the desktop range. Touch movement remains the fallback, and motion pauses when an app is open.
 - Desk parallax intensity is 1.3 times the original: pan up to ±28.6/±16.9 scene pixels (horizontal/vertical), and tilt up to ±4.16°/±3.12° (left-right/up-down). Cursor smoothing is unchanged.
 - Automatic exits wait for camera arrival, then allow a 150 ms desk grace period or 110 ms monitor grace period, with a 10 px boundary margin. Returning inside cancels the pending exit.
 - On camera arrival, hover is rechecked for a stationary mouse. Keyboard and explicit click/touch entry remain stable until deliberate mouse movement resumes.
