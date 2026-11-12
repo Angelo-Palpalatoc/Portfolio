@@ -963,7 +963,7 @@ export default function App() {
                   >
                     <div className="start-menu-topline">
                       <span className="start-menu-hamburger" aria-hidden="true">
-                        â˜°
+                        ☰
                       </span>
                       <span>Recently added</span>
                     </div>
@@ -1020,7 +1020,7 @@ export default function App() {
                       aria-hidden="true"
                     />
                     <span className="window-title">
-                      Portfolio.ino <span>â€” Arduino IDE 2.3.10 Â· Angelo Palpalatoc</span>
+                      Portfolio.ino <span>— Arduino IDE 2.3.10 · Angelo Palpalatoc</span>
                     </span>
                     <div className="window-controls" aria-label="Arduino IDE window controls">
                       <button
@@ -1029,7 +1029,7 @@ export default function App() {
                         onClick={minimizeApp}
                         aria-label="Minimize Arduino IDE"
                       >
-                        â€”
+                        —
                       </button>
                       <button
                         className="window-control"
@@ -1039,7 +1039,7 @@ export default function App() {
                           windowMaximized ? 'Restore Arduino IDE' : 'Maximize Arduino IDE'
                         }
                       >
-                        {windowMaximized ? 'â–¢' : 'â–¡'}
+                        {windowMaximized ? '▣' : '□'}
                       </button>
                       <button
                         className="window-control window-close"
@@ -1047,7 +1047,7 @@ export default function App() {
                         onClick={() => closeApp('arduino')}
                         aria-label="Close Arduino IDE"
                       >
-                        Ã—
+                        ×
                       </button>
                     </div>
                   </header>
@@ -1072,7 +1072,7 @@ export default function App() {
                   <header className="arduino-window-titlebar">
                     <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
                     <span className="window-title">
-                      AutoRename <span>â€” interactive mobile demo</span>
+                      AutoRename <span>— interactive mobile demo</span>
                     </span>
                     <button
                       className="rename-return-button"
@@ -1088,7 +1088,7 @@ export default function App() {
                         onClick={minimizeApp}
                         aria-label="Minimize AutoRename"
                       >
-                        â€”
+                        —
                       </button>
                       <button
                         className="window-control"
@@ -1096,7 +1096,7 @@ export default function App() {
                         onClick={toggleMaximize}
                         aria-label={windowMaximized ? 'Restore AutoRename' : 'Maximize AutoRename'}
                       >
-                        {windowMaximized ? 'â–¢' : 'â–¡'}
+                        {windowMaximized ? '▣' : '□'}
                       </button>
                       <button
                         className="window-control window-close"
@@ -1104,7 +1104,7 @@ export default function App() {
                         onClick={() => closeApp('autorename')}
                         aria-label="Close AutoRename"
                       >
-                        Ã—
+                        ×
                       </button>
                     </div>
                   </header>
@@ -1147,9 +1147,9 @@ export default function App() {
             <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
             <p>
               {motionStatus === 'requesting'
-                ? 'Waiting for motion permissionâ€¦'
+                ? 'Waiting for motion permission…'
                 : motionStatus === 'calibrating'
-                  ? 'Hold your phone comfortably while motion calibratesâ€¦'
+                  ? 'Hold your phone comfortably while motion calibrates…'
                   : motionStatus === 'denied'
                     ? 'Motion permission was not granted.'
                     : motionStatus === 'unavailable'
