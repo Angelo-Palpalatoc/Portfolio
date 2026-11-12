@@ -22,6 +22,8 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 - Add AutoRename as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.
 - Henry Heffernan's portfolio is the reference for the immersive interaction. Refer to his code when changing that experience: https://github.com/henryjeff/portfolio-website.
 - Use a 280 ms monitor exit grace period and 180 ms desk exit grace period so pointer movement across the irregular projected edges does not trigger premature exits. Preserve the existing 10 px boundary margin and re-entry cancellation.
+- Use the portrait monitor as a compact Project Explorer: profile signal, stack, project status, and personal/work labels. Keep it complementary to the detailed Arduino portfolio on the main monitor.
+- Use a generated static image for the portrait monitor's Explorer surface. Keep the portrait display decorative and leave the main monitor as the only interactive screen.
 
 ## Ownership and scope
 

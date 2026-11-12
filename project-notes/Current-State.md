@@ -83,6 +83,8 @@ The shared surface is laid out at 1280 logical pixels wide, with height derived 
 
 Pointer exits use short hysteresis delays: 280 ms from the monitor and 180 ms from the desk. Returning inside the active bounds cancels the pending exit.
 
+The portrait monitor now renders a generated static Project Explorer image aligned to the physical vertical display beside the main monitor. It uses the shared Arduino teal, white, and dark-neutral palette and does not alter the main portfolio app.
+
 ## Run locally
 
 ```powershell

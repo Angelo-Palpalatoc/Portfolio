@@ -1,7 +1,8 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+﻿import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import roomImage from './assets/room.webp';
 import monitorBackground from './assets/desktop-background.webp';
+import portraitMonitorImage from './assets/portrait-monitor-explorer.png';
 import { monitorProjection } from './monitorProjection';
 import { LoadNotice, useImageAsset } from './LoadingState';
 import PortfolioFrame from './PortfolioFrame';
@@ -851,7 +852,19 @@ export default function App() {
             alt="A compact loft workspace with a monitor, desk, and chair"
             draggable={false}
             fetchPriority="high"
-          />
+          />{' '}
+          <aside
+            className="portrait-monitor"
+            aria-label="Portfolio project explorer"
+            aria-hidden={view === 'room'}
+          >
+            <img
+              className="portrait-monitor-image"
+              src={portraitMonitorImage}
+              alt=""
+              draggable={false}
+            />
+          </aside>
           <div className="monitor-screen" onPointerLeave={onMonitorLeave}>
             <div className="monitor-surface">
               <div
@@ -950,7 +963,7 @@ export default function App() {
                   >
                     <div className="start-menu-topline">
                       <span className="start-menu-hamburger" aria-hidden="true">
-                        ☰
+                        â˜°
                       </span>
                       <span>Recently added</span>
                     </div>
@@ -1007,7 +1020,7 @@ export default function App() {
                       aria-hidden="true"
                     />
                     <span className="window-title">
-                      Portfolio.ino <span>— Arduino IDE 2.3.10 · Angelo Palpalatoc</span>
+                      Portfolio.ino <span>â€” Arduino IDE 2.3.10 Â· Angelo Palpalatoc</span>
                     </span>
                     <div className="window-controls" aria-label="Arduino IDE window controls">
                       <button
@@ -1016,7 +1029,7 @@ export default function App() {
                         onClick={minimizeApp}
                         aria-label="Minimize Arduino IDE"
                       >
-                        —
+                        â€”
                       </button>
                       <button
                         className="window-control"
@@ -1026,7 +1039,7 @@ export default function App() {
                           windowMaximized ? 'Restore Arduino IDE' : 'Maximize Arduino IDE'
                         }
                       >
-                        {windowMaximized ? '▢' : '□'}
+                        {windowMaximized ? 'â–¢' : 'â–¡'}
                       </button>
                       <button
                         className="window-control window-close"
@@ -1034,7 +1047,7 @@ export default function App() {
                         onClick={() => closeApp('arduino')}
                         aria-label="Close Arduino IDE"
                       >
-                        ×
+                        Ã—
                       </button>
                     </div>
                   </header>
@@ -1059,7 +1072,7 @@ export default function App() {
                   <header className="arduino-window-titlebar">
                     <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
                     <span className="window-title">
-                      AutoRename <span>— interactive mobile demo</span>
+                      AutoRename <span>â€” interactive mobile demo</span>
                     </span>
                     <button
                       className="rename-return-button"
@@ -1075,7 +1088,7 @@ export default function App() {
                         onClick={minimizeApp}
                         aria-label="Minimize AutoRename"
                       >
-                        —
+                        â€”
                       </button>
                       <button
                         className="window-control"
@@ -1083,7 +1096,7 @@ export default function App() {
                         onClick={toggleMaximize}
                         aria-label={windowMaximized ? 'Restore AutoRename' : 'Maximize AutoRename'}
                       >
-                        {windowMaximized ? '▢' : '□'}
+                        {windowMaximized ? 'â–¢' : 'â–¡'}
                       </button>
                       <button
                         className="window-control window-close"
@@ -1091,7 +1104,7 @@ export default function App() {
                         onClick={() => closeApp('autorename')}
                         aria-label="Close AutoRename"
                       >
-                        ×
+                        Ã—
                       </button>
                     </div>
                   </header>
@@ -1134,9 +1147,9 @@ export default function App() {
             <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
             <p>
               {motionStatus === 'requesting'
-                ? 'Waiting for motion permission…'
+                ? 'Waiting for motion permissionâ€¦'
                 : motionStatus === 'calibrating'
-                  ? 'Hold your phone comfortably while motion calibrates…'
+                  ? 'Hold your phone comfortably while motion calibratesâ€¦'
                   : motionStatus === 'denied'
                     ? 'Motion permission was not granted.'
                     : motionStatus === 'unavailable'

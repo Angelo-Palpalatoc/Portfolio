@@ -1,4 +1,4 @@
-/* Base document */
+﻿/* Base document */
 :root {
   color-scheme: dark;
   font-family:
@@ -61,6 +61,30 @@ button {
   height: 100%;
   object-fit: fill;
   object-position: center 52%;
+  user-select: none;
+}
+.portrait-monitor {
+  position: absolute;
+  z-index: 1;
+  left: 36.55%;
+  top: 46.15%;
+  width: 8.75%;
+  height: 10.95%;
+  overflow: hidden;
+  container-type: inline-size;
+  clip-path: polygon(1% 0, 99% 1.7%, 100% 99%, 0 100%);
+  color: #eaf6f7;
+  background: #121b1e;
+  box-shadow: inset 0 0 0 1px #00979c66;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+.portrait-monitor-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
   user-select: none;
 }
 .desk-camera {
