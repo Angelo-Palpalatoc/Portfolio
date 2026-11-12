@@ -332,13 +332,13 @@ export default function App() {
     setMobileExpanded(mobile);
     setStatus(
       mobile
-        ? `${activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE'} open in phone reading view.`
-        : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'AutoRename' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
+        ? `${activeApp === 'autorename' ? 'Sec Rename' : 'Arduino IDE'} open in phone reading view.`
+        : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'Sec Rename' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
     );
   };
 
   const closeApp = (app: AppName) => {
-    const name = app === 'autorename' ? 'AutoRename' : 'Arduino IDE';
+    const name = app === 'autorename' ? 'Sec Rename' : 'Arduino IDE';
     setOpenApps((current) => ({ ...current, [app]: false }));
     setActiveApp(null);
     setWindowMaximized(false);
@@ -349,7 +349,7 @@ export default function App() {
 
   const minimizeApp = () => {
     if (!activeApp) return;
-    const name = activeApp === 'autorename' ? 'AutoRename' : 'Arduino IDE';
+    const name = activeApp === 'autorename' ? 'Sec Rename' : 'Arduino IDE';
     setActiveApp(null);
     setStartMenuOpen(false);
     setStatus(`${name} minimized to the taskbar. Its current state is preserved.`);
@@ -360,7 +360,7 @@ export default function App() {
     setActiveApp(app);
     setWindowMaximized(false);
     setStartMenuOpen(false);
-    setStatus(`${app === 'autorename' ? 'AutoRename' : 'Arduino IDE'} opened.`);
+    setStatus(`${app === 'autorename' ? 'Sec Rename' : 'Arduino IDE'} opened.`);
   }, []);
 
   const activateTaskbarApp = (app: AppName) => {
@@ -906,7 +906,7 @@ export default function App() {
                         alt=""
                         draggable={false}
                       />
-                      <span className="desktop-shortcut-label">AutoRename</span>
+                      <span className="desktop-shortcut-label">Sec Rename</span>
                     </button>
                   </div>
                 )}
@@ -944,13 +944,13 @@ export default function App() {
                       className={`taskbar-app${openApps.autorename ? ' is-running' : ''}${activeApp === 'autorename' ? ' is-active' : ''}`}
                       type="button"
                       aria-label={
-                        activeApp === 'autorename' ? 'Minimize AutoRename' : 'Open AutoRename'
+                        activeApp === 'autorename' ? 'Minimize Sec Rename' : 'Open Sec Rename'
                       }
                       aria-pressed={activeApp === 'autorename'}
                       onClick={() => activateTaskbarApp('autorename')}
                     >
                       <img src="/autorenamer-icon.svg" alt="" draggable={false} />
-                      <span className="taskbar-tooltip">AutoRename</span>
+                      <span className="taskbar-tooltip">Sec Rename</span>
                     </button>
                   </div>
                 </div>
@@ -988,7 +988,7 @@ export default function App() {
                     >
                       <img src="/autorenamer-icon.svg" alt="" draggable={false} />
                       <span>
-                        <strong>AutoRename</strong>
+                        <strong>Sec Rename</strong>
                         <small>Mobile app demo</small>
                       </span>
                     </button>
@@ -1065,14 +1065,14 @@ export default function App() {
                   tabIndex={-1}
                   className={`autorename-window monitor-app-window${windowMaximized && activeApp === 'autorename' ? ' window-maximized' : ''}${activeApp !== 'autorename' ? ' is-minimized' : ''}`}
                   id="autorenamer-window"
-                  aria-label="AutoRename interactive mobile demo"
+                  aria-label="Sec Rename interactive mobile demo"
                   aria-hidden={view !== 'screen' || activeApp !== 'autorename'}
                   inert={view !== 'screen' || activeApp !== 'autorename'}
                 >
                   <header className="arduino-window-titlebar">
                     <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
                     <span className="window-title">
-                      AutoRename <span>— interactive mobile demo</span>
+                      Sec Rename <span>— interactive mobile demo</span>
                     </span>
                     <button
                       className="rename-return-button"
@@ -1081,12 +1081,12 @@ export default function App() {
                     >
                       Back to Portfolio
                     </button>
-                    <div className="window-controls" aria-label="AutoRename window controls">
+                    <div className="window-controls" aria-label="Sec Rename window controls">
                       <button
                         className="window-control"
                         type="button"
                         onClick={minimizeApp}
-                        aria-label="Minimize AutoRename"
+                        aria-label="Minimize Sec Rename"
                       >
                         —
                       </button>
@@ -1094,7 +1094,7 @@ export default function App() {
                         className="window-control"
                         type="button"
                         onClick={toggleMaximize}
-                        aria-label={windowMaximized ? 'Restore AutoRename' : 'Maximize AutoRename'}
+                        aria-label={windowMaximized ? 'Restore Sec Rename' : 'Maximize Sec Rename'}
                       >
                         {windowMaximized ? '▣' : '□'}
                       </button>
@@ -1102,7 +1102,7 @@ export default function App() {
                         className="window-control window-close"
                         type="button"
                         onClick={() => closeApp('autorename')}
-                        aria-label="Close AutoRename"
+                        aria-label="Close Sec Rename"
                       >
                         ×
                       </button>

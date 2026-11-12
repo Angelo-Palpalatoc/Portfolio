@@ -908,7 +908,7 @@ button {
     transform-origin: center;
   }
 
-  /* AutoRename is a phone app; keep its demo upright instead of using the
+  /* Sec Rename is a phone app; keep its demo upright instead of using the
      landscape reading canvas reserved for the Arduino portfolio. */
   .experience[data-expanded='true'] #autorenamer-window {
     top: env(safe-area-inset-top, 0px);

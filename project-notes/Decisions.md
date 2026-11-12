@@ -19,7 +19,7 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 - Use Arduino teal (`#00979C`), white, and black/dark neutrals for new room-shell UI components.
 - Serve lossless WebP versions of the room, wallpaper, and icon; preserve the original image dimensions and decoded pixels.
 - Keep the existing Lighthouse project content unchanged. Its interactive demo remains withdrawn because it is company property.
-- Add AutoRename as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.
+- Add Sec Rename as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.
 - Henry Heffernan's portfolio is the reference for the immersive interaction. Refer to his code when changing that experience: https://github.com/henryjeff/portfolio-website.
 - Use a 280 ms monitor exit grace period and 180 ms desk exit grace period so pointer movement across the irregular projected edges does not trigger premature exits. Preserve the existing 10 px boundary margin and re-entry cancellation.
 - Use the portrait monitor as a compact Project Explorer: profile signal, stack, project status, and personal/work labels. Keep it complementary to the detailed Arduino portfolio on the main monitor.

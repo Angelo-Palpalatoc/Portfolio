@@ -9,8 +9,8 @@ Related: [[Current-State]], [[Decisions]], [[Tooling]].
 ## Awaiting direction
 
 - Continue the Arduino portfolio's actual content/design in Claude Design. Integrate a new export only when the user supplies or requests it.
-- Decide what the portrait monitor should show. A CV, project showcase, and AutoRenamer demo were discussed; no final content choice is recorded here.
-- Decide whether the current fictional AutoRename single/batch demo needs additional recruiter-facing scenarios. Keep it UI-only and do not access visitor files or cameras.
+- Decide what the portrait monitor should show. A CV, project showcase, and Sec Rename demo were discussed; no final content choice is recorded here.
+- Decide whether the current fictional Sec Rename single/batch demo needs additional recruiter-facing scenarios. Keep it UI-only and do not access visitor files or cameras.
 
 ## Verification when revisiting the outer UI
 

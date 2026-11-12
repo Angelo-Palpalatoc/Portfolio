@@ -78,7 +78,7 @@ Graphify uses local code-only extraction; no model API is configured. Generated 
 
 Dependencies, build output, Graphify output, and its local Python environment are generated and ignored by Git. Project Explorer settings hide these folders so the active source stays easy to navigate.
 
-Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The public AutoRename showcase uses only fictional, predefined data.
+Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The public Sec Rename showcase uses only fictional, predefined data.
 
 ## Cleanup tools
 

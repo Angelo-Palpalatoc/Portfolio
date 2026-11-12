@@ -81,7 +81,7 @@ export default function AutoRenameDemo() {
     <div className="rename-demo">
       <div className="rename-demo-aside">
         <span className="rename-demo-label">INTERACTIVE MOBILE DEMO</span>
-        <h2>See AutoRename in action</h2>
+        <h2>See Sec Rename in action</h2>
         <p>
           Try the single-document or batch flow with fictional certificates. The screens mirror the
           Android app; the results and saved copies are simulated.
@@ -96,7 +96,7 @@ export default function AutoRenameDemo() {
         </button>
       </div>
 
-      <div className="rename-phone" aria-label="AutoRename Android app demo">
+      <div className="rename-phone" aria-label="Sec Rename Android app demo">
         <div className="rename-phone-status" aria-hidden="true">
           <span>9:41</span>
           <span>●●● ▰</span>
