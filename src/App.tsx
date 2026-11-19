@@ -1,7 +1,7 @@
 ﻿import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import roomImage from './assets/room.webp';
-import monitorBackground from './assets/desktop-background.webp';
+import monitorBackground from './assets/BackgroundDesktop.png';
 import portraitMonitorImage from './assets/portrait-monitor-explorer.png';
 import { monitorProjection } from './monitorProjection';
 import { LoadNotice, useImageAsset } from './LoadingState';
