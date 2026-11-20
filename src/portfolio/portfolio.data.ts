@@ -355,7 +355,7 @@ export const experienceEntries: ExperienceEntry[] = [
   },
   {
     role: 'Software Engineer (Freelance)',
-    company: 'Ally Public Adjusting',
+    company: 'Ally Public Adjusting (US-Based)',
     dates: 'January – August 2026',
     bullets: [
       'Owned frontend implementation across 10+ workspace views, 19 custom data hooks, and Jotai global state for a real-time chat and insurance claims document platform (156 commits)',

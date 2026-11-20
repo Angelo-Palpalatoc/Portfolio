@@ -111,7 +111,7 @@ export default function App() {
   const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const portraitEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deskMotion = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, blend: 0, velocity: 0 });
-  const checkHoverRef = useRef<() => void>(() => { });
+  const checkHoverRef = useRef<() => void>(() => {});
 
   // Camera motion and scene measurement.
   const paintDesk = useCallback(() => {
@@ -721,10 +721,10 @@ export default function App() {
     const calibrationTimer =
       motionStatus === 'calibrating'
         ? window.setTimeout(() => {
-          setMotionStatus('unavailable');
-          resetMotionPose();
-          setStatus('No motion readings were received. Touch movement remains available.');
-        }, 3000)
+            setMotionStatus('unavailable');
+            resetMotionPose();
+            setStatus('No motion readings were received. Touch movement remains available.');
+          }, 3000)
         : 0;
     const onOrientation = (event: DeviceOrientationEvent) => {
       if (document.visibilityState !== 'visible') return;

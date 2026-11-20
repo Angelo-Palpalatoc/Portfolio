@@ -55,7 +55,8 @@ button {
   height: auto;
   aspect-ratio: 1086 / 1448;
   transform-origin: 56.375% 50.965%;
-  transform: translate3d(var(--camera-x, -50%), var(--camera-y, -50%), 0) scale(var(--camera-scale, 1)) !important;
+  transform: translate3d(var(--camera-x, -50%), var(--camera-y, -50%), 0)
+    scale(var(--camera-scale, 1)) !important;
   transition: none;
   will-change: transform;
 }
@@ -419,8 +420,7 @@ button {
   transform: translateY(0);
 }
 
-@media (hover: none),
-(pointer: coarse) {
+@media (hover: none), (pointer: coarse) {
   .portrait-monitor-badge {
     opacity: 0.92;
     transform: none;
@@ -436,7 +436,8 @@ button {
 }
 
 .room-stage[data-desk-motion] .desk-camera {
-  transform: perspective(1100px) rotateX(var(--desk-tilt-x, 0deg)) rotateY(var(--desk-tilt-y, 0deg)) translate3d(var(--desk-pan-x, 0px), var(--desk-pan-y, 0px), 0);
+  transform: perspective(1100px) rotateX(var(--desk-tilt-x, 0deg)) rotateY(var(--desk-tilt-y, 0deg))
+    translate3d(var(--desk-pan-x, 0px), var(--desk-pan-y, 0px), 0);
 }
 
 .desk-hotspot {
@@ -1147,7 +1148,7 @@ button {
   white-space: nowrap;
 }
 
-.motion-toolbar-status>span {
+.motion-toolbar-status > span {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -1155,7 +1156,7 @@ button {
   box-shadow: 0 0 8px #28c6c4aa;
 }
 
-.motion-toolbar-status>span.is-off {
+.motion-toolbar-status > span.is-off {
   background: #89989a;
   box-shadow: none;
 }
@@ -1184,8 +1185,8 @@ button {
 }
 
 @media (max-width: 700px),
-(max-width: 950px) and (pointer: coarse),
-(max-width: 950px) and (max-height: 500px) {
+  (max-width: 950px) and (pointer: coarse),
+  (max-width: 950px) and (max-height: 500px) {
   .experience {
     min-height: 0;
   }
@@ -1243,7 +1244,8 @@ button {
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-window {
     position: fixed;
     z-index: 10;
-    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     width: auto;
     height: auto;
   }
@@ -1263,7 +1265,9 @@ button {
     display: none;
   }
 
-  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-window .mobile-portfolio-back {
+  .experience[data-expanded='true'][data-view='portrait']
+    .portrait-cv-window
+    .mobile-portfolio-back {
     position: static;
     min-width: 0;
     min-height: 36px;
@@ -1294,7 +1298,8 @@ button {
   .experience[data-expanded='true'] .monitor-app-window {
     position: fixed;
     z-index: 10;
-    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     width: auto;
     height: auto;
     transform: none;
@@ -1379,13 +1384,18 @@ button {
 }
 
 @media (max-width: 700px) and (orientation: portrait),
-(max-width: 950px) and (pointer: coarse) and (orientation: portrait) {
+  (max-width: 950px) and (pointer: coarse) and (orientation: portrait) {
   .experience[data-expanded='true'] .monitor-app-window {
-    --mobile-reading-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    --mobile-reading-height: calc(
+      100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+    );
     top: calc(env(safe-area-inset-top, 0px) + var(--mobile-reading-height) / 2);
     right: auto;
     bottom: auto;
-    left: calc(env(safe-area-inset-left, 0px) + (100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 2);
+    left: calc(
+      env(safe-area-inset-left, 0px) +
+        (100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) / 2
+    );
     width: var(--mobile-reading-height);
     height: calc(100dvw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
     transform: translate(-50%, -50%) rotate(90deg);
@@ -1439,7 +1449,6 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   .room-stage,
   .room-caption,
   .desktop-taskbar {
