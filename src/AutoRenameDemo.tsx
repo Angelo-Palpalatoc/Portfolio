@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { playSound } from './sound';
 import './AutoRenameDemo.css';
 
 type Screen = 'home' | 'single' | 'batch';
@@ -391,6 +392,7 @@ export default function AutoRenameDemo() {
                     <button
                       type="button"
                       onClick={() => {
+                        playSound('chime');
                         setStage('saved');
                         setDialog('none');
                         setNotice('Simulated copy saved. No file was changed.');
@@ -416,6 +418,7 @@ export default function AutoRenameDemo() {
                     <button
                       type="button"
                       onClick={() => {
+                        playSound('chime');
                         setBatchRows((rows) =>
                           rows.map((row) =>
                             row.id === activeBatchId

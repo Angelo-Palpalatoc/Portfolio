@@ -7,6 +7,7 @@ import { monitorProjection } from './monitorProjection';
 import { LoadNotice, useImageAsset } from './LoadingState';
 import AutoRenameDemo from './AutoRenameDemo';
 import PortraitCvViewer from './PortraitCvViewer';
+import { playSound, setSoundEnabled, unlockSound, useSoundEnabled } from './sound';
 const ArduinoPortfolio = lazy(() => import('./portfolio/ArduinoPortfolio'));
 
 const ideWidth = 1280;
@@ -33,6 +34,12 @@ type OrientationEventConstructor = typeof DeviceOrientationEvent & {
   requestPermission?: () => Promise<'granted' | 'denied'>;
 };
 const initialPose = { x: 0, y: 0, scale: 1 };
+const interactiveSelector =
+  'button:not(:disabled), a[href], input, [role="tab"], [role="menuitem"]';
+const isInteractiveTarget = (target: EventTarget | null) =>
+  target instanceof Element &&
+  Boolean(target.closest(interactiveSelector)) &&
+  !target.closest('.sound-toggle');
 const outside = (x: number, y: number, rect: DOMRect, margin = 0) =>
   x < rect.left - margin ||
   x > rect.right + margin ||
@@ -65,6 +72,7 @@ export default function App() {
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [motionStatus, setMotionStatus] = useState<MotionStatus>('hidden');
+  const soundEnabled = useSoundEnabled();
   const roomAsset = useImageAsset(roomImage);
   const wallpaperAsset = useImageAsset(monitorBackground, roomAsset.state === 'ready');
   const [status, setStatus] = useState('');
@@ -110,6 +118,7 @@ export default function App() {
   const pointer = useRef({ x: 0, y: 0, active: false });
   const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const portraitEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressedInteractive = useRef(false);
   const deskMotion = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, blend: 0, velocity: 0 });
   const checkHoverRef = useRef<() => void>(() => {});
 
@@ -352,6 +361,14 @@ export default function App() {
     portraitEnterTimer.current = null;
   }, []);
 
+  const toggleSound = () => {
+    unlockSound();
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    if (next) playSound('click');
+    setStatus(next ? 'Sound effects enabled.' : 'Sound effects muted.');
+  };
+
   const enterDesk = () => {
     if (viewRef.current !== 'room') return;
     interacted.current = true;
@@ -363,6 +380,7 @@ export default function App() {
     viewRef.current = 'desk';
     aimCamera(poses.current.desk, 'desk');
     setView('desk');
+    playSound('zoomIn');
     setStatus('At the desk. Hover or select either monitor to open the portfolio or read the CV.');
   };
 
@@ -375,6 +393,7 @@ export default function App() {
     viewRef.current = 'screen';
     aimCamera(poses.current.screen, 'screen');
     setView('screen');
+    playSound('zoomIn');
     const mobile = window.matchMedia(phoneQuery).matches;
     setMobileExpanded(mobile);
     setStatus(
@@ -394,6 +413,7 @@ export default function App() {
     viewRef.current = 'portrait';
     aimCamera(poses.current.portrait, 'portrait');
     setView('portrait');
+    playSound('zoomIn');
     const mobile = window.matchMedia(phoneQuery).matches;
     setMobileExpanded(mobile);
     setStatus(
@@ -405,6 +425,7 @@ export default function App() {
 
   const closeApp = (app: AppName) => {
     const name = app === 'autorename' ? 'Sec Renamer' : 'Arduino IDE';
+    playSound('windowClose');
     setOpenApps((current) => ({ ...current, [app]: false }));
     setActiveApp(null);
     setWindowMaximized(false);
@@ -416,12 +437,14 @@ export default function App() {
   const minimizeApp = () => {
     if (!activeApp) return;
     const name = activeApp === 'autorename' ? 'Sec Renamer' : 'Arduino IDE';
+    playSound('windowClose');
     setActiveApp(null);
     setStartMenuOpen(false);
     setStatus(`${name} minimized to the taskbar. Its current state is preserved.`);
   };
 
   const openApp = useCallback((app: AppName = 'arduino') => {
+    playSound('windowOpen');
     setOpenApps((current) => ({ ...current, [app]: true }));
     setActiveApp(app);
     setWindowMaximized(false);
@@ -434,7 +457,9 @@ export default function App() {
     else openApp(app);
   };
 
-  const toggleMaximize = () => setWindowMaximized((value) => !value);
+  const toggleMaximize = () => {
+    setWindowMaximized((value) => !value);
+  };
 
   const leaveScreen = useCallback(() => {
     if (viewRef.current !== 'screen') return;
@@ -451,6 +476,7 @@ export default function App() {
     viewRef.current = 'desk';
     aimCamera(poses.current.desk, 'desk');
     setView('desk');
+    playSound('zoomOut');
     setStatus('Back at the desk. Move away to see the room.');
   }, [aimCamera, clearExitTimer, clearPortraitEnterTimer]);
 
@@ -468,6 +494,7 @@ export default function App() {
     viewRef.current = 'desk';
     aimCamera(poses.current.desk, 'desk');
     setView('desk');
+    playSound('zoomOut');
     setStatus('Back at the desk. Move away to see the room.');
   }, [aimCamera, clearExitTimer, clearPortraitEnterTimer]);
 
@@ -493,11 +520,16 @@ export default function App() {
     viewRef.current = 'room';
     aimCamera(poses.current.room, 'room');
     setView('room');
+    playSound('zoomOut');
     setStatus('Back in the room. Explore the computer setup to approach the desk.');
   }, [aimCamera, clearExitTimer, clearPortraitEnterTimer]);
 
   const onNavigationKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      unlockSound();
+      if (!event.repeat && ['Enter', ' ', 'Escape', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+        playSound('key');
+      }
       // Keyboard navigation remains stable until the mouse is deliberately moved.
       pointer.current.active = false;
       clearExitTimer();
@@ -980,11 +1012,34 @@ export default function App() {
       setStartMenuOpen(false);
   };
 
+  const handleExperiencePointerDown = (event: PointerEvent<HTMLElement>) => {
+    unlockSound();
+    const inActiveMonitor =
+      (viewRef.current === 'screen' || viewRef.current === 'portrait') &&
+      event.target instanceof Element &&
+      Boolean(event.target.closest('.monitor-screen, .portrait-monitor'));
+    if (event.button === 0 && (isInteractiveTarget(event.target) || inActiveMonitor)) {
+      pressedInteractive.current = true;
+      playSound('mouseDown');
+    }
+  };
+
+  const handleExperiencePointerUp = () => {
+    if (!pressedInteractive.current) return;
+    pressedInteractive.current = false;
+    playSound('mouseUp');
+  };
+
   return (
     <main
       className="experience"
       data-view={view}
       data-expanded={mobileExpanded}
+      onPointerDown={handleExperiencePointerDown}
+      onPointerUp={handleExperiencePointerUp}
+      onPointerCancel={() => {
+        pressedInteractive.current = false;
+      }}
       onPointerMove={followCursor}
     >
       <div
@@ -1363,6 +1418,28 @@ export default function App() {
             )}
           </div>
         )}
+
+      <button
+        className={`sound-toggle${soundEnabled ? ' is-on' : ''}`}
+        type="button"
+        aria-pressed={soundEnabled}
+        aria-label={soundEnabled ? 'Mute sound effects' : 'Enable sound effects'}
+        title={soundEnabled ? 'Sound on (click to mute)' : 'Sound off (click to enable)'}
+        onClick={toggleSound}
+      >
+        <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+          <path d="M3.5 7.5H7L11.5 3.8V16.2L7 12.5H3.5Z" />
+          {soundEnabled ? (
+            <>
+              <path d="M14.2 7.2C15.1 8.1 15.6 9 15.6 10C15.6 11 15.1 11.9 14.2 12.8" />
+              <path d="M16.4 5.2C17.8 6.5 18.5 8.1 18.5 10C18.5 11.9 17.8 13.5 16.4 14.8" />
+            </>
+          ) : (
+            <path d="M14.2 7.5L18.2 12.5M18.2 7.5L14.2 12.5" />
+          )}
+        </svg>
+        <span>{soundEnabled ? 'Sound on' : 'Sound off'}</span>
+      </button>
 
       {view === 'desk' && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { playSound } from '../sound';
 
 async function writeClipboard(value: string): Promise<boolean> {
   if (navigator.clipboard?.writeText) {
@@ -32,6 +33,7 @@ export function useCopyToClipboard(value: string, resetMs = 2000) {
 
   const copy = useCallback(async () => {
     if (!(await writeClipboard(value))) return;
+    playSound('chime');
     setCopied(true);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setCopied(false), resetMs);

@@ -10,6 +10,7 @@ import { InfoPanel } from './components/InfoPanel';
 import { SerialMonitor } from './components/SerialMonitor';
 import { PortfolioSection } from './sections/PortfolioSection';
 import { useRotatedTouchScroll } from './useRotatedTouchScroll';
+import { playSound } from '../sound';
 import './tailwind.css';
 
 type ArduinoPortfolioProps = {
@@ -92,6 +93,7 @@ export default function ArduinoPortfolio({ onOpenSecRename, onReady }: ArduinoPo
     window.clearTimeout(clearTimer.current);
     dispatch({ type: 'compile-start', time: stamp() });
     compileTimer.current = window.setTimeout(() => {
+      playSound('chime');
       dispatch({ type: 'compile-success', time: stamp() });
       clearTimer.current = window.setTimeout(() => dispatch({ type: 'compile-clear' }), 3000);
     }, 800);
@@ -115,7 +117,10 @@ export default function ArduinoPortfolio({ onOpenSecRename, onReady }: ArduinoPo
           phase={state.boot}
           step={state.bootStep}
           narrow={narrow}
-          onRun={() => dispatch({ type: 'boot-finish' })}
+          onRun={() => {
+            playSound('chime');
+            dispatch({ type: 'boot-finish' });
+          }}
         />
       )}
 
