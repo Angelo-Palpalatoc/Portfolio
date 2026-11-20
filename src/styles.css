@@ -10,15 +10,18 @@
     'Segoe UI',
     sans-serif;
 }
+
 * {
   box-sizing: border-box;
 }
+
 html,
 body {
   margin: 0;
   min-height: 100%;
   background: #11131a;
 }
+
 button {
   font: inherit;
 }
@@ -33,6 +36,7 @@ button {
   background: #11120f;
   isolation: isolate;
 }
+
 .experience::after {
   content: '';
   position: absolute;
@@ -41,6 +45,7 @@ button {
   box-shadow: inset 0 0 120px #080a12a6;
   z-index: 2;
 }
+
 .room-stage {
   position: absolute;
   inset: auto;
@@ -55,6 +60,7 @@ button {
   transition: none;
   will-change: transform;
 }
+
 .room-image {
   display: block;
   width: 100%;
@@ -63,53 +69,60 @@ button {
   object-position: center 52%;
   user-select: none;
 }
+
 .portrait-monitor {
   position: absolute;
   z-index: 1;
-  left: 36.55%;
-  top: 46.15%;
-  width: 8.75%;
-  height: 10.95%;
+  left: 36.82%;
+  top: 46%;
+  width: 8.34%;
+  height: 11.42%;
   overflow: visible;
   container-type: size;
-  clip-path: polygon(1% 0%, 99% 1.7%, 100% 99%, 0% 100%);
+  clip-path: polygon(0% 0%, 99% 1.8%, 100% 96%, 0.6% 100%);
   background: #14191b;
-  box-shadow: inset 0 0 0 1px #00979c66;
   pointer-events: none;
-  transform: translateZ(0);
 }
+
 .experience[data-view='desk'] .portrait-monitor {
   z-index: 3;
   pointer-events: auto;
 }
+
 .experience[data-view='portrait'] .portrait-monitor {
   z-index: 4;
   pointer-events: auto;
 }
+
 .experience[data-view='portrait'] .monitor-screen {
   pointer-events: none;
 }
+
 .portrait-surface {
   position: absolute;
   inset: 0;
-  width: var(--portrait-width, 580px);
-  height: var(--portrait-height, 968px);
+  width: var(--portrait-width, 520px);
+  height: var(--portrait-height, 949px);
   container-type: size;
   transform: var(--portrait-projection, none);
   transform-origin: top left;
 }
+
 .portrait-cv-window {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid #00979c55;
   background: #1a2024;
   color: #111;
 }
+
 .portrait-cv-window:focus-visible {
   outline: none;
 }
+
 .portrait-cv-toolbar {
   display: flex;
   flex: 0 0 auto;
@@ -122,18 +135,21 @@ button {
   color: #eef5f5;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
+
 .portrait-cv-file {
   display: inline-flex;
   min-width: 0;
   align-items: center;
   gap: 7px;
 }
+
 .portrait-cv-dot {
   width: 7px;
   height: 7px;
   flex: 0 0 auto;
   background: #28c6c4;
 }
+
 .portrait-cv-filename {
   overflow: hidden;
   font-size: 11px;
@@ -141,12 +157,14 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .portrait-cv-actions {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 6px;
 }
+
 .portrait-cv-action,
 .portrait-cv-download {
   display: inline-flex;
@@ -158,27 +176,32 @@ button {
   text-decoration: none;
   white-space: nowrap;
 }
+
 .portrait-cv-action {
   border: 1px solid #3c4a4f;
   color: #d7e4e6;
   background: transparent;
 }
+
 .portrait-cv-action:hover,
 .portrait-cv-action:focus-visible {
   border-color: #28c6c4;
   color: #28c6c4;
   outline: none;
 }
+
 .portrait-cv-download {
   border: 1px solid #00979c;
   color: #071718;
   background: #28c6c4;
 }
+
 .portrait-cv-download:hover,
 .portrait-cv-download:focus-visible {
   background: #57d4d1;
   outline: 1px solid #fff;
 }
+
 .portrait-cv-close {
   display: grid;
   width: 24px;
@@ -191,12 +214,14 @@ button {
   font-size: 16px;
   line-height: 1;
 }
+
 .portrait-cv-close:hover,
 .portrait-cv-close:focus-visible {
   border-color: #e34b4b;
   background: #e34b4b;
   outline: none;
 }
+
 .portrait-cv-scroll {
   flex: 1 1 auto;
   overflow-x: hidden;
@@ -207,10 +232,12 @@ button {
   scrollbar-color: #28c6c466 #14191b;
   scrollbar-width: thin;
 }
+
 .portrait-cv-scroll:focus-visible {
   outline: 2px solid #28c6c4;
   outline-offset: -2px;
 }
+
 .portrait-cv-sheet {
   padding: 20px 24px 26px;
   background: #ffffff;
@@ -220,30 +247,37 @@ button {
   font-size: 10.6px;
   line-height: 1.38;
 }
+
 .portrait-cv-sheet a {
   color: #1155cc;
   text-decoration: underline;
 }
+
 .cv-doc-header {
   margin-bottom: 11px;
   text-align: center;
 }
+
 .cv-doc-header h1 {
   margin: 0 0 3px;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
 .cv-doc-meta {
   font-size: 10px;
   line-height: 1.45;
 }
+
 .cv-doc-section {
   margin-bottom: 11px;
 }
+
 .cv-doc-section:last-child {
   margin-bottom: 0;
 }
+
 .cv-doc-section h2 {
   margin: 0 0 5px;
   padding-bottom: 2px;
@@ -253,59 +287,74 @@ button {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+
 .cv-doc-section p {
   margin: 0 0 4px;
 }
+
 .cv-doc-entry {
   margin-bottom: 9px;
 }
+
 .cv-doc-entry:last-child {
   margin-bottom: 0;
 }
+
 .cv-doc-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
 }
+
 .cv-doc-org {
   font-size: 11px;
   font-weight: 700;
 }
+
 .cv-doc-date {
   font-size: 10.2px;
   white-space: nowrap;
 }
+
 .cv-doc-role {
   margin-top: 1px;
   font-size: 10.5px;
   font-style: italic;
 }
+
 .cv-doc-section ul {
   margin: 4px 0 0;
   padding-left: 16px;
 }
+
 .cv-doc-section li {
   margin-bottom: 3px;
 }
+
 .cv-doc-section li:last-child {
   margin-bottom: 0;
 }
+
 .cv-doc-skills {
   display: grid;
   grid-template-columns: 84px 1fr;
   row-gap: 5px;
   column-gap: 10px;
 }
+
 .cv-doc-skills-label {
   font-weight: 700;
 }
+
 .cv-doc-skills-body p {
   margin: 0 0 3px;
 }
+
 .cv-doc-skills-body p:last-child {
   margin-bottom: 0;
 }
+
 .portrait-monitor-hotspot {
   position: absolute;
   inset: 0;
@@ -318,12 +367,14 @@ button {
   cursor: zoom-in;
   transition: background-color 140ms ease;
 }
+
 .portrait-monitor-hotspot:hover,
 .portrait-monitor-hotspot:focus-visible {
   background: #00979c20;
   box-shadow: inset 0 0 0 2px #28c6c4;
   outline: none;
 }
+
 .portrait-monitor-badge {
   padding: 3px 6px;
   border: 1px solid #28c6c4;
@@ -339,17 +390,20 @@ button {
     opacity 140ms ease,
     transform 140ms ease;
 }
+
 .portrait-monitor-hotspot:hover .portrait-monitor-badge,
 .portrait-monitor-hotspot:focus-visible .portrait-monitor-badge {
   opacity: 1;
   transform: translateY(0);
 }
+
 @media (hover: none), (pointer: coarse) {
   .portrait-monitor-badge {
     opacity: 0.92;
     transform: none;
   }
 }
+
 .desk-camera {
   position: absolute;
   inset: 0;
@@ -357,10 +411,12 @@ button {
   transform: none;
   transition: none;
 }
+
 .room-stage[data-desk-motion] .desk-camera {
   transform: perspective(1100px) rotateX(var(--desk-tilt-x, 0deg)) rotateY(var(--desk-tilt-y, 0deg))
     translate3d(var(--desk-pan-x, 0px), var(--desk-pan-y, 0px), 0);
 }
+
 .desk-hotspot {
   position: absolute;
   z-index: 2;
@@ -373,9 +429,11 @@ button {
   background: transparent;
   cursor: zoom-in;
 }
+
 .desk-hotspot:focus-visible {
   outline: none;
 }
+
 .experience[data-view='desk'] .desk-hotspot,
 .experience[data-view='screen'] .desk-hotspot,
 .experience[data-view='portrait'] .desk-hotspot {
@@ -394,6 +452,7 @@ button {
   clip-path: polygon(0.3% 1.7%, 100.4% 0, 100.7% 98.7%, 0.2% 98.7%);
   background: #1e1e1e;
 }
+
 .monitor-surface {
   position: absolute;
   inset: 0;
@@ -403,6 +462,7 @@ button {
   transform: var(--monitor-projection, none);
   transform-origin: top left;
 }
+
 .monitor-desktop {
   position: absolute;
   inset: 0;
@@ -411,6 +471,7 @@ button {
   background-size: cover;
   background-position: center;
 }
+
 .screen-hotspot {
   position: absolute;
   inset: 0;
@@ -425,9 +486,11 @@ button {
   background: transparent;
   cursor: zoom-in;
 }
+
 .screen-hotspot:focus-visible {
   outline: none;
 }
+
 .desktop-shortcuts {
   position: absolute;
   top: 5%;
@@ -437,6 +500,7 @@ button {
   align-items: flex-start;
   gap: 2.8%;
 }
+
 .desktop-shortcut {
   display: grid;
   width: calc(var(--desktop-icon-size) * 1.7);
@@ -458,17 +522,20 @@ button {
     0 0.073cqw 0.22cqw #000,
     0 0.073cqw 0.51cqw #000;
 }
+
 .desktop-shortcut:hover,
 .desktop-shortcut:focus-visible {
   background: #ffffff25;
   outline: 0.073cqw solid #ffffff75;
 }
+
 .desktop-shortcut-icon {
   display: block;
   width: var(--desktop-icon-size);
   height: var(--desktop-icon-size);
   object-fit: contain;
 }
+
 .desktop-shortcut-label {
   display: block;
   line-height: 1.2;
@@ -498,12 +565,14 @@ button {
     opacity 140ms ease,
     transform 180ms ease;
 }
+
 .desktop-taskbar:hover,
 .desktop-taskbar:focus-within,
 .desktop-taskbar.is-open {
   opacity: 1;
   transform: translateY(0);
 }
+
 .taskbar-start,
 .taskbar-app {
   position: relative;
@@ -516,10 +585,12 @@ button {
   background: transparent;
   cursor: pointer;
 }
+
 .taskbar-start {
   width: 4.2cqw;
   min-width: 27px;
 }
+
 .taskbar-start:hover,
 .taskbar-start:focus-visible,
 .taskbar-app:hover,
@@ -528,6 +599,7 @@ button {
   outline: 1px solid #ffffff70;
   outline-offset: -1px;
 }
+
 .windows-logo {
   display: block;
   width: 2.05cqw;
@@ -535,19 +607,23 @@ button {
   min-width: 14px;
   min-height: 14px;
 }
+
 .windows-logo path {
   fill: #e6f2f4;
 }
+
 .taskbar-apps {
   display: flex;
   height: 100%;
   align-items: center;
   gap: 0.2cqw;
 }
+
 .taskbar-app {
   width: 4.2cqw;
   min-width: 27px;
 }
+
 .taskbar-app img {
   display: block;
   width: var(--taskbar-icon-size);
@@ -556,6 +632,7 @@ button {
   min-height: 17px;
   object-fit: contain;
 }
+
 .taskbar-app.is-running::after {
   position: absolute;
   right: 22%;
@@ -565,14 +642,17 @@ button {
   background: #28c6c4;
   content: '';
 }
+
 .taskbar-app.is-running:not(.is-active)::after {
   background: #8b9a9c;
 }
+
 .taskbar-app.is-active::after {
   right: 16%;
   left: 16%;
   height: 3px;
 }
+
 .taskbar-tooltip {
   position: absolute;
   bottom: calc(100% + 7px);
@@ -592,11 +672,13 @@ button {
     transform 120ms ease;
   white-space: nowrap;
 }
+
 .taskbar-app:hover .taskbar-tooltip,
 .taskbar-app:focus-visible .taskbar-tooltip {
   opacity: 1;
   transform: translateX(-50%);
 }
+
 .desktop-start-menu {
   position: absolute;
   z-index: 3;
@@ -614,6 +696,7 @@ button {
   box-shadow: 0 10px 24px #0008;
   backdrop-filter: blur(8px);
 }
+
 .start-menu-topline {
   display: flex;
   align-items: center;
@@ -623,11 +706,13 @@ button {
   color: #dbe7e9;
   font-size: 12px;
 }
+
 .start-menu-hamburger {
   color: #9fb2b5;
   font-size: 15px;
   line-height: 1;
 }
+
 .start-menu-heading {
   padding: 9px 8px 4px;
   color: #28c6c4;
@@ -636,6 +721,7 @@ button {
     monospace;
   letter-spacing: 0.14em;
 }
+
 .start-menu-app {
   display: flex;
   min-height: 52px;
@@ -648,28 +734,33 @@ button {
   cursor: pointer;
   text-align: left;
 }
+
 .start-menu-app:hover,
 .start-menu-app:focus-visible {
   border-color: #28c6c4;
   background: #28c6c41c;
   outline: none;
 }
+
 .start-menu-app img {
   width: 30px;
   height: 30px;
   flex: 0 0 auto;
   object-fit: contain;
 }
+
 .start-menu-app span {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 3px;
 }
+
 .start-menu-app strong {
   font-size: 13px;
   font-weight: 650;
 }
+
 .start-menu-app small {
   color: #9fb2b5;
   font:
@@ -696,14 +787,17 @@ button {
   transform: scaleX(0.9522) scaleY(0.9054);
   transform-origin: top left;
 }
+
 .monitor-app-window.window-maximized {
   left: 0;
   top: 0;
   transform: scale(1);
 }
+
 .monitor-app-window.is-minimized {
   display: none;
 }
+
 .arduino-window-titlebar {
   position: relative;
   z-index: 1;
@@ -722,6 +816,7 @@ button {
     system-ui,
     sans-serif;
 }
+
 .arduino-app-mark {
   display: block;
   flex: 0 0 auto;
@@ -730,6 +825,7 @@ button {
   border-radius: 3px;
   object-fit: contain;
 }
+
 .window-title {
   min-width: 0;
   overflow: hidden;
@@ -737,9 +833,11 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .window-title span {
   color: #c3b7ca;
 }
+
 .window-controls {
   display: flex;
   height: 100%;
@@ -747,6 +845,7 @@ button {
   align-items: stretch;
   margin-left: auto;
 }
+
 .window-control {
   display: grid;
   width: 42px;
@@ -762,32 +861,39 @@ button {
     system-ui,
     sans-serif;
 }
+
 .window-control:hover,
 .window-control:focus-visible {
   color: white;
   background: #49354f;
   outline: none;
 }
+
 .window-close {
   width: 48px;
   font-size: 20px;
 }
+
 .window-close:hover,
 .window-close:focus-visible {
   background: #e34b4b;
 }
+
 .window-close:focus-visible {
   box-shadow: inset 0 0 0 2px white;
 }
+
 .window-control:focus-visible {
   outline: 2px solid #28c6c4;
   outline-offset: -3px;
 }
+
 .rename-window-mark {
   width: 20px;
   height: 20px;
   flex: 0 0 auto;
 }
+
 .rename-return-button {
   min-height: 30px;
   margin-left: auto;
@@ -798,16 +904,19 @@ button {
   cursor: pointer;
   font-size: 12px;
 }
+
 .rename-return-button:hover,
 .rename-return-button:focus-visible {
   border-color: #28c6c4;
   outline: 2px solid #28c6c4;
   outline-offset: 1px;
 }
+
 .autorename-window:focus-visible {
   outline: 2px solid #28c6c4;
   outline-offset: -2px;
 }
+
 .portfolio-content {
   position: relative;
   flex: 1 1 auto;
@@ -828,6 +937,7 @@ button {
   line-height: 1.4;
   text-align: center;
 }
+
 .load-notice button {
   min-height: 44px;
   padding: 8px 16px;
@@ -837,12 +947,14 @@ button {
   background: #1bb7b6;
   cursor: pointer;
 }
+
 .load-notice button:hover,
 .load-notice button:focus-visible {
   background: #57d4d1;
   outline: 2px solid white;
   outline-offset: 3px;
 }
+
 .room-loading {
   position: absolute;
   z-index: 12;
@@ -851,6 +963,7 @@ button {
   place-items: center;
   background: #11120f;
 }
+
 .wallpaper-loading {
   position: absolute;
   right: 0;
@@ -876,6 +989,7 @@ button {
     0 0 18px #000c;
   transition: opacity 500ms ease;
 }
+
 .room-caption::before {
   content: '';
   position: absolute;
@@ -884,11 +998,14 @@ button {
   pointer-events: none;
   background: radial-gradient(ellipse at 24% 72%, #080b0fd1 0%, #080b0f80 48%, transparent 78%);
 }
+
 .experience[data-view='desk'] .room-caption,
-.experience[data-view='screen'] .room-caption {
+.experience[data-view='screen'] .room-caption,
+.experience[data-view='portrait'] .room-caption {
   opacity: 0;
   pointer-events: none;
 }
+
 .caption-kicker {
   display: flex;
   align-items: center;
@@ -899,12 +1016,14 @@ button {
   font-weight: 700;
   letter-spacing: 0.14em;
 }
+
 .caption-line {
   width: 24px;
   height: 2px;
   background: #28c6c4;
   box-shadow: 0 1px 6px #000;
 }
+
 .caption-title {
   margin: 0;
   font-size: clamp(24px, 2.8vw, 38px);
@@ -912,12 +1031,14 @@ button {
   line-height: 1.08;
   letter-spacing: -0.035em;
 }
+
 .caption-stack {
   color: #dff5f5;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: clamp(11px, 0.95vw, 12.5px);
   letter-spacing: 0.02em;
 }
+
 .caption-hint {
   color: #eef3f4;
   font-size: clamp(12.5px, 1.08vw, 14.5px);
@@ -941,6 +1062,7 @@ button {
   box-shadow: 0 12px 30px #0008;
   backdrop-filter: blur(8px);
 }
+
 .motion-prompt-kicker {
   color: #28c6c4;
   font:
@@ -948,11 +1070,13 @@ button {
     monospace;
   letter-spacing: 0.12em;
 }
+
 .motion-prompt p {
   margin: 0;
   font-size: 13px;
   line-height: 1.4;
 }
+
 .motion-prompt button {
   min-height: 42px;
   border: 1px solid #00979c;
@@ -962,16 +1086,19 @@ button {
   font-size: 12px;
   font-weight: 750;
 }
+
 .motion-prompt button:hover,
 .motion-prompt button:focus-visible {
   background: #fff;
   outline: 2px solid #fff;
   outline-offset: 2px;
 }
+
 .motion-prompt-hint {
   color: #d9e7e7;
   font-size: 11px;
 }
+
 .motion-toolbar {
   position: absolute;
   z-index: 4;
@@ -988,6 +1115,7 @@ button {
   box-shadow: 0 8px 24px #0007;
   backdrop-filter: blur(8px);
 }
+
 .motion-toolbar-status {
   display: inline-flex;
   align-items: center;
@@ -996,6 +1124,7 @@ button {
   font-size: 11px;
   white-space: nowrap;
 }
+
 .motion-toolbar-status > span {
   width: 7px;
   height: 7px;
@@ -1003,10 +1132,12 @@ button {
   background: #28c6c4;
   box-shadow: 0 0 8px #28c6c4aa;
 }
+
 .motion-toolbar-status > span.is-off {
   background: #89989a;
   box-shadow: none;
 }
+
 .motion-toolbar button {
   min-height: 34px;
   padding: 0 9px;
@@ -1016,6 +1147,7 @@ button {
   cursor: pointer;
   font-size: 11px;
 }
+
 .motion-toolbar button:hover,
 .motion-toolbar button:focus-visible {
   border-color: #28c6c4;
@@ -1028,52 +1160,64 @@ button {
 .mobile-portfolio-back {
   display: none;
 }
+
 @media (max-width: 700px),
   (max-width: 950px) and (pointer: coarse),
   (max-width: 950px) and (max-height: 500px) {
   .experience {
     min-height: 0;
   }
+
   .desktop-taskbar {
     opacity: 1;
     transform: translateY(0);
   }
+
   .arduino-window-titlebar {
     gap: 7px;
     padding-left: 8px;
   }
+
   .arduino-app-mark {
     width: 17px;
     height: 17px;
     font-size: 13px;
   }
+
   .window-title {
     font-size: 11px;
   }
+
   .window-control {
     width: 32px;
   }
+
   .window-close {
     width: 38px;
   }
+
   /* Expand the existing app in place; no extra control strip reserves space. */
   .experience[data-expanded='true'] .room-stage {
     transform: none !important;
     will-change: auto;
   }
+
   .experience[data-expanded='true'] .desk-camera {
     transform: none;
   }
+
   .experience[data-expanded='true'][data-view='screen'] .monitor-screen,
   .experience[data-expanded='true'][data-view='portrait'] .portrait-monitor {
     clip-path: none;
     container-type: normal;
   }
+
   .experience[data-expanded='true'][data-view='screen'] .monitor-surface,
   .experience[data-expanded='true'][data-view='portrait'] .portrait-surface {
     transform: none;
     container-type: normal;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-window {
     position: fixed;
     z-index: 10;
@@ -1082,18 +1226,22 @@ button {
     width: auto;
     height: auto;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-toolbar {
     padding: 8px 10px;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-action,
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-download {
     min-height: 36px;
     padding: 0 11px;
     font-size: 12px;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-close {
     display: none;
   }
+
   .experience[data-expanded='true'][data-view='portrait']
     .portrait-cv-window
     .mobile-portfolio-back {
@@ -1104,21 +1252,26 @@ button {
     box-shadow: none;
     font-size: 12px;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-sheet {
     padding: 18px 16px 28px;
     font-size: 12.5px;
     line-height: 1.45;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .cv-doc-header h1 {
     font-size: 19px;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .cv-doc-meta {
     font-size: 11.5px;
   }
+
   .experience[data-expanded='true'][data-view='portrait'] .cv-doc-skills {
     grid-template-columns: 1fr;
     row-gap: 4px;
   }
+
   .experience[data-expanded='true'] .monitor-app-window {
     position: fixed;
     z-index: 10;
@@ -1129,9 +1282,11 @@ button {
     transform: none;
     border: 0;
   }
+
   .experience[data-expanded='true'] .arduino-window-titlebar {
     display: none;
   }
+
   .mobile-portfolio-back {
     position: absolute;
     z-index: 13;
@@ -1153,6 +1308,7 @@ button {
     font-size: 13px;
     font-weight: 650;
   }
+
   .mobile-portfolio-back svg {
     width: 18px;
     height: 18px;
@@ -1162,6 +1318,7 @@ button {
     stroke-linejoin: round;
     stroke-width: 1.8;
   }
+
   .mobile-portfolio-back:hover,
   .mobile-portfolio-back:focus-visible {
     color: #071718;
@@ -1169,10 +1326,12 @@ button {
     outline: 2px solid #28c6c4;
     outline-offset: 2px;
   }
+
   .mobile-portfolio-back:hover svg,
   .mobile-portfolio-back:focus-visible svg {
     stroke: #071718;
   }
+
   .mobile-room-button {
     position: fixed;
     z-index: 11;
@@ -1192,6 +1351,7 @@ button {
     font-size: 12px;
     font-weight: 700;
   }
+
   .mobile-room-button:hover,
   .mobile-room-button:focus-visible {
     background: #57d4d1;
@@ -1199,6 +1359,7 @@ button {
     outline-offset: 3px;
   }
 }
+
 @media (max-width: 700px) and (orientation: portrait),
   (max-width: 950px) and (pointer: coarse) and (orientation: portrait) {
   .experience[data-expanded='true'] .monitor-app-window {
@@ -1230,22 +1391,27 @@ button {
     transform: none;
   }
 }
+
 @media (max-width: 600px) {
   .experience {
     min-height: 0;
   }
+
   .room-caption {
     bottom: 20px;
     max-width: calc(100vw - 36px);
   }
+
   .caption-title {
     font-size: 23px;
   }
+
   .caption-hint {
     max-width: 290px;
     line-height: 1.35;
   }
 }
+
 /* Accessibility and motion preferences */
 .sr-only {
   position: absolute;
@@ -1258,6 +1424,7 @@ button {
   white-space: nowrap;
   border: 0;
 }
+
 @media (prefers-reduced-motion: reduce) {
   .room-stage,
   .room-caption,
@@ -1265,6 +1432,7 @@ button {
     transition-duration: 0ms !important;
     transition-delay: 0ms !important;
   }
+
   .desk-camera,
   .room-stage[data-desk-motion] .desk-camera {
     transform: none;

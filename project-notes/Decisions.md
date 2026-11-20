@@ -45,6 +45,16 @@ Order: top-left, top-right, bottom-right, bottom-left. Values describe points re
 
 The user tuned these corners through several visual reviews. Preserve them unless asked to recalibrate. The single authoritative polygon is now in the `.monitor-screen` rule in `src/styles.css`; legacy duplicates were consolidated during cleanup on 2026-11-09.
 
+Portrait monitor calibration (verified from user reference on 2026-11-20 in `.portrait-monitor`, `src/styles.css`):
+
+```css
+left: 36.82%;
+top: 46%;
+width: 8.34%;
+height: 11.42%;
+clip-path: polygon(0% 0%, 99% 1.8%, 100% 96%, 0.6% 100%);
+```
+
 ## Tooling setup
 
 Graphify is a local code map, with model extraction disabled. Obsidian stores Markdown notes and the exported graph. Neither is a runtime dependency of the public portfolio. See [[Tooling]].
