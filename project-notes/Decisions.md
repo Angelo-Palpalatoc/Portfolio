@@ -13,7 +13,7 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 - The Arduino-style portfolio is the actual portfolio. The separate web portfolio was removed.
 - Keep the desktop wallpaper and an app that can close and reopen. Open the Arduino portfolio by default.
 - Use the supplied ACP icon with **Portfolio** below it, like a desktop shortcut.
-- Keep one portfolio iframe when switching phone reading size; preserve app state while resizing or minimizing, and reset it on close/reopen. On portrait phones, entering the monitor presents the app sideways in landscape proportions; turning the phone to landscape restores a conventional wide reading view.
+- Keep one React portfolio instance when switching phone reading size; preserve app state while resizing or minimizing, and reset it on close/reopen. On portrait phones, entering the monitor presents the app sideways in landscape proportions; turning the phone to landscape restores a conventional wide reading view.
 - Phone motion is optional. Confirm actual sensor readings before treating it as active, provide touch fallback plus recenter/off controls, and respect reduced-motion preference.
 - Start phone motion automatically when the browser exposes orientation readings without a permission gesture. Show the enable control only when the browser requires explicit consent; the browser's permission decision cannot be bypassed.
 - Use Arduino teal (`#00979C`), white, and black/dark neutrals for new room-shell UI components.
@@ -27,7 +27,7 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 
 ## Ownership and scope
 
-- Claude Design continues the actual Arduino portfolio app's design/content.
+- Preserve the approved Claude Design portfolio content and visual direction while maintaining the active implementation in readable React, TypeScript, and Tailwind source.
 - Work here focuses on surrounding UI/UX unless the user explicitly asks for app content changes.
 - Do not alter unrelated behavior or styling.
 

@@ -2,7 +2,7 @@
 
 An interactive room → desk → monitor experience built with React, TypeScript, and Vite. The landscape monitor contains a desktop and an Arduino-style portfolio app that opens by default. The portrait monitor remains decorative.
 
-The surrounding experience takes inspiration from [Henry Heffernan's portfolio](https://github.com/henryjeff/portfolio-website). Claude Design owns the embedded portfolio content.
+The surrounding experience takes inspiration from [Henry Heffernan's portfolio](https://github.com/henryjeff/portfolio-website). The Arduino portfolio is maintained as readable React, TypeScript, and Tailwind source; its approved content originated in the preserved Claude Design export.
 
 ## Start locally
 
@@ -22,6 +22,7 @@ Open the URL printed by Vite, normally http://127.0.0.1:5173/.
 | `npm.cmd run dev`          | Start the local development server                      |
 | `npm.cmd run check`        | Check types, unused source/dependencies, and formatting |
 | `npm.cmd run build`        | Type-check and generate the static site in `dist/`      |
+| `npm.cmd run test`         | Run focused portfolio state and content tests           |
 | `npm.cmd run preview`      | Preview the generated build locally                     |
 | `npm.cmd run format`       | Format maintained source and project configuration      |
 | `npm.cmd run check:unused` | Run Knip's unused-code/dependency check                 |
@@ -35,13 +36,13 @@ src/
   assets/               Room photograph and desktop wallpaper
   App.tsx               Camera, view navigation, app shell, focus, and phone controls
   LoadingState.tsx      Image loading, slow-load feedback, and retry UI
-  PortfolioFrame.tsx    Persistent portfolio iframe, readiness, recovery, and keyboard events
+  portfolio/            Arduino IDE portfolio components, typed content, state, and Tailwind styles
   monitorProjection.ts  Four-corner desktop-to-monitor mapping
   styles.css            Organized styles for the surrounding experience
   main.tsx              React entry point
   vite-env.d.ts         Vite asset types
 public/
-  arduino-portfolio.html  Embedded portfolio export, owned by Claude Design
+  arduino-portfolio.html  Preserved legacy export for temporary rollback only
   portfolio-logo.webp    Supplied ACP app icon, losslessly encoded
 project-notes/           Obsidian notebook: current state, decisions, and tooling
 scripts/                 Local Graphify query and refresh commands
@@ -55,13 +56,13 @@ Project configuration lives in the root: [package.json](./package.json), [tsconf
 - Move into the computer setup to approach the desk, then into the monitor to use the portfolio. Buttons support click, touch, and keyboard entry.
 - Escape returns through the expanded phone view, monitor, desk, and room.
 - The portfolio window can minimize, maximize, close, and reopen from the Portfolio shortcut. Minimize keeps the app mounted; close resets it.
-- Phones enter a full-screen reading view from the monitor. Phone orientation changes keep the same iframe and app session, while closing and reopening starts a fresh session.
+- Phones enter a full-screen reading view from the monitor. Phone orientation changes keep the same React app session, while closing and reopening starts a fresh session.
 - The room, wallpaper, and logo use lossless WebP with unchanged dimensions and pixels. Their original PNGs are preserved locally in `.archive/source-assets/`.
-- Room and portfolio loading failures have retry controls. Loads still pending after 15 seconds offer a retry without cancelling the original request.
+- Room and wallpaper loading failures have retry controls. Loads still pending after 15 seconds offer a retry without cancelling the original request.
 - Desk parallax is **30% above its original intensity**. Optional phone motion starts automatically where the browser permits it, requests a tap only where browser consent is required, confirms sensor readings before activation, and provides recenter, off, and touch fallback controls. Reduced motion disables the animated camera approach and desk tilt.
 - The shared desktop is rendered at **1280 logical pixels wide** before projection to preserve sharpness.
 - The monitor's calibrated polygon lives in one `.monitor-screen` rule in [styles.css](./src/styles.css). Preserve it unless a fit adjustment is requested.
-- Leave [the Arduino export](./public/arduino-portfolio.html) unchanged unless explicitly requested. Formatting commands exclude it.
+- Leave [the legacy Arduino export](./public/arduino-portfolio.html) unchanged. It is retained temporarily for rollback and is excluded from formatting.
 
 ## Project knowledge and code map
 

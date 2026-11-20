@@ -4,7 +4,13 @@ tags: [portfolio, architecture]
 
 # Current state
 
-Updated from the source on 2026-11-12. See [[Decisions]] for constraints and [[Next-Steps]] for pending ideas.
+Updated from the source on 2026-11-20. See [[Decisions]] for constraints and [[Next-Steps]] for pending ideas.
+
+## React portfolio cutover (2026-11-20)
+
+The Arduino portfolio now runs directly from the React, TypeScript, and Tailwind implementation under `src/portfolio/`. The approved room-shell preview became the production implementation after visual approval. The development-only `/portfolio-preview` route remains useful for focused component review.
+
+Milestones M0–M5 are complete. Automated M6 checks cover desktop and phone viewports, keyboard focus, Escape handling, reduced motion, rotated portrait scrolling, room-shell integration, minimize/restore continuity, and close/reopen reset. Physical verification on the S23 Ultra remains a post-cutover device check. See [[Arduino-Portfolio-React-Migration]] for evidence.
 
 ## Visitor experience
 
@@ -17,7 +23,7 @@ Updated from the source on 2026-11-12. See [[Decisions]] for constraints and [[N
 7. The monitor desktop includes a simulated Windows taskbar and Start menu for the Portfolio and Sec Rename apps. Taskbar indicators, minimize/restore behavior, outside-click dismissal, Escape, and Windows-key menu toggling are handled by the room shell; Lighthouse is not exposed as a runnable app.
 
 The Lighthouse project entry now presents a recruiter-facing system architecture overview: React/TypeScript web app, Portal API, PostgreSQL/object storage, AI extraction with retrieval context, and an LLM assistant with streaming chat. Internal decision and orchestration layers are intentionally omitted from the public portfolio view.
-The Sec Rename and Room Portfolio project entries now include compact, technology-based architecture overviews. Sec Rename shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, the persistent iframe runtime, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
+The Sec Rename and Room Portfolio project entries now include compact, technology-based architecture overviews. Sec Rename shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, typed React portfolio state, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
 
 Pointer movement drives the desktop approach and departure. Touch/keyboard controls provide alternate entry. Escape backs out through the views. Reduced-motion preference bypasses the camera animation. Phones have a larger reading view; in portrait it rotates to landscape proportions, then returns to a wide reading view when the phone is turned.
 
@@ -37,11 +43,11 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 ### Loading and mobile continuity (2026-11-09)
 
 - The three live images use lossless WebP, reducing their combined file size from 6,136,874 bytes to 3,222,032 bytes (47.5%). Dimensions and all decoded RGBA bytes match the original PNGs. Originals remain locally in `.archive/source-assets/`.
-- Room and wallpaper loads show quiet pending/error feedback with retry controls. The portfolio wrapper checks HTTP status and waits for the exported `#dc-root` to mount before revealing the iframe. Portfolio content in the export remains unchanged; its Serial Monitor now starts collapsed.
+- Room and wallpaper loads show quiet pending/error feedback with retry controls. The React portfolio is code-split from the initial room bundle and its Serial Monitor starts collapsed.
 - A load still pending after 15 seconds offers retry; it may still finish normally. No automatic reload loop is used.
 - On phones, entering the monitor opens the existing app directly in the full-screen reading view; no separate control strip or orientation prompt takes space. In portrait, the app rotates to landscape proportions, and turning the phone sideways keeps the expanded state and restores the regular wide layout. Touch drags in portrait use the dominant finger axis to control the portfolio content scroller, with a short ease-out glide; landscape uses native touch scrolling.
 - Sec Rename keeps its mobile demo upright in portrait phone view, using the available viewport without the Arduino portfolio's landscape rotation. Its desktop and landscape layouts remain unchanged.
-- A compact, upright **Back** control is anchored to the expanded app's top-right corner with a transparent fill, so it follows the app when the portrait reading canvas rotates. It uses the Arduino teal accent consistently across the Arduino and Sec Rename apps so it remains readable on both dark and light surfaces. Sec Rename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The Arduino iframe remains mounted during its full-screen reading view, preserving its active section and scroll position.
+- A compact, upright **Back** control is anchored to the expanded app's top-right corner with a transparent fill, so it follows the app when the portrait reading canvas rotates. It uses the Arduino teal accent consistently across the Arduino and Sec Rename apps so it remains readable on both dark and light surfaces. Sec Rename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The React portfolio remains mounted during its full-screen reading view, preserving its active section and scroll position.
 - The boot screen no longer shows a **Skip** button, so it cannot overlap the phone Back control; the boot sequence continues automatically.
 - The Arduino IDE Serial Monitor starts collapsed; users can still open it from the IDE toolbar.
 - Phone expansion temporarily flattens the surrounding CSS layers so the app can fill the available viewport. Normal monitor calibration and projection are retained and restored on return, including a resize beyond the phone breakpoint.
@@ -68,13 +74,13 @@ Browser checks covered controlled 60/144 Hz animation, boundary cancellation, id
 | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | [App.tsx](../src/App.tsx)                           | Camera state, room/desk/screen views, app window, focus, mobile controls             |
 | [LoadingState.tsx](../src/LoadingState.tsx)         | Image loading state and reusable loading/retry notice                                |
-| [PortfolioFrame.tsx](../src/PortfolioFrame.tsx)     | Persistent iframe, export readiness, recovery, and embedded keyboard events          |
+| [portfolio](../src/portfolio/)                      | Arduino IDE components, typed content/state, Tailwind styles, and mobile scrolling   |
 | [AutoRenameDemo.tsx](../src/AutoRenameDemo.tsx)     | Guided, UI-only mobile app demo with fictional single and batch samples              |
 | [styles.css](../src/styles.css)                     | Scene geometry, calibrated screen corners, desktop/window styling, responsive layout |
 | [monitorProjection.ts](../src/monitorProjection.ts) | Projective transform from the shared rectangle to four screen corners                |
 | [main.tsx](../src/main.tsx)                         | React entry point                                                                    |
 | [assets](../src/assets/)                            | Live room photograph and desktop wallpaper                                           |
-| [Arduino export](../public/arduino-portfolio.html)  | Actual portfolio content; owned by Claude Design                                     |
+| [Arduino export](../public/arduino-portfolio.html)  | Preserved legacy rollback artifact; no longer loaded by the room                     |
 | [package.json](../package.json)                     | React, TypeScript, Vite, development/build commands                                  |
 
 The wallpaper, shortcut, and app share a projected monitor surface. Preserve that common coordinate system when adjusting alignment.
@@ -99,4 +105,4 @@ npm.cmd run build
 
 The root README describes the active folder structure and commands. Historical screenshots, uploaded references, the original export, the APK, and the superseded milestone are preserved locally under `.archive/`, outside the active source tree and ignored by Git. Generated folders are hidden in the project Explorer; Obsidian still reads its generated code map normally.
 
-Cleanup consolidated the stylesheet, removed unused screen-scaling state, and organized live images under `src/assets`. The Arduino export's portfolio content remains Claude Design-owned; the Serial Monitor's default open/closed state is configured in that export. Knip checks unused source/dependencies, and Prettier handles formatting; see [[Tooling]].
+Cleanup consolidated the stylesheet, removed unused screen-scaling state, and organized live images under `src/assets`. The maintained portfolio content and Serial Monitor state now live under `src/portfolio/`; the unchanged export remains only for temporary rollback. Knip checks unused source/dependencies, and Prettier handles formatting; see [[Tooling]].

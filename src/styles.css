@@ -413,7 +413,7 @@ button {
     monospace;
 }
 
-/* Arduino window shell; portfolio content belongs to the embedded export */
+/* Arduino window shell; portfolio content is rendered by the React app */
 .monitor-app-window {
   position: absolute;
   z-index: 1;
@@ -519,10 +519,6 @@ button {
   outline: 2px solid #28c6c4;
   outline-offset: -3px;
 }
-.monitor-app-window .arduino-frame:focus-visible {
-  outline: 2px solid #28c6c4;
-  outline-offset: -2px;
-}
 .rename-window-mark {
   width: 20px;
   height: 20px;
@@ -548,22 +544,13 @@ button {
   outline: 2px solid #28c6c4;
   outline-offset: -2px;
 }
-.arduino-frame {
-  display: block;
-  flex: 1 1 auto;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  border: 0;
-  background: #1e1e1e;
-}
 .portfolio-content {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-/* Quiet loading and recovery states, outside the exported app. */
+/* Quiet loading and recovery states for room and wallpaper assets. */
 .load-notice {
   display: flex;
   min-width: 0;
@@ -591,11 +578,6 @@ button {
   background: #57d4d1;
   outline: 2px solid white;
   outline-offset: 3px;
-}
-.portfolio-content > .load-notice {
-  position: absolute;
-  inset: 0;
-  background: #1e1e1e;
 }
 .room-loading {
   position: absolute;

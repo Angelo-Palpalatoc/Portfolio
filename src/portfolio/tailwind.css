@@ -1,0 +1,153 @@
+/* Keep Tailwind's global Preflight out of the calibrated room shell. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  --color-arduino-teal: #00979c;
+  --color-arduino-bg: #1e1e1e;
+  --color-arduino-panel: #252526;
+  --color-arduino-border: #333333;
+  --color-arduino-text: #d4d4d4;
+  --color-arduino-muted: #858585;
+  --font-arduino-ui: Inter, Arial, sans-serif;
+  --font-arduino-code: 'JetBrains Mono', Consolas, monospace;
+}
+
+@font-face {
+  font-family: Inter;
+  src: url('./assets/inter-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./assets/jetbrains-mono-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@layer base {
+  .arduino-ide,
+  .arduino-ide * {
+    box-sizing: border-box;
+  }
+
+  .arduino-ide :where(h1, h2, h3, h4, p, pre, ul, dl, dd) {
+    margin: 0;
+  }
+
+  :where(.arduino-ide button) {
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .arduino-ide a {
+    text-decoration: none;
+  }
+
+  .arduino-ide button:focus-visible,
+  .arduino-ide a:focus-visible {
+    outline: 2px solid #00979c;
+    outline-offset: 2px;
+  }
+}
+
+.arduino-ide ::selection {
+  background: #00979c;
+  color: white;
+}
+
+/* The room stylesheet sets button { font: inherit } outside Tailwind layers. */
+.arduino-ide :where(button) {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.arduino-ide ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.arduino-ide ::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+}
+
+.arduino-ide ::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.ide-round-button {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: #00979c;
+  padding: 0;
+}
+
+.ide-round-button:hover,
+.ide-primary-button:hover {
+  background: #008184;
+}
+
+.ide-primary-button,
+.ide-secondary-button {
+  display: inline-flex;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.ide-primary-button {
+  border: 1px solid #00979c;
+  background: #00979c;
+  color: #0d0d0d;
+  font-weight: 700;
+}
+
+.ide-secondary-button {
+  border: 1px solid #333333;
+  background: transparent;
+  color: #d4d4d4;
+}
+
+.ide-secondary-button:hover {
+  border-color: #00979c;
+  color: #00979c;
+}
+
+@keyframes ide-caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.ide-caret {
+  animation: ide-caret-blink 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ide-caret {
+    animation: none;
+  }
+}

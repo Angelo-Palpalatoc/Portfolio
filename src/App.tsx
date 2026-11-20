@@ -1,12 +1,13 @@
 ﻿import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
+import { lazy, Suspense } from 'react';
 import roomImage from './assets/room.webp';
 import monitorBackground from './assets/BackgroundDesktop.png';
 import portraitMonitorImage from './assets/portrait-monitor-explorer.png';
 import { monitorProjection } from './monitorProjection';
 import { LoadNotice, useImageAsset } from './LoadingState';
-import PortfolioFrame from './PortfolioFrame';
 import AutoRenameDemo from './AutoRenameDemo';
+const ArduinoPortfolio = lazy(() => import('./portfolio/ArduinoPortfolio'));
 
 const ideWidth = 1280;
 const deskParallaxIntensity = 1.3;
@@ -72,7 +73,7 @@ export default function App() {
   const startButtonRef = useRef<HTMLButtonElement>(null);
   const startMenuRef = useRef<HTMLDivElement>(null);
   const mobileBackRef = useRef<HTMLButtonElement>(null);
-  const frameRef = useRef<HTMLIFrameElement>(null);
+  const reactPortfolioRef = useRef<HTMLDivElement>(null);
   const mobileExpandedRef = useRef(mobileExpanded);
   mobileExpandedRef.current = mobileExpanded;
   const hoverArmed = useRef(true);
@@ -460,7 +461,7 @@ export default function App() {
 
   // Responsive measurements, keyboard navigation, and focus management.
   useLayoutEffect(() => {
-    // The same iframe expands; changing viewport size must also restore the
+    // The same React app expands; changing viewport size must also restore the
     // physical projection when leaving the phone reading layout.
     measureScene();
     const phone = window.matchMedia(phoneQuery);
@@ -495,7 +496,7 @@ export default function App() {
     if (view === 'screen' && window.matchMedia(phoneQuery).matches)
       mobileBackRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'arduino')
-      frameRef.current?.focus({ preventScroll: true });
+      reactPortfolioRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'autorename')
       autoRenameWindowRef.current?.focus({ preventScroll: true });
     else if (view === 'screen') desktopAppRef.current?.focus({ preventScroll: true });
@@ -515,20 +516,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', onNavigationKeyDown);
   }, [onNavigationKeyDown]);
 
-  useLayoutEffect(() => {
-    const openDemoFromPortfolio = (event: MessageEvent) => {
-      if (
-        event.origin !== window.location.origin ||
-        event.source !== frameRef.current?.contentWindow ||
-        event.data?.type !== 'open-autorenamer-demo'
-      )
-        return;
-      openApp('autorename');
-    };
-    window.addEventListener('message', openDemoFromPortfolio);
-    return () => window.removeEventListener('message', openDemoFromPortfolio);
-  }, [openApp]);
-
   const onPortfolioReady = useCallback(() => {
     if (
       interacted.current &&
@@ -536,7 +523,7 @@ export default function App() {
       !mobileExpandedRef.current &&
       !window.matchMedia(phoneQuery).matches
     )
-      frameRef.current?.focus({ preventScroll: true });
+      reactPortfolioRef.current?.focus({ preventScroll: true });
   }, []);
 
   const resetMotionPose = useCallback(() => {
@@ -1051,11 +1038,14 @@ export default function App() {
                       </button>
                     </div>
                   </header>
-                  <PortfolioFrame
-                    frameRef={frameRef}
-                    onNavigationKeyDown={onNavigationKeyDown}
-                    onReady={onPortfolioReady}
-                  />
+                  <div ref={reactPortfolioRef} tabIndex={-1} className="portfolio-content">
+                    <Suspense fallback={null}>
+                      <ArduinoPortfolio
+                        onOpenSecRename={() => openApp('autorename')}
+                        onReady={onPortfolioReady}
+                      />
+                    </Suspense>
+                  </div>
                   {activeApp === 'arduino' ? mobileBackButton : null}
                 </section>
               )}
