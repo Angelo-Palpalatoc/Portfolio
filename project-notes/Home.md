@@ -11,6 +11,7 @@ This vault is the development notebook for Angelo Palpalatoc's room portfolio. I
 - [[Decisions]] — agreed behavior, design ownership, and monitor calibration.
 - [[Next-Steps]] — work awaiting a decision or assets.
 - [[Arduino-Portfolio-React-Migration]] — milestone plan for replacing the packed export with maintainable React, TypeScript, and Tailwind source.
+- [[Portfolio-Improvements-Plan]] — critique-driven roadmap for recruiter UX, content depth, and asset optimization.
 - [[Tooling]] — use Graphify, refresh this map, and reopen the vault.
 
 ## Explore the code
