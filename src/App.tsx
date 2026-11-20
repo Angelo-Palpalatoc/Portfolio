@@ -10,7 +10,7 @@ import PortraitCvViewer from './PortraitCvViewer';
 const ArduinoPortfolio = lazy(() => import('./portfolio/ArduinoPortfolio'));
 
 const ideWidth = 1280;
-const portraitLogicalWidth = 520;
+const portraitLogicalWidth = 440;
 const cvUrl = '/Angelo-Palpalatoc-CV.pdf';
 const deskParallaxIntensity = 1.3;
 const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
@@ -298,8 +298,8 @@ export default function App() {
     const portraitZoom = Math.max(
       1,
       Math.min(
-        (window.innerWidth * 0.866) / portraitWidth,
-        (window.innerHeight * 0.9) / portraitHeight,
+        (window.innerWidth * 0.88) / portraitWidth,
+        (window.innerHeight * 0.94) / portraitHeight,
       ),
     );
     const deskZoom = Math.max(
@@ -721,682 +721,682 @@ export default function App() {
     const calibrationTimer =
       motionStatus === 'calibrating'
         ? window.setTimeout(() => {
-            setMotionStatus('unavailable');
-    resetMotionPose();
-    setStatus('No motion readings were received. Touch movement remains available.');
-  }, 3000)
+          setMotionStatus('unavailable');
+          resetMotionPose();
+          setStatus('No motion readings were received. Touch movement remains available.');
+        }, 3000)
         : 0;
-  const onOrientation = (event: DeviceOrientationEvent) => {
-    if (document.visibilityState !== 'visible') return;
-    if (
-      viewRef.current === 'screen' ||
-      viewRef.current === 'portrait' ||
-      mobileExpandedRef.current
-    )
-      return;
-    if (event.beta == null || event.gamma == null) return;
-    if (!orientationBaseline.current) {
-      orientationBaseline.current = { beta: event.beta, gamma: event.gamma };
-      orientationSamples.current = 1;
-      return;
-    }
-    orientationSamples.current += 1;
-    if (motionStatus === 'calibrating' && orientationSamples.current >= 2) {
-      setMotionStatus('active');
-      setStatus('Motion view enabled. Tilt your phone gently to look around.');
-    }
-    const rawTilt = screenRelativeTilt(
-      shortestAngleDelta(event.beta, orientationBaseline.current.beta),
-      shortestAngleDelta(event.gamma, orientationBaseline.current.gamma),
-    );
-    const normalizedX = normalizeTilt(rawTilt.x);
-    const normalizedY = normalizeTilt(rawTilt.y);
-    if (viewRef.current === 'room') {
-      updateRoomPose(
-        -normalizedX * 36 * mobileRoomParallaxScale,
-        -normalizedY * 24 * mobileRoomParallaxScale,
-      );
-    } else if (viewRef.current === 'desk') {
-      deskMotion.current.targetX = normalizedX * mobileDeskParallaxScale;
-      deskMotion.current.targetY = normalizedY * mobileDeskParallaxScale;
-      wakeCamera();
-    }
-  };
-  const resetBaseline = () => {
-    orientationBaseline.current = null;
-    orientationSamples.current = 0;
-  };
-  window.addEventListener('deviceorientation', onOrientation, { passive: true });
-  window.screen.orientation?.addEventListener('change', resetBaseline);
-  document.addEventListener('visibilitychange', resetBaseline);
-  return () => {
-    if (calibrationTimer) window.clearTimeout(calibrationTimer);
-    window.removeEventListener('deviceorientation', onOrientation);
-    window.screen.orientation?.removeEventListener('change', resetBaseline);
-    document.removeEventListener('visibilitychange', resetBaseline);
-  };
-}, [motionStatus, resetMotionPose, updateRoomPose, wakeCamera]);
-
-// Pointer navigation between the room, desk, and both monitors. Short grace
-// periods prevent irregular projected edges from feeling like traps, and a
-// brief hover dwell on the portrait monitor avoids accidental zooms while
-// sweeping toward the main screen.
-const monitorExitDelay = 280;
-const deskExitDelay = 180;
-const portraitHoverDelay = 220;
-const scheduleExit = (from: 'desk' | 'screen' | 'portrait') => {
-  if (exitTimer.current) return;
-  exitTimer.current = setTimeout(
-    () => {
-      exitTimer.current = null;
+    const onOrientation = (event: DeviceOrientationEvent) => {
+      if (document.visibilityState !== 'visible') return;
       if (
-        viewRef.current !== from ||
-        !camera.current.ready ||
-        !pointer.current.active ||
+        viewRef.current === 'screen' ||
+        viewRef.current === 'portrait' ||
         mobileExpandedRef.current
       )
         return;
-      const bounds =
-        from === 'screen'
-          ? stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect()
-          : from === 'portrait'
-            ? stageRef.current?.querySelector('.portrait-monitor')?.getBoundingClientRect()
-            : deskRef.current?.getBoundingClientRect();
-      if (bounds && outside(pointer.current.x, pointer.current.y, bounds, 10)) {
-        if (from === 'screen') leaveScreen();
-        else if (from === 'portrait') leavePortrait();
-        else leaveDesk();
+      if (event.beta == null || event.gamma == null) return;
+      if (!orientationBaseline.current) {
+        orientationBaseline.current = { beta: event.beta, gamma: event.gamma };
+        orientationSamples.current = 1;
+        return;
       }
-    },
-    from === 'desk' ? deskExitDelay : monitorExitDelay,
-  );
-};
+      orientationSamples.current += 1;
+      if (motionStatus === 'calibrating' && orientationSamples.current >= 2) {
+        setMotionStatus('active');
+        setStatus('Motion view enabled. Tilt your phone gently to look around.');
+      }
+      const rawTilt = screenRelativeTilt(
+        shortestAngleDelta(event.beta, orientationBaseline.current.beta),
+        shortestAngleDelta(event.gamma, orientationBaseline.current.gamma),
+      );
+      const normalizedX = normalizeTilt(rawTilt.x);
+      const normalizedY = normalizeTilt(rawTilt.y);
+      if (viewRef.current === 'room') {
+        updateRoomPose(
+          -normalizedX * 36 * mobileRoomParallaxScale,
+          -normalizedY * 24 * mobileRoomParallaxScale,
+        );
+      } else if (viewRef.current === 'desk') {
+        deskMotion.current.targetX = normalizedX * mobileDeskParallaxScale;
+        deskMotion.current.targetY = normalizedY * mobileDeskParallaxScale;
+        wakeCamera();
+      }
+    };
+    const resetBaseline = () => {
+      orientationBaseline.current = null;
+      orientationSamples.current = 0;
+    };
+    window.addEventListener('deviceorientation', onOrientation, { passive: true });
+    window.screen.orientation?.addEventListener('change', resetBaseline);
+    document.addEventListener('visibilitychange', resetBaseline);
+    return () => {
+      if (calibrationTimer) window.clearTimeout(calibrationTimer);
+      window.removeEventListener('deviceorientation', onOrientation);
+      window.screen.orientation?.removeEventListener('change', resetBaseline);
+      document.removeEventListener('visibilitychange', resetBaseline);
+    };
+  }, [motionStatus, resetMotionPose, updateRoomPose, wakeCamera]);
 
-const onMonitorLeave = (event: PointerEvent<HTMLDivElement>) => {
-  if (event.pointerType !== 'mouse' || !pointer.current.active) return;
-  pointer.current.x = event.clientX;
-  pointer.current.y = event.clientY;
-  if (viewRef.current === 'screen' && camera.current.ready && !mobileExpandedRef.current)
-    scheduleExit('screen');
-};
+  // Pointer navigation between the room, desk, and both monitors. Short grace
+  // periods prevent irregular projected edges from feeling like traps, and a
+  // brief hover dwell on the portrait monitor avoids accidental zooms while
+  // sweeping toward the main screen.
+  const monitorExitDelay = 280;
+  const deskExitDelay = 180;
+  const portraitHoverDelay = 220;
+  const scheduleExit = (from: 'desk' | 'screen' | 'portrait') => {
+    if (exitTimer.current) return;
+    exitTimer.current = setTimeout(
+      () => {
+        exitTimer.current = null;
+        if (
+          viewRef.current !== from ||
+          !camera.current.ready ||
+          !pointer.current.active ||
+          mobileExpandedRef.current
+        )
+          return;
+        const bounds =
+          from === 'screen'
+            ? stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect()
+            : from === 'portrait'
+              ? stageRef.current?.querySelector('.portrait-monitor')?.getBoundingClientRect()
+              : deskRef.current?.getBoundingClientRect();
+        if (bounds && outside(pointer.current.x, pointer.current.y, bounds, 10)) {
+          if (from === 'screen') leaveScreen();
+          else if (from === 'portrait') leavePortrait();
+          else leaveDesk();
+        }
+      },
+      from === 'desk' ? deskExitDelay : monitorExitDelay,
+    );
+  };
 
-const onPortraitLeave = (event: PointerEvent<HTMLElement>) => {
-  if (event.pointerType !== 'mouse' || !pointer.current.active) return;
-  pointer.current.x = event.clientX;
-  pointer.current.y = event.clientY;
-  clearPortraitEnterTimer();
-  if (viewRef.current === 'portrait' && camera.current.ready && !mobileExpandedRef.current)
-    scheduleExit('portrait');
-};
+  const onMonitorLeave = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || !pointer.current.active) return;
+    pointer.current.x = event.clientX;
+    pointer.current.y = event.clientY;
+    if (viewRef.current === 'screen' && camera.current.ready && !mobileExpandedRef.current)
+      scheduleExit('screen');
+  };
 
-const checkHover = () => {
-  if (!pointer.current.active || !camera.current.ready || mobileExpandedRef.current) {
-    clearExitTimer();
+  const onPortraitLeave = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== 'mouse' || !pointer.current.active) return;
+    pointer.current.x = event.clientX;
+    pointer.current.y = event.clientY;
     clearPortraitEnterTimer();
-    return;
-  }
-  const { x, y } = pointer.current;
-  if (viewRef.current === 'screen') {
-    const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
-    if (screen && outside(x, y, screen, 10)) scheduleExit('screen');
-    else clearExitTimer();
-    return;
-  }
-  if (viewRef.current === 'portrait') {
-    const portrait = stageRef.current
-      ?.querySelector('.portrait-monitor')
-      ?.getBoundingClientRect();
-    if (portrait && outside(x, y, portrait, 10)) scheduleExit('portrait');
-    else clearExitTimer();
-    return;
-  }
-  if (viewRef.current === 'desk') {
-    const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
-    const portrait = stageRef.current
-      ?.querySelector('.portrait-monitor')
-      ?.getBoundingClientRect();
-    if (screen && outside(x, y, screen)) hoverArmed.current = true;
-    if (portrait && outside(x, y, portrait)) {
-      portraitHoverArmed.current = true;
+    if (viewRef.current === 'portrait' && camera.current.ready && !mobileExpandedRef.current)
+      scheduleExit('portrait');
+  };
+
+  const checkHover = () => {
+    if (!pointer.current.active || !camera.current.ready || mobileExpandedRef.current) {
+      clearExitTimer();
       clearPortraitEnterTimer();
-    }
-    if (hoverArmed.current && screen && !outside(x, y, screen)) {
-      clearPortraitEnterTimer();
-      enterScreen();
       return;
     }
-    if (portraitHoverArmed.current && portrait && !outside(x, y, portrait)) {
-      clearExitTimer();
-      if (!portraitEnterTimer.current) {
-        portraitEnterTimer.current = setTimeout(() => {
-          portraitEnterTimer.current = null;
-          if (
-            viewRef.current !== 'desk' ||
-            !camera.current.ready ||
-            !pointer.current.active ||
-            mobileExpandedRef.current
-          )
-            return;
-          const currentPortrait = stageRef.current
-            ?.querySelector('.portrait-monitor')
-            ?.getBoundingClientRect();
-          if (currentPortrait && !outside(pointer.current.x, pointer.current.y, currentPortrait))
-            enterPortrait();
-        }, portraitHoverDelay);
+    const { x, y } = pointer.current;
+    if (viewRef.current === 'screen') {
+      const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
+      if (screen && outside(x, y, screen, 10)) scheduleExit('screen');
+      else clearExitTimer();
+      return;
+    }
+    if (viewRef.current === 'portrait') {
+      const portrait = stageRef.current
+        ?.querySelector('.portrait-monitor')
+        ?.getBoundingClientRect();
+      if (portrait && outside(x, y, portrait, 10)) scheduleExit('portrait');
+      else clearExitTimer();
+      return;
+    }
+    if (viewRef.current === 'desk') {
+      const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
+      const portrait = stageRef.current
+        ?.querySelector('.portrait-monitor')
+        ?.getBoundingClientRect();
+      if (screen && outside(x, y, screen)) hoverArmed.current = true;
+      if (portrait && outside(x, y, portrait)) {
+        portraitHoverArmed.current = true;
+        clearPortraitEnterTimer();
       }
+      if (hoverArmed.current && screen && !outside(x, y, screen)) {
+        clearPortraitEnterTimer();
+        enterScreen();
+        return;
+      }
+      if (portraitHoverArmed.current && portrait && !outside(x, y, portrait)) {
+        clearExitTimer();
+        if (!portraitEnterTimer.current) {
+          portraitEnterTimer.current = setTimeout(() => {
+            portraitEnterTimer.current = null;
+            if (
+              viewRef.current !== 'desk' ||
+              !camera.current.ready ||
+              !pointer.current.active ||
+              mobileExpandedRef.current
+            )
+              return;
+            const currentPortrait = stageRef.current
+              ?.querySelector('.portrait-monitor')
+              ?.getBoundingClientRect();
+            if (currentPortrait && !outside(pointer.current.x, pointer.current.y, currentPortrait))
+              enterPortrait();
+          }, portraitHoverDelay);
+        }
+        return;
+      }
+      const desk = deskRef.current?.getBoundingClientRect();
+      if (desk && outside(x, y, desk, 10)) scheduleExit('desk');
+      else clearExitTimer();
+    }
+  };
+  checkHoverRef.current = checkHover;
+
+  const followCursor = (event: PointerEvent<HTMLElement>) => {
+    if (roomAsset.state !== 'ready') return;
+    if (event.pointerType !== 'mouse') {
+      pointer.current.active = false;
+      clearExitTimer();
+      clearPortraitEnterTimer();
+      if (
+        event.pointerType === 'touch' &&
+        viewRef.current === 'room' &&
+        !mobileExpandedRef.current &&
+        motionStatus !== 'active' &&
+        motionStatus !== 'calibrating'
+      ) {
+        updateRoomPose(
+          (event.clientX / window.innerWidth - 0.5) * -36 * mobileRoomParallaxScale,
+          (event.clientY / window.innerHeight - 0.5) * -24 * mobileRoomParallaxScale,
+        );
+      } else if (
+        event.pointerType === 'touch' &&
+        viewRef.current === 'desk' &&
+        motionStatus !== 'active' &&
+        motionStatus !== 'calibrating'
+      ) {
+        deskMotion.current.targetX =
+          (event.clientX / window.innerWidth - 0.5) * 2 * mobileDeskParallaxScale;
+        deskMotion.current.targetY =
+          (event.clientY / window.innerHeight - 0.5) * 2 * mobileDeskParallaxScale;
+        wakeCamera();
+      }
+      return;
+    }
+    pointer.current = { x: event.clientX, y: event.clientY, active: true };
+    if (viewRef.current === 'desk') {
+      deskMotion.current.targetX = Math.max(
+        -1,
+        Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2),
+      );
+      deskMotion.current.targetY = Math.max(
+        -1,
+        Math.min(1, (event.clientY / window.innerHeight - 0.5) * 2),
+      );
+      wakeCamera();
+    }
+    if (viewRef.current !== 'room') {
+      checkHover();
       return;
     }
     const desk = deskRef.current?.getBoundingClientRect();
-    if (desk && outside(x, y, desk, 10)) scheduleExit('desk');
-    else clearExitTimer();
-  }
-};
-checkHoverRef.current = checkHover;
-
-const followCursor = (event: PointerEvent<HTMLElement>) => {
-  if (roomAsset.state !== 'ready') return;
-  if (event.pointerType !== 'mouse') {
-    pointer.current.active = false;
-    clearExitTimer();
-    clearPortraitEnterTimer();
     if (
-      event.pointerType === 'touch' &&
-      viewRef.current === 'room' &&
-      !mobileExpandedRef.current &&
-      motionStatus !== 'active' &&
-      motionStatus !== 'calibrating'
+      camera.current.current.scale < 1.05 &&
+      desk &&
+      !outside(event.clientX, event.clientY, desk)
     ) {
-      updateRoomPose(
-        (event.clientX / window.innerWidth - 0.5) * -36 * mobileRoomParallaxScale,
-        (event.clientY / window.innerHeight - 0.5) * -24 * mobileRoomParallaxScale,
-      );
-    } else if (
-      event.pointerType === 'touch' &&
-      viewRef.current === 'desk' &&
-      motionStatus !== 'active' &&
-      motionStatus !== 'calibrating'
-    ) {
-      deskMotion.current.targetX =
-        (event.clientX / window.innerWidth - 0.5) * 2 * mobileDeskParallaxScale;
-      deskMotion.current.targetY =
-        (event.clientY / window.innerHeight - 0.5) * 2 * mobileDeskParallaxScale;
-      wakeCamera();
+      enterDesk();
+      return;
     }
-    return;
-  }
-  pointer.current = { x: event.clientX, y: event.clientY, active: true };
-  if (viewRef.current === 'desk') {
-    deskMotion.current.targetX = Math.max(
-      -1,
-      Math.min(1, (event.clientX / window.innerWidth - 0.5) * 2),
+    updateRoomPose(
+      (event.clientX / window.innerWidth - 0.5) * -36,
+      (event.clientY / window.innerHeight - 0.5) * -24,
     );
-    deskMotion.current.targetY = Math.max(
-      -1,
-      Math.min(1, (event.clientY / window.innerHeight - 0.5) * 2),
-    );
-    wakeCamera();
-  }
-  if (viewRef.current !== 'room') {
-    checkHover();
-    return;
-  }
-  const desk = deskRef.current?.getBoundingClientRect();
-  if (
-    camera.current.current.scale < 1.05 &&
-    desk &&
-    !outside(event.clientX, event.clientY, desk)
-  ) {
-    enterDesk();
-    return;
-  }
-  updateRoomPose(
-    (event.clientX / window.innerWidth - 0.5) * -36,
-    (event.clientY / window.innerHeight - 0.5) * -24,
-  );
-};
+  };
 
-const mobileBackButton =
-  (view === 'screen' || view === 'portrait') && mobileExpanded ? (
-    <button
-      ref={mobileBackRef}
-      className="mobile-portfolio-back"
-      type="button"
-      onClick={handlePhoneBack}
-      aria-label={
-        view === 'screen' && activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'
-      }
+  const mobileBackButton =
+    (view === 'screen' || view === 'portrait') && mobileExpanded ? (
+      <button
+        ref={mobileBackRef}
+        className="mobile-portfolio-back"
+        type="button"
+        onClick={handlePhoneBack}
+        aria-label={
+          view === 'screen' && activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'
+        }
+      >
+        <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+          <path d="M8 4 2.5 10 8 16M3 10h14" />
+        </svg>
+        <span>{view === 'screen' && activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
+      </button>
+    ) : null;
+
+  const handleDesktopPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!startMenuOpen) return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.closest('.desktop-start-menu, .taskbar-start'))
+      setStartMenuOpen(false);
+  };
+
+  return (
+    <main
+      className="experience"
+      data-view={view}
+      data-expanded={mobileExpanded}
+      onPointerMove={followCursor}
     >
-      <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
-        <path d="M8 4 2.5 10 8 16M3 10h14" />
-      </svg>
-      <span>{view === 'screen' && activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
-    </button>
-  ) : null;
-
-const handleDesktopPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-  if (!startMenuOpen) return;
-  const target = event.target;
-  if (!(target instanceof HTMLElement) || !target.closest('.desktop-start-menu, .taskbar-start'))
-    setStartMenuOpen(false);
-};
-
-return (
-  <main
-    className="experience"
-    data-view={view}
-    data-expanded={mobileExpanded}
-    onPointerMove={followCursor}
-  >
-    <div
-      className="room-stage"
-      ref={stageRef}
-      inert={roomAsset.state !== 'ready'}
-      aria-hidden={roomAsset.state !== 'ready'}
-    >
-      <div className="desk-camera">
-        <img
-          className="room-image"
-          src={roomAsset.url}
-          alt="A compact loft workspace with a monitor, desk, and chair"
-          draggable={false}
-          fetchPriority="high"
-        />{' '}
-        <aside
-          className="portrait-monitor"
-          aria-label="Angelo Palpalatoc CV"
-          aria-hidden={view === 'room' || view === 'screen'}
-          onPointerLeave={onPortraitLeave}
-        >
-          <div className="portrait-surface">
-            <PortraitCvViewer
-              cvUrl={cvUrl}
-              active={view === 'portrait'}
-              windowRef={portraitWindowRef}
-              onClose={leavePortrait}
-              mobileBackButton={view === 'portrait' ? mobileBackButton : null}
-            />
-          </div>
-          {view === 'desk' && (
-            <button
-              ref={portraitMonitorRef}
-              className="portrait-monitor-hotspot"
-              type="button"
-              aria-label="Zoom into the portrait monitor to read or download Angelo Palpalatoc's CV"
-              onClick={() => {
-                pointer.current.active = false;
-                enterPortrait();
-              }}
-            >
-              <span className="portrait-monitor-badge">VIEW CV</span>
-            </button>
-          )}
-        </aside>
-        <div className="monitor-screen" onPointerLeave={onMonitorLeave}>
-          <div className="monitor-surface">
-            <div
-              className="monitor-desktop"
-              style={{
-                backgroundImage:
-                  wallpaperAsset.state === 'ready' ? `url("${wallpaperAsset.url}")` : 'none',
-              }}
-              aria-label="Desktop background"
-              aria-hidden={view !== 'screen' || mobileExpanded}
-              inert={view !== 'screen' || mobileExpanded}
-              onPointerDown={handleDesktopPointerDown}
-            >
-              {activeApp === null && (
-                <div className="desktop-shortcuts" aria-label="Desktop apps">
+      <div
+        className="room-stage"
+        ref={stageRef}
+        inert={roomAsset.state !== 'ready'}
+        aria-hidden={roomAsset.state !== 'ready'}
+      >
+        <div className="desk-camera">
+          <img
+            className="room-image"
+            src={roomAsset.url}
+            alt="A compact loft workspace with a monitor, desk, and chair"
+            draggable={false}
+            fetchPriority="high"
+          />{' '}
+          <aside
+            className="portrait-monitor"
+            aria-label="Angelo Palpalatoc CV"
+            aria-hidden={view === 'room' || view === 'screen'}
+            onPointerLeave={onPortraitLeave}
+          >
+            <div className="portrait-surface">
+              <PortraitCvViewer
+                cvUrl={cvUrl}
+                active={view === 'portrait'}
+                windowRef={portraitWindowRef}
+                onClose={leavePortrait}
+                mobileBackButton={view === 'portrait' ? mobileBackButton : null}
+              />
+            </div>
+            {view === 'desk' && (
+              <button
+                ref={portraitMonitorRef}
+                className="portrait-monitor-hotspot"
+                type="button"
+                aria-label="Zoom into the portrait monitor to read or download Angelo Palpalatoc's CV"
+                onClick={() => {
+                  pointer.current.active = false;
+                  enterPortrait();
+                }}
+              >
+                <span className="portrait-monitor-badge">VIEW CV</span>
+              </button>
+            )}
+          </aside>
+          <div className="monitor-screen" onPointerLeave={onMonitorLeave}>
+            <div className="monitor-surface">
+              <div
+                className="monitor-desktop"
+                style={{
+                  backgroundImage:
+                    wallpaperAsset.state === 'ready' ? `url("${wallpaperAsset.url}")` : 'none',
+                }}
+                aria-label="Desktop background"
+                aria-hidden={view !== 'screen' || mobileExpanded}
+                inert={view !== 'screen' || mobileExpanded}
+                onPointerDown={handleDesktopPointerDown}
+              >
+                {activeApp === null && (
+                  <div className="desktop-shortcuts" aria-label="Desktop apps">
+                    <button
+                      className="desktop-shortcut"
+                      ref={desktopAppRef}
+                      type="button"
+                      onClick={() => openApp('arduino')}
+                    >
+                      <img
+                        className="desktop-shortcut-icon"
+                        src="/portfolio-logo.webp"
+                        alt=""
+                        draggable={false}
+                      />
+                      <span className="desktop-shortcut-label">Portfolio</span>
+                    </button>
+                    <button
+                      className="desktop-shortcut"
+                      ref={autoRenameRef}
+                      type="button"
+                      onClick={() => openApp('autorename')}
+                    >
+                      <img
+                        className="desktop-shortcut-icon"
+                        src="/autorenamer-icon.svg"
+                        alt=""
+                        draggable={false}
+                      />
+                      <span className="desktop-shortcut-label">Sec Renamer</span>
+                    </button>
+                  </div>
+                )}
+                <div
+                  className={`desktop-taskbar${startMenuOpen ? ' is-open' : ''}`}
+                  aria-label="Taskbar; move the pointer to the bottom edge to reveal"
+                >
                   <button
-                    className="desktop-shortcut"
-                    ref={desktopAppRef}
+                    ref={startButtonRef}
+                    className="taskbar-start"
                     type="button"
-                    onClick={() => openApp('arduino')}
+                    aria-label="Open Start menu"
+                    aria-expanded={startMenuOpen}
+                    onClick={() => setStartMenuOpen((value) => !value)}
                   >
+                    <svg className="windows-logo" aria-hidden="true" viewBox="0 0 24 24">
+                      <path d="M2 3.8 10.7 2.5v8.8H2V3.8Z" />
+                      <path d="M12.3 2.25 22 1v10.3h-9.7V2.25Z" />
+                      <path d="M2 12.7h8.7v8.8L2 20.2v-7.5Z" />
+                      <path d="M12.3 12.7H22V23l-9.7-1.25v-9.05Z" />
+                    </svg>
+                  </button>
+                  <div className="taskbar-apps" aria-label="Available apps">
+                    <button
+                      className={`taskbar-app${openApps.arduino ? ' is-running' : ''}${activeApp === 'arduino' ? ' is-active' : ''}`}
+                      type="button"
+                      aria-label={activeApp === 'arduino' ? 'Minimize Portfolio' : 'Open Portfolio'}
+                      aria-pressed={activeApp === 'arduino'}
+                      onClick={() => activateTaskbarApp('arduino')}
+                    >
+                      <img src="/portfolio-logo.webp" alt="" draggable={false} />
+                      <span className="taskbar-tooltip">Portfolio</span>
+                    </button>
+                    <button
+                      className={`taskbar-app${openApps.autorename ? ' is-running' : ''}${activeApp === 'autorename' ? ' is-active' : ''}`}
+                      type="button"
+                      aria-label={
+                        activeApp === 'autorename' ? 'Minimize Sec Renamer' : 'Open Sec Renamer'
+                      }
+                      aria-pressed={activeApp === 'autorename'}
+                      onClick={() => activateTaskbarApp('autorename')}
+                    >
+                      <img src="/autorenamer-icon.svg" alt="" draggable={false} />
+                      <span className="taskbar-tooltip">Sec Renamer</span>
+                    </button>
+                  </div>
+                </div>
+                {startMenuOpen && (
+                  <div
+                    ref={startMenuRef}
+                    className="desktop-start-menu"
+                    role="menu"
+                    aria-label="Start menu"
+                  >
+                    <div className="start-menu-topline">
+                      <span className="start-menu-hamburger" aria-hidden="true">
+                        ☰
+                      </span>
+                      <span>Recently added</span>
+                    </div>
+                    <div className="start-menu-heading">PORTFOLIO APPS</div>
+                    <button
+                      className="start-menu-app"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => openApp('arduino')}
+                    >
+                      <img src="/portfolio-logo.webp" alt="" draggable={false} />
+                      <span>
+                        <strong>Portfolio</strong>
+                        <small>Arduino IDE workspace</small>
+                      </span>
+                    </button>
+                    <button
+                      className="start-menu-app"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => openApp('autorename')}
+                    >
+                      <img src="/autorenamer-icon.svg" alt="" draggable={false} />
+                      <span>
+                        <strong>Sec Renamer</strong>
+                        <small>Mobile app demo</small>
+                      </span>
+                    </button>
+                  </div>
+                )}
+                {wallpaperAsset.state !== 'ready' && (
+                  <div className="wallpaper-loading">
+                    <LoadNotice
+                      state={wallpaperAsset.state}
+                      subject="desktop background"
+                      onRetry={wallpaperAsset.retry}
+                    />
+                  </div>
+                )}
+              </div>
+              {openApps.arduino && (
+                <section
+                  className={`arduino-window monitor-app-window${windowMaximized && activeApp === 'arduino' ? ' window-maximized' : ''}${activeApp !== 'arduino' ? ' is-minimized' : ''}`}
+                  id="portfolio-window"
+                  aria-label="Angelo's Arduino IDE portfolio"
+                  aria-hidden={view !== 'screen' || activeApp !== 'arduino'}
+                  inert={view !== 'screen' || activeApp !== 'arduino'}
+                >
+                  <header className="arduino-window-titlebar">
                     <img
-                      className="desktop-shortcut-icon"
+                      className="arduino-app-mark"
                       src="/portfolio-logo.webp"
                       alt=""
-                      draggable={false}
+                      aria-hidden="true"
                     />
-                    <span className="desktop-shortcut-label">Portfolio</span>
-                  </button>
-                  <button
-                    className="desktop-shortcut"
-                    ref={autoRenameRef}
-                    type="button"
-                    onClick={() => openApp('autorename')}
-                  >
-                    <img
-                      className="desktop-shortcut-icon"
-                      src="/autorenamer-icon.svg"
-                      alt=""
-                      draggable={false}
-                    />
-                    <span className="desktop-shortcut-label">Sec Renamer</span>
-                  </button>
-                </div>
-              )}
-              <div
-                className={`desktop-taskbar${startMenuOpen ? ' is-open' : ''}`}
-                aria-label="Taskbar; move the pointer to the bottom edge to reveal"
-              >
-                <button
-                  ref={startButtonRef}
-                  className="taskbar-start"
-                  type="button"
-                  aria-label="Open Start menu"
-                  aria-expanded={startMenuOpen}
-                  onClick={() => setStartMenuOpen((value) => !value)}
-                >
-                  <svg className="windows-logo" aria-hidden="true" viewBox="0 0 24 24">
-                    <path d="M2 3.8 10.7 2.5v8.8H2V3.8Z" />
-                    <path d="M12.3 2.25 22 1v10.3h-9.7V2.25Z" />
-                    <path d="M2 12.7h8.7v8.8L2 20.2v-7.5Z" />
-                    <path d="M12.3 12.7H22V23l-9.7-1.25v-9.05Z" />
-                  </svg>
-                </button>
-                <div className="taskbar-apps" aria-label="Available apps">
-                  <button
-                    className={`taskbar-app${openApps.arduino ? ' is-running' : ''}${activeApp === 'arduino' ? ' is-active' : ''}`}
-                    type="button"
-                    aria-label={activeApp === 'arduino' ? 'Minimize Portfolio' : 'Open Portfolio'}
-                    aria-pressed={activeApp === 'arduino'}
-                    onClick={() => activateTaskbarApp('arduino')}
-                  >
-                    <img src="/portfolio-logo.webp" alt="" draggable={false} />
-                    <span className="taskbar-tooltip">Portfolio</span>
-                  </button>
-                  <button
-                    className={`taskbar-app${openApps.autorename ? ' is-running' : ''}${activeApp === 'autorename' ? ' is-active' : ''}`}
-                    type="button"
-                    aria-label={
-                      activeApp === 'autorename' ? 'Minimize Sec Renamer' : 'Open Sec Renamer'
-                    }
-                    aria-pressed={activeApp === 'autorename'}
-                    onClick={() => activateTaskbarApp('autorename')}
-                  >
-                    <img src="/autorenamer-icon.svg" alt="" draggable={false} />
-                    <span className="taskbar-tooltip">Sec Renamer</span>
-                  </button>
-                </div>
-              </div>
-              {startMenuOpen && (
-                <div
-                  ref={startMenuRef}
-                  className="desktop-start-menu"
-                  role="menu"
-                  aria-label="Start menu"
-                >
-                  <div className="start-menu-topline">
-                    <span className="start-menu-hamburger" aria-hidden="true">
-                      ☰
+                    <span className="window-title">
+                      Portfolio.ino <span>— Arduino IDE 2.3.10 · Angelo Palpalatoc</span>
                     </span>
-                    <span>Recently added</span>
+                    <div className="window-controls" aria-label="Arduino IDE window controls">
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={minimizeApp}
+                        aria-label="Minimize Arduino IDE"
+                      >
+                        —
+                      </button>
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={toggleMaximize}
+                        aria-label={
+                          windowMaximized ? 'Restore Arduino IDE' : 'Maximize Arduino IDE'
+                        }
+                      >
+                        {windowMaximized ? '▣' : '□'}
+                      </button>
+                      <button
+                        className="window-control window-close"
+                        type="button"
+                        onClick={() => closeApp('arduino')}
+                        aria-label="Close Arduino IDE"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </header>
+                  <div ref={reactPortfolioRef} tabIndex={-1} className="portfolio-content">
+                    <Suspense fallback={null}>
+                      <ArduinoPortfolio
+                        onOpenSecRename={() => openApp('autorename')}
+                        onReady={onPortfolioReady}
+                      />
+                    </Suspense>
                   </div>
-                  <div className="start-menu-heading">PORTFOLIO APPS</div>
-                  <button
-                    className="start-menu-app"
-                    type="button"
-                    role="menuitem"
-                    onClick={() => openApp('arduino')}
-                  >
-                    <img src="/portfolio-logo.webp" alt="" draggable={false} />
-                    <span>
-                      <strong>Portfolio</strong>
-                      <small>Arduino IDE workspace</small>
-                    </span>
-                  </button>
-                  <button
-                    className="start-menu-app"
-                    type="button"
-                    role="menuitem"
-                    onClick={() => openApp('autorename')}
-                  >
-                    <img src="/autorenamer-icon.svg" alt="" draggable={false} />
-                    <span>
-                      <strong>Sec Renamer</strong>
-                      <small>Mobile app demo</small>
-                    </span>
-                  </button>
-                </div>
+                  {activeApp === 'arduino' ? mobileBackButton : null}
+                </section>
               )}
-              {wallpaperAsset.state !== 'ready' && (
-                <div className="wallpaper-loading">
-                  <LoadNotice
-                    state={wallpaperAsset.state}
-                    subject="desktop background"
-                    onRetry={wallpaperAsset.retry}
-                  />
-                </div>
+              {openApps.autorename && (
+                <section
+                  ref={autoRenameWindowRef}
+                  tabIndex={-1}
+                  className={`autorename-window monitor-app-window${windowMaximized && activeApp === 'autorename' ? ' window-maximized' : ''}${activeApp !== 'autorename' ? ' is-minimized' : ''}`}
+                  id="autorenamer-window"
+                  aria-label="Sec Renamer interactive mobile demo"
+                  aria-hidden={view !== 'screen' || activeApp !== 'autorename'}
+                  inert={view !== 'screen' || activeApp !== 'autorename'}
+                >
+                  <header className="arduino-window-titlebar">
+                    <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
+                    <span className="window-title">
+                      Sec Renamer <span>— interactive mobile demo</span>
+                    </span>
+                    <button
+                      className="rename-return-button"
+                      type="button"
+                      onClick={() => openApp('arduino')}
+                    >
+                      Back to Portfolio
+                    </button>
+                    <div className="window-controls" aria-label="Sec Renamer window controls">
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={minimizeApp}
+                        aria-label="Minimize Sec Renamer"
+                      >
+                        —
+                      </button>
+                      <button
+                        className="window-control"
+                        type="button"
+                        onClick={toggleMaximize}
+                        aria-label={
+                          windowMaximized ? 'Restore Sec Renamer' : 'Maximize Sec Renamer'
+                        }
+                      >
+                        {windowMaximized ? '▣' : '□'}
+                      </button>
+                      <button
+                        className="window-control window-close"
+                        type="button"
+                        onClick={() => closeApp('autorename')}
+                        aria-label="Close Sec Renamer"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </header>
+                  <AutoRenameDemo />
+                  {activeApp === 'autorename' ? mobileBackButton : null}
+                </section>
               )}
             </div>
-            {openApps.arduino && (
-              <section
-                className={`arduino-window monitor-app-window${windowMaximized && activeApp === 'arduino' ? ' window-maximized' : ''}${activeApp !== 'arduino' ? ' is-minimized' : ''}`}
-                id="portfolio-window"
-                aria-label="Angelo's Arduino IDE portfolio"
-                aria-hidden={view !== 'screen' || activeApp !== 'arduino'}
-                inert={view !== 'screen' || activeApp !== 'arduino'}
-              >
-                <header className="arduino-window-titlebar">
-                  <img
-                    className="arduino-app-mark"
-                    src="/portfolio-logo.webp"
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  <span className="window-title">
-                    Portfolio.ino <span>— Arduino IDE 2.3.10 · Angelo Palpalatoc</span>
-                  </span>
-                  <div className="window-controls" aria-label="Arduino IDE window controls">
-                    <button
-                      className="window-control"
-                      type="button"
-                      onClick={minimizeApp}
-                      aria-label="Minimize Arduino IDE"
-                    >
-                      —
-                    </button>
-                    <button
-                      className="window-control"
-                      type="button"
-                      onClick={toggleMaximize}
-                      aria-label={
-                        windowMaximized ? 'Restore Arduino IDE' : 'Maximize Arduino IDE'
-                      }
-                    >
-                      {windowMaximized ? '▣' : '□'}
-                    </button>
-                    <button
-                      className="window-control window-close"
-                      type="button"
-                      onClick={() => closeApp('arduino')}
-                      aria-label="Close Arduino IDE"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </header>
-                <div ref={reactPortfolioRef} tabIndex={-1} className="portfolio-content">
-                  <Suspense fallback={null}>
-                    <ArduinoPortfolio
-                      onOpenSecRename={() => openApp('autorename')}
-                      onReady={onPortfolioReady}
-                    />
-                  </Suspense>
-                </div>
-                {activeApp === 'arduino' ? mobileBackButton : null}
-              </section>
-            )}
-            {openApps.autorename && (
-              <section
-                ref={autoRenameWindowRef}
-                tabIndex={-1}
-                className={`autorename-window monitor-app-window${windowMaximized && activeApp === 'autorename' ? ' window-maximized' : ''}${activeApp !== 'autorename' ? ' is-minimized' : ''}`}
-                id="autorenamer-window"
-                aria-label="Sec Renamer interactive mobile demo"
-                aria-hidden={view !== 'screen' || activeApp !== 'autorename'}
-                inert={view !== 'screen' || activeApp !== 'autorename'}
-              >
-                <header className="arduino-window-titlebar">
-                  <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
-                  <span className="window-title">
-                    Sec Renamer <span>— interactive mobile demo</span>
-                  </span>
-                  <button
-                    className="rename-return-button"
-                    type="button"
-                    onClick={() => openApp('arduino')}
-                  >
-                    Back to Portfolio
-                  </button>
-                  <div className="window-controls" aria-label="Sec Renamer window controls">
-                    <button
-                      className="window-control"
-                      type="button"
-                      onClick={minimizeApp}
-                      aria-label="Minimize Sec Renamer"
-                    >
-                      —
-                    </button>
-                    <button
-                      className="window-control"
-                      type="button"
-                      onClick={toggleMaximize}
-                      aria-label={
-                        windowMaximized ? 'Restore Sec Renamer' : 'Maximize Sec Renamer'
-                      }
-                    >
-                      {windowMaximized ? '▣' : '□'}
-                    </button>
-                    <button
-                      className="window-control window-close"
-                      type="button"
-                      onClick={() => closeApp('autorename')}
-                      aria-label="Close Sec Renamer"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </header>
-                <AutoRenameDemo />
-                {activeApp === 'autorename' ? mobileBackButton : null}
-              </section>
+            {view === 'desk' && (
+              <button
+                className="screen-hotspot"
+                ref={hotspotRef}
+                type="button"
+                aria-label="View the desktop apps on the monitor"
+                onClick={() => {
+                  pointer.current.active = false;
+                  enterScreen();
+                }}
+              />
             )}
           </div>
-          {view === 'desk' && (
-            <button
-              className="screen-hotspot"
-              ref={hotspotRef}
-              type="button"
-              aria-label="View the desktop apps on the monitor"
-              onClick={() => {
-                pointer.current.active = false;
-                enterScreen();
-              }}
-            />
-          )}
+          <button
+            className="desk-hotspot"
+            ref={deskRef}
+            type="button"
+            aria-label="Approach the computer desk"
+            aria-hidden={view !== 'room'}
+            tabIndex={view === 'room' ? 0 : -1}
+            onClick={() => {
+              pointer.current.active = false;
+              enterDesk();
+            }}
+          />
         </div>
-        <button
-          className="desk-hotspot"
-          ref={deskRef}
-          type="button"
-          aria-label="Approach the computer desk"
-          aria-hidden={view !== 'room'}
-          tabIndex={view === 'room' ? 0 : -1}
-          onClick={() => {
-            pointer.current.active = false;
-            enterDesk();
-          }}
-        />
       </div>
-    </div>
 
-    {view === 'room' &&
-      ['prompt', 'requesting', 'calibrating', 'denied', 'unavailable'].includes(motionStatus) && (
-        <aside className="motion-prompt" aria-label="Motion view setup" aria-live="polite">
-          <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
-          <p>
-            {motionStatus === 'requesting'
-              ? 'Waiting for motion permission…'
-              : motionStatus === 'calibrating'
-                ? 'Hold your phone comfortably while motion calibrates…'
-                : motionStatus === 'denied'
-                  ? 'Motion permission was not granted.'
-                  : motionStatus === 'unavailable'
-                    ? 'No motion readings were detected.'
-                    : 'Tilt your phone to look around the room.'}
-          </p>
-          {motionStatus === 'prompt' ? (
-            <button type="button" onClick={requestMotionPermission}>
-              Enable motion view
-            </button>
-          ) : motionStatus === 'denied' || motionStatus === 'unavailable' ? (
-            <button type="button" onClick={disableMotion}>
-              Continue with touch
-            </button>
-          ) : null}
-          <span className="motion-prompt-hint">Touch movement is always available.</span>
-        </aside>
-      )}
-
-    {(view === 'room' || view === 'desk') &&
-      (motionStatus === 'active' || motionStatus === 'off') && (
-        <div className="motion-toolbar" role="group" aria-label="Motion view controls">
-          <span className="motion-toolbar-status">
-            <span aria-hidden="true" className={motionStatus === 'off' ? 'is-off' : ''} />
-            {motionStatus === 'active' ? 'Motion on' : 'Motion off'}
-          </span>
-          {motionStatus === 'active' ? (
-            <>
-              <button type="button" onClick={recenterMotion}>
-                Recenter
+      {view === 'room' &&
+        ['prompt', 'requesting', 'calibrating', 'denied', 'unavailable'].includes(motionStatus) && (
+          <aside className="motion-prompt" aria-label="Motion view setup" aria-live="polite">
+            <span className="motion-prompt-kicker">OPTIONAL MOTION VIEW</span>
+            <p>
+              {motionStatus === 'requesting'
+                ? 'Waiting for motion permission…'
+                : motionStatus === 'calibrating'
+                  ? 'Hold your phone comfortably while motion calibrates…'
+                  : motionStatus === 'denied'
+                    ? 'Motion permission was not granted.'
+                    : motionStatus === 'unavailable'
+                      ? 'No motion readings were detected.'
+                      : 'Tilt your phone to look around the room.'}
+            </p>
+            {motionStatus === 'prompt' ? (
+              <button type="button" onClick={requestMotionPermission}>
+                Enable motion view
               </button>
+            ) : motionStatus === 'denied' || motionStatus === 'unavailable' ? (
               <button type="button" onClick={disableMotion}>
-                Turn off
+                Continue with touch
               </button>
-            </>
-          ) : (
-            <button type="button" onClick={requestMotionPermission}>
-              Enable
-            </button>
-          )}
+            ) : null}
+            <span className="motion-prompt-hint">Touch movement is always available.</span>
+          </aside>
+        )}
+
+      {(view === 'room' || view === 'desk') &&
+        (motionStatus === 'active' || motionStatus === 'off') && (
+          <div className="motion-toolbar" role="group" aria-label="Motion view controls">
+            <span className="motion-toolbar-status">
+              <span aria-hidden="true" className={motionStatus === 'off' ? 'is-off' : ''} />
+              {motionStatus === 'active' ? 'Motion on' : 'Motion off'}
+            </span>
+            {motionStatus === 'active' ? (
+              <>
+                <button type="button" onClick={recenterMotion}>
+                  Recenter
+                </button>
+                <button type="button" onClick={disableMotion}>
+                  Turn off
+                </button>
+              </>
+            ) : (
+              <button type="button" onClick={requestMotionPermission}>
+                Enable
+              </button>
+            )}
+          </div>
+        )}
+
+      {view === 'desk' && (
+        <button className="mobile-room-button" type="button" onClick={leaveDesk}>
+          Back to room
+        </button>
+      )}
+
+      <section
+        className="room-caption"
+        aria-hidden={view !== 'room' || roomAsset.state !== 'ready'}
+        inert={view !== 'room' || roomAsset.state !== 'ready'}
+        aria-label="Angelo Palpalatoc portfolio overview"
+      >
+        <span className="caption-kicker">
+          <span className="caption-line" /> ANGELO PALPALATOC · FULL-STACK ENGINEER
+        </span>
+        <h1 className="caption-title">Come on in. My work is on screen.</h1>
+        <span className="caption-stack">
+          React · TypeScript · Python · FastAPI · PostgreSQL · AI Workflows
+        </span>
+        <span className="caption-hint">
+          Approach the desk to inspect the monitors — portfolio on the right, CV on the left.
+        </span>
+      </section>
+
+      {roomAsset.state !== 'ready' && (
+        <div className="room-loading">
+          <LoadNotice state={roomAsset.state} subject="room" onRetry={roomAsset.retry} />
         </div>
       )}
 
-    {view === 'desk' && (
-      <button className="mobile-room-button" type="button" onClick={leaveDesk}>
-        Back to room
-      </button>
-    )}
-
-    <section
-      className="room-caption"
-      aria-hidden={view !== 'room' || roomAsset.state !== 'ready'}
-      inert={view !== 'room' || roomAsset.state !== 'ready'}
-      aria-label="Angelo Palpalatoc portfolio overview"
-    >
-      <span className="caption-kicker">
-        <span className="caption-line" /> ANGELO PALPALATOC · FULL-STACK ENGINEER
-      </span>
-      <h1 className="caption-title">Come on in. My work is on screen.</h1>
-      <span className="caption-stack">
-        React · TypeScript · Python · FastAPI · PostgreSQL · AI Workflows
-      </span>
-      <span className="caption-hint">
-        Approach the desk to inspect the monitors — portfolio on the right, CV on the left.
-      </span>
-    </section>
-
-    {roomAsset.state !== 'ready' && (
-      <div className="room-loading">
-        <LoadNotice state={roomAsset.state} subject="room" onRetry={roomAsset.retry} />
-      </div>
-    )}
-
-    <p className="sr-only" role="status" aria-live="polite">
-      {status}
-    </p>
-  </main>
-);
+      <p className="sr-only" role="status" aria-live="polite">
+        {status}
+      </p>
+    </main>
+  );
 }

@@ -1,4 +1,5 @@
 .rename-demo {
+  color-scheme: light;
   --rename-blue: #0054a4;
   --rename-red: #b51f32;
   --rename-ink: #162b43;
@@ -288,9 +289,17 @@
   padding: 10px;
   border: 1px solid #cbd5e0;
   border-radius: 12px;
-  background: #f3f6fa;
+  color: var(--rename-ink);
+  background: white;
   cursor: pointer;
   text-align: left;
+}
+.rename-file:hover {
+  background: #edf3fa;
+}
+.rename-file > span:last-child {
+  color: var(--rename-muted);
+  font-size: 16px;
 }
 .rename-file-icon {
   display: grid;
