@@ -114,8 +114,7 @@ button {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid #00979c55;
-  background: #1a2024;
+  background: #16191c;
   color: #111;
 }
 
@@ -129,11 +128,19 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 7px 10px;
-  border-bottom: 1px solid #2b3438;
-  background: #14191b;
-  color: #eef5f5;
+  padding: 6px 8px 6px 10px;
+  border-bottom: 1px solid #262b30;
+  background: #14171a;
+  color: #e6eded;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.portrait-cv-left {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .portrait-cv-file {
@@ -144,82 +151,84 @@ button {
 }
 
 .portrait-cv-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   flex: 0 0 auto;
+  border-radius: 50%;
   background: #28c6c4;
 }
 
 .portrait-cv-filename {
   overflow: hidden;
-  font-size: 11px;
-  font-weight: 700;
+  color: #d7e2e4;
+  font-size: 10.5px;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.portrait-cv-filename-short {
+  display: none;
+  color: #e6eded;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .portrait-cv-actions {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  opacity: 0.42;
+  transition: opacity 180ms ease;
 }
 
-.portrait-cv-action,
-.portrait-cv-download {
-  display: inline-flex;
-  min-height: 24px;
-  align-items: center;
-  padding: 0 8px;
-  font-size: 10.5px;
-  font-weight: 700;
-  text-decoration: none;
-  white-space: nowrap;
+.experience[data-view='portrait'] .portrait-cv-actions {
+  opacity: 1;
 }
 
-.portrait-cv-action {
-  border: 1px solid #3c4a4f;
-  color: #d7e4e6;
-  background: transparent;
-}
-
-.portrait-cv-action:hover,
-.portrait-cv-action:focus-visible {
-  border-color: #28c6c4;
-  color: #28c6c4;
-  outline: none;
-}
-
-.portrait-cv-download {
-  border: 1px solid #00979c;
-  color: #071718;
-  background: #28c6c4;
-}
-
-.portrait-cv-download:hover,
-.portrait-cv-download:focus-visible {
-  background: #57d4d1;
-  outline: 1px solid #fff;
-}
-
-.portrait-cv-close {
-  display: grid;
+.portrait-cv-icon-action {
+  display: inline-grid;
   width: 24px;
   height: 24px;
   place-items: center;
-  border: 1px solid #3c4a4f;
-  color: #eef5f5;
+  border: 0;
+  border-radius: 4px;
+  color: #b7c5c9;
   background: transparent;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
+  text-decoration: none;
+  transition:
+    color 130ms ease,
+    background-color 130ms ease;
 }
 
-.portrait-cv-close:hover,
-.portrait-cv-close:focus-visible {
-  border-color: #e34b4b;
-  background: #e34b4b;
+.portrait-cv-icon-action svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
+
+.portrait-cv-icon-action:hover,
+.portrait-cv-icon-action:focus-visible {
+  color: #28c6c4;
+  background: #ffffff14;
   outline: none;
+}
+
+.portrait-cv-download-icon {
+  color: #28c6c4;
+}
+
+.portrait-cv-download-icon:hover,
+.portrait-cv-download-icon:focus-visible {
+  color: #071718;
+  background: #28c6c4;
 }
 
 .portrait-cv-scroll {
@@ -228,8 +237,8 @@ button {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 6px;
-  background: #1f2529;
-  scrollbar-color: #28c6c488 #14191b;
+  background: #181b1e;
+  scrollbar-color: #ffffff30 #14171a;
   scrollbar-width: thin;
 }
 
@@ -399,13 +408,15 @@ button {
 }
 
 .portrait-monitor-badge {
-  padding: 3px 6px;
-  border: 1px solid #28c6c4;
+  padding: 2px 7px;
+  border: 1px solid #28c6c499;
+  border-radius: 999px;
   color: #f4fbfb;
-  background: #0b1112e6;
+  background: #0b1112cc;
+  backdrop-filter: blur(6px);
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: clamp(6px, 11cqw, 10px);
-  font-weight: 700;
+  font-size: clamp(6px, 10cqw, 9.5px);
+  font-weight: 600;
   letter-spacing: 0.08em;
   opacity: 0;
   transform: translateY(3px);
@@ -1318,15 +1329,22 @@ button {
     padding: 8px 10px;
   }
 
-  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-action,
-  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-download {
-    min-height: 36px;
-    padding: 0 11px;
-    font-size: 12px;
+  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-filename {
+    display: none;
   }
 
-  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-close {
-    display: none;
+  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-filename-short {
+    display: inline;
+  }
+
+  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-icon-action {
+    width: 36px;
+    height: 36px;
+  }
+
+  .experience[data-expanded='true'][data-view='portrait'] .portrait-cv-icon-action svg {
+    width: 16px;
+    height: 16px;
   }
 
   .experience[data-expanded='true'][data-view='portrait']
@@ -1335,7 +1353,10 @@ button {
     position: static;
     min-width: 0;
     min-height: 36px;
-    padding: 0 10px;
+    padding: 0 10px 0 7px;
+    border: 0;
+    border-radius: 4px;
+    background: #ffffff10;
     box-shadow: none;
     font-size: 12px;
   }

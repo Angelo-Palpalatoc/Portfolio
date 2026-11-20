@@ -1067,7 +1067,6 @@ export default function App() {
                 cvUrl={cvUrl}
                 active={view === 'portrait'}
                 windowRef={portraitWindowRef}
-                onClose={leavePortrait}
                 mobileBackButton={view === 'portrait' ? mobileBackButton : null}
               />
             </div>

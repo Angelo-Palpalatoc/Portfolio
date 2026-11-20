@@ -1,10 +1,10 @@
 import type { ReactNode, RefObject } from 'react';
+import { getEmailLinkProps, portfolioLinks } from './portfolio/portfolio.data';
 
 type PortraitCvViewerProps = {
   cvUrl: string;
   active: boolean;
   windowRef: RefObject<HTMLElement | null>;
-  onClose: () => void;
   mobileBackButton?: ReactNode;
 };
 
@@ -12,7 +12,6 @@ export default function PortraitCvViewer({
   cvUrl,
   active,
   windowRef,
-  onClose,
   mobileBackButton,
 }: PortraitCvViewerProps) {
   return (
@@ -25,38 +24,40 @@ export default function PortraitCvViewer({
       inert={!active}
     >
       <header className="portrait-cv-toolbar">
-        <div className="portrait-cv-file">
-          <span className="portrait-cv-dot" aria-hidden="true" />
-          <span className="portrait-cv-filename">Angelo-Palpalatoc-CV.pdf</span>
+        <div className="portrait-cv-left">
+          {mobileBackButton}
+          <div className="portrait-cv-file">
+            <span className="portrait-cv-dot" aria-hidden="true" />
+            <span className="portrait-cv-filename">Angelo-Palpalatoc-CV.pdf</span>
+            <span className="portrait-cv-filename-short" aria-hidden="true">
+              CV
+            </span>
+          </div>
         </div>
         <div className="portrait-cv-actions">
           <a
-            className="portrait-cv-action"
+            className="portrait-cv-icon-action"
             href={cvUrl}
             target="_blank"
             rel="noreferrer"
+            aria-label="Open CV PDF in a new tab"
             title="Open PDF in a new tab"
           >
-            PDF
+            <svg aria-hidden="true" viewBox="0 0 16 16" focusable="false">
+              <path d="M6.5 3.5H3.5V12.5H12.5V9.5M9.5 3.5H12.5V6.5M12.5 3.5L7.5 8.5" />
+            </svg>
           </a>
           <a
-            className="portrait-cv-download"
+            className="portrait-cv-icon-action portrait-cv-download-icon"
             href={cvUrl}
             download="Angelo-Palpalatoc-CV.pdf"
-            title="Download Angelo Palpalatoc CV PDF"
+            aria-label="Download Angelo Palpalatoc CV PDF"
+            title="Download CV PDF"
           >
-            Download
+            <svg aria-hidden="true" viewBox="0 0 16 16" focusable="false">
+              <path d="M8 2.5V10.5M4.8 7.5L8 10.7L11.2 7.5M3 13H13" />
+            </svg>
           </a>
-          <button
-            className="portrait-cv-close"
-            type="button"
-            onClick={onClose}
-            aria-label="Return to desk"
-            title="Return to desk (Esc)"
-          >
-            ×
-          </button>
-          {mobileBackButton}
         </div>
       </header>
 
@@ -66,7 +67,7 @@ export default function PortraitCvViewer({
             <h1>ANGELO C. PALPALATOC</h1>
             <div className="cv-doc-meta">Santa Maria, Bulacan, Philippines</div>
             <div className="cv-doc-meta">
-              <a href="mailto:palpalatocangelo@gmail.com">palpalatocangelo@gmail.com</a>
+              <a {...getEmailLinkProps()}>{portfolioLinks.emailAddress}</a>
               <span> | </span>
               <a
                 href="https://www.linkedin.com/in/angelo-palpalatoc-66baa8329/"

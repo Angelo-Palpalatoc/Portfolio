@@ -1,10 +1,7 @@
-import { portfolioLinks } from '../portfolio.data';
+import { getEmailLinkProps, portfolioLinks } from '../portfolio.data';
 import type { SectionInfo } from '../portfolio.types';
-import { useCopyToClipboard } from '../useCopyToClipboard';
 
 export function InfoPanel({ info }: { info: SectionInfo }) {
-  const { copied, copy } = useCopyToClipboard(portfolioLinks.emailAddress, 1800);
-
   return (
     <aside className="w-[280px] shrink-0 overflow-y-auto border-l border-arduino-border bg-arduino-panel px-[18px] py-4 font-arduino-code">
       <div className="mb-[14px] text-[11px] tracking-[0.14em] text-arduino-muted">INFO</div>
@@ -39,23 +36,13 @@ export function InfoPanel({ info }: { info: SectionInfo }) {
         >
           ↓ Download CV (PDF)
         </a>
-        <div className="flex items-center justify-between gap-2">
-          <a
-            className="min-w-0 truncate text-arduino-muted hover:text-arduino-teal"
-            href={portfolioLinks.email}
-            title={portfolioLinks.emailAddress}
-          >
-            ✉ {portfolioLinks.emailAddress}
-          </a>
-          <button
-            type="button"
-            onClick={copy}
-            className="shrink-0 border border-arduino-border px-[6px] py-[2px] text-[10px] text-arduino-muted hover:border-arduino-teal hover:text-arduino-teal"
-            aria-label="Copy email address"
-          >
-            {copied ? 'Copied' : 'Copy'}
-          </button>
-        </div>
+        <a
+          className="truncate text-arduino-muted hover:text-arduino-teal"
+          {...getEmailLinkProps()}
+          title={portfolioLinks.emailAddress}
+        >
+          ✉ {portfolioLinks.emailAddress}
+        </a>
         <a
           className="text-arduino-muted hover:text-arduino-teal"
           href={portfolioLinks.github}

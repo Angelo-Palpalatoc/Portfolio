@@ -13,12 +13,25 @@ import type {
 export const portfolioLinks = {
   emailAddress: 'palpalatocangelo@gmail.com',
   email: 'mailto:palpalatocangelo@gmail.com',
+  gmailCompose: 'https://mail.google.com/mail/?view=cm&fs=1&to=palpalatocangelo%40gmail.com',
   github: 'https://github.com/Angelo-Palpalatoc',
   linkedin: 'https://www.linkedin.com/in/angelo-palpalatoc-66baa8329/',
   cv: '/Angelo-Palpalatoc-CV.pdf',
   portfolioRepo: 'https://github.com/Angelo-Palpalatoc/Portfolio',
   secRenamerRepo: 'https://github.com/Angelo-Palpalatoc/AutomaticFileName',
 } as const;
+
+export function getEmailLinkProps(): {
+  href: string;
+  target?: '_blank';
+  rel?: 'noreferrer';
+} {
+  const isTouchDevice =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(pointer: coarse), (max-width: 700px)').matches;
+  if (isTouchDevice) return { href: portfolioLinks.email };
+  return { href: portfolioLinks.gmailCompose, target: '_blank', rel: 'noreferrer' };
+}
 
 export const fileEntries: FileEntry[] = [
   { id: 'main', name: 'main.ino', path: 'main.ino' },

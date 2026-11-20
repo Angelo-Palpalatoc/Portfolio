@@ -1,5 +1,4 @@
-import { portfolioLinks } from '../portfolio.data';
-import { useCopyToClipboard } from '../useCopyToClipboard';
+import { getEmailLinkProps, portfolioLinks } from '../portfolio.data';
 import { CodePreview } from './SectionPieces';
 
 const lines = [
@@ -17,8 +16,6 @@ const lines = [
 ];
 
 export function ContactSection() {
-  const { copied, copy } = useCopyToClipboard(portfolioLinks.emailAddress);
-
   return (
     <div className="max-w-[720px]">
       <CodePreview lines={lines} />
@@ -30,17 +27,9 @@ export function ContactSection() {
         Based in Santa Maria, Bulacan, Philippines.
       </p>
       <div className="flex flex-wrap gap-3">
-        <a href={portfolioLinks.email} className="ide-primary-button !h-[46px]">
+        <a {...getEmailLinkProps()} className="ide-primary-button !h-[46px]">
           [ EMAIL ME ]
         </a>
-        <button
-          type="button"
-          onClick={copy}
-          className="ide-secondary-button !h-[46px]"
-          aria-live="polite"
-        >
-          {copied ? '[ ✓ EMAIL COPIED ]' : '[ COPY EMAIL ]'}
-        </button>
         <a
           href={portfolioLinks.cv}
           target="_blank"

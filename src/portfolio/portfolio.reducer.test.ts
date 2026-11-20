@@ -83,6 +83,7 @@ describe('portfolio state', () => {
     const validIds = new Set(fileEntries.map((file) => file.id));
     expect(featuredProjects.every((project) => validIds.has(project.id))).toBe(true);
     expect(portfolioLinks.cv).toBe('/Angelo-Palpalatoc-CV.pdf');
+    expect(portfolioLinks.gmailCompose).toContain('to=palpalatocangelo%40gmail.com');
     expect(sectionInfo.lighthouse.meta).toContainEqual(['links', 'Private (NDA)']);
   });
 });
