@@ -3,24 +3,27 @@ import type { PointerEvent } from 'react';
 import { lazy, Suspense } from 'react';
 import roomImage from './assets/room.webp';
 import monitorBackground from './assets/desktop-background.webp';
-import portraitMonitorImage from './assets/portrait-monitor-cv.webp';
 import { monitorProjection } from './monitorProjection';
 import { LoadNotice, useImageAsset } from './LoadingState';
 import AutoRenameDemo from './AutoRenameDemo';
+import PortraitCvViewer from './PortraitCvViewer';
 const ArduinoPortfolio = lazy(() => import('./portfolio/ArduinoPortfolio'));
 
 const ideWidth = 1280;
+const portraitLogicalWidth = 580;
 const cvUrl = '/Angelo-Palpalatoc-CV.pdf';
 const deskParallaxIntensity = 1.3;
 const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
 const deskCenter = { x: 0.575, y: 0.495 };
 const screenCenter = { x: 0.5635, y: 0.5109 };
+const stageOrigin = { x: 0.56375, y: 0.50965 };
+const portraitCenter = { x: 0.40925, y: 0.51625 };
 const mobileRoomParallaxScale = 0.8;
 const mobileRoomTiltRange = 18;
 const mobileDeskParallaxScale = 0.65;
 const phoneQuery =
   '(max-width: 700px), (max-width: 950px) and (pointer: coarse), (max-width: 950px) and (max-height: 500px)';
-type View = 'room' | 'desk' | 'screen';
+type View = 'room' | 'desk' | 'screen' | 'portrait';
 type AppName = 'arduino' | 'autorename';
 type AppWindow = AppName | null;
 type CameraPose = { x: number; y: number; scale: number };
@@ -61,7 +64,6 @@ export default function App() {
   const [windowMaximized, setWindowMaximized] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
-  const [cvOpen, setCvOpen] = useState(false);
   const [motionStatus, setMotionStatus] = useState<MotionStatus>('hidden');
   const roomAsset = useImageAsset(roomImage);
   const wallpaperAsset = useImageAsset(monitorBackground, roomAsset.state === 'ready');
@@ -70,7 +72,7 @@ export default function App() {
   const deskRef = useRef<HTMLButtonElement>(null);
   const hotspotRef = useRef<HTMLButtonElement>(null);
   const portraitMonitorRef = useRef<HTMLButtonElement>(null);
-  const cvModalCloseRef = useRef<HTMLButtonElement>(null);
+  const portraitWindowRef = useRef<HTMLElement>(null);
   const desktopAppRef = useRef<HTMLButtonElement>(null);
   const autoRenameRef = useRef<HTMLButtonElement>(null);
   const autoRenameWindowRef = useRef<HTMLElement>(null);
@@ -80,15 +82,16 @@ export default function App() {
   const reactPortfolioRef = useRef<HTMLDivElement>(null);
   const mobileExpandedRef = useRef(mobileExpanded);
   mobileExpandedRef.current = mobileExpanded;
-  const cvOpenRef = useRef(cvOpen);
-  cvOpenRef.current = cvOpen;
   const hoverArmed = useRef(true);
+  const portraitHoverArmed = useRef(true);
+  const lastZoomedView = useRef<'screen' | 'portrait' | null>(null);
   const interacted = useRef(false);
   const viewRef = useRef<View>('room');
   const poses = useRef<Record<View, CameraPose>>({
     room: initialPose,
     desk: initialPose,
     screen: initialPose,
+    portrait: initialPose,
   });
   const camera = useRef({
     current: { ...initialPose },
@@ -106,6 +109,7 @@ export default function App() {
   const orientationSamples = useRef(0);
   const pointer = useRef({ x: 0, y: 0, active: false });
   const exitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const portraitEnterTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deskMotion = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, blend: 0, velocity: 0 });
   const checkHoverRef = useRef<() => void>(() => {});
 
@@ -211,7 +215,7 @@ export default function App() {
         motion.destination = destination;
       }
       motion.target = { ...pose };
-      motion.frequency = destination === 'screen' ? 6 : 8;
+      motion.frequency = destination === 'screen' || destination === 'portrait' ? 6 : 8;
       motion.ready = false;
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         if (motion.frame) cancelAnimationFrame(motion.frame);
@@ -252,6 +256,8 @@ export default function App() {
     const height = stage.offsetHeight;
     const screenWidth = width * 0.213;
     const screenHeight = height * 0.0868;
+    const portraitWidth = width * 0.0875;
+    const portraitHeight = height * 0.1095;
     const screen = stage.querySelector<HTMLElement>('.monitor-screen');
     if (screen && !mobileExpandedRef.current) {
       const style = getComputedStyle(screen);
@@ -267,11 +273,33 @@ export default function App() {
         monitorProjection(physicalWidth, physicalHeight, style.clipPath, ideWidth),
       );
     }
+    const portrait = stage.querySelector<HTMLElement>('.portrait-monitor');
+    if (portrait && !mobileExpandedRef.current) {
+      const style = getComputedStyle(portrait);
+      const physicalWidth = parseFloat(style.width);
+      const physicalHeight = parseFloat(style.height);
+      portrait.style.setProperty('--portrait-width', `${portraitLogicalWidth}px`);
+      portrait.style.setProperty(
+        '--portrait-height',
+        `${(portraitLogicalWidth * physicalHeight) / physicalWidth}px`,
+      );
+      portrait.style.setProperty(
+        '--portrait-projection',
+        monitorProjection(physicalWidth, physicalHeight, style.clipPath, portraitLogicalWidth),
+      );
+    }
     const screenZoom = Math.max(
       1,
       Math.min(
         (window.innerWidth * 0.866) / screenWidth,
         (window.innerHeight * 0.9) / screenHeight,
+      ),
+    );
+    const portraitZoom = Math.max(
+      1,
+      Math.min(
+        (window.innerWidth * 0.866) / portraitWidth,
+        (window.innerHeight * 0.9) / portraitHeight,
       ),
     );
     const deskZoom = Math.max(
@@ -297,6 +325,11 @@ export default function App() {
         y: -screenCenter.y * height + window.innerHeight * 0.005,
         scale: screenZoom,
       },
+      portrait: {
+        x: (-portraitCenter.x - (portraitZoom - 1) * (portraitCenter.x - stageOrigin.x)) * width,
+        y: (-portraitCenter.y - (portraitZoom - 1) * (portraitCenter.y - stageOrigin.y)) * height,
+        scale: portraitZoom,
+      },
     };
     if (!camera.current.initialized) {
       camera.current.current = { ...poses.current.room };
@@ -314,30 +347,30 @@ export default function App() {
     exitTimer.current = null;
   }, []);
 
-  // Focus returns to the portrait monitor from the layout effect below, after
-  // the room stage is no longer inert.
-  const closeCvPreview = useCallback(() => {
-    setCvOpen(false);
-    setStatus('Closed CV preview. Back at the desk.');
+  const clearPortraitEnterTimer = useCallback(() => {
+    if (portraitEnterTimer.current) clearTimeout(portraitEnterTimer.current);
+    portraitEnterTimer.current = null;
   }, []);
 
   const enterDesk = () => {
     if (viewRef.current !== 'room') return;
     interacted.current = true;
     clearExitTimer();
+    clearPortraitEnterTimer();
     orientationBaseline.current = null;
     setStartMenuOpen(false);
     measureScene();
     viewRef.current = 'desk';
     aimCamera(poses.current.desk, 'desk');
     setView('desk');
-    setStatus('At the desk. Hover over the monitor to use the desktop and apps.');
+    setStatus('At the desk. Hover or select either monitor to open the portfolio or read the CV.');
   };
 
   const enterScreen = () => {
     if (viewRef.current !== 'desk') return;
     interacted.current = true;
     clearExitTimer();
+    clearPortraitEnterTimer();
     measureScene();
     viewRef.current = 'screen';
     aimCamera(poses.current.screen, 'screen');
@@ -348,6 +381,25 @@ export default function App() {
       mobile
         ? `${activeApp === 'autorename' ? 'Sec Renamer' : 'Arduino IDE'} open in phone reading view.`
         : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'Sec Renamer' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
+    );
+  };
+
+  const enterPortrait = () => {
+    if (viewRef.current !== 'desk') return;
+    interacted.current = true;
+    clearExitTimer();
+    clearPortraitEnterTimer();
+    setStartMenuOpen(false);
+    measureScene();
+    viewRef.current = 'portrait';
+    aimCamera(poses.current.portrait, 'portrait');
+    setView('portrait');
+    const mobile = window.matchMedia(phoneQuery).matches;
+    setMobileExpanded(mobile);
+    setStatus(
+      mobile
+        ? 'CV open in phone reading view.'
+        : 'CV open inside the portrait monitor. Scroll to read, or press Escape or move away to return to the desk.',
     );
   };
 
@@ -388,18 +440,42 @@ export default function App() {
     if (viewRef.current !== 'screen') return;
     interacted.current = true;
     clearExitTimer();
+    clearPortraitEnterTimer();
     setStartMenuOpen(false);
     orientationBaseline.current = null;
     orientationSamples.current = 0;
     hoverArmed.current = false;
+    portraitHoverArmed.current = false;
+    lastZoomedView.current = 'screen';
     setMobileExpanded(false);
     viewRef.current = 'desk';
     aimCamera(poses.current.desk, 'desk');
     setView('desk');
     setStatus('Back at the desk. Move away to see the room.');
-  }, [aimCamera, clearExitTimer]);
+  }, [aimCamera, clearExitTimer, clearPortraitEnterTimer]);
+
+  const leavePortrait = useCallback(() => {
+    if (viewRef.current !== 'portrait') return;
+    interacted.current = true;
+    clearExitTimer();
+    clearPortraitEnterTimer();
+    orientationBaseline.current = null;
+    orientationSamples.current = 0;
+    hoverArmed.current = false;
+    portraitHoverArmed.current = false;
+    lastZoomedView.current = 'portrait';
+    setMobileExpanded(false);
+    viewRef.current = 'desk';
+    aimCamera(poses.current.desk, 'desk');
+    setView('desk');
+    setStatus('Back at the desk. Move away to see the room.');
+  }, [aimCamera, clearExitTimer, clearPortraitEnterTimer]);
 
   const handlePhoneBack = () => {
+    if (viewRef.current === 'portrait') {
+      leavePortrait();
+      return;
+    }
     if (activeApp === 'autorename') {
       openApp('arduino');
       return;
@@ -411,13 +487,14 @@ export default function App() {
     if (viewRef.current !== 'desk') return;
     interacted.current = true;
     clearExitTimer();
+    clearPortraitEnterTimer();
     orientationBaseline.current = null;
     setStartMenuOpen(false);
     viewRef.current = 'room';
     aimCamera(poses.current.room, 'room');
     setView('room');
     setStatus('Back in the room. Explore the computer setup to approach the desk.');
-  }, [aimCamera, clearExitTimer]);
+  }, [aimCamera, clearExitTimer, clearPortraitEnterTimer]);
 
   const onNavigationKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -463,9 +540,9 @@ export default function App() {
         return;
       }
       if (event.key !== 'Escape') return;
-      if (cvOpenRef.current) {
+      if (viewRef.current === 'portrait') {
         event.preventDefault();
-        closeCvPreview();
+        leavePortrait();
         return;
       }
       if (viewRef.current === 'screen' && mobileExpandedRef.current) {
@@ -474,7 +551,7 @@ export default function App() {
       } else if (viewRef.current === 'screen') leaveScreen();
       else if (viewRef.current === 'desk') leaveDesk();
     },
-    [activeApp, openApp, leaveScreen, leaveDesk, clearExitTimer, closeCvPreview, startMenuOpen],
+    [activeApp, openApp, leaveScreen, leavePortrait, leaveDesk, clearExitTimer, startMenuOpen],
   );
 
   // Responsive measurements, keyboard navigation, and focus management.
@@ -503,23 +580,29 @@ export default function App() {
       reducedMotion.removeEventListener('change', measureScene);
       window.removeEventListener('resize', measureScene);
       clearExitTimer();
+      clearPortraitEnterTimer();
       if (camera.current.frame) cancelAnimationFrame(camera.current.frame);
       camera.current.frame = 0;
       camera.current.lastTime = 0;
     };
-  }, [measureScene, clearExitTimer]);
+  }, [measureScene, clearExitTimer, clearPortraitEnterTimer]);
 
   useLayoutEffect(() => {
     if (!interacted.current) return;
-    if (view === 'screen' && window.matchMedia(phoneQuery).matches)
+    if ((view === 'screen' || view === 'portrait') && window.matchMedia(phoneQuery).matches)
       mobileBackRef.current?.focus({ preventScroll: true });
+    else if (view === 'portrait') portraitWindowRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'arduino')
       reactPortfolioRef.current?.focus({ preventScroll: true });
     else if (view === 'screen' && activeApp === 'autorename')
       autoRenameWindowRef.current?.focus({ preventScroll: true });
     else if (view === 'screen') desktopAppRef.current?.focus({ preventScroll: true });
-    else if (view === 'desk') hotspotRef.current?.focus({ preventScroll: true });
-    else deskRef.current?.focus({ preventScroll: true });
+    else if (view === 'desk') {
+      if (lastZoomedView.current === 'portrait')
+        portraitMonitorRef.current?.focus({ preventScroll: true });
+      else hotspotRef.current?.focus({ preventScroll: true });
+      lastZoomedView.current = null;
+    } else deskRef.current?.focus({ preventScroll: true });
   }, [view, activeApp, mobileExpanded]);
 
   useLayoutEffect(() => {
@@ -528,13 +611,6 @@ export default function App() {
         ?.querySelector<HTMLButtonElement>('[role="menuitem"]')
         ?.focus({ preventScroll: true });
   }, [startMenuOpen]);
-
-  const cvWasOpen = useRef(false);
-  useLayoutEffect(() => {
-    if (cvOpen) cvModalCloseRef.current?.focus({ preventScroll: true });
-    else if (cvWasOpen.current) portraitMonitorRef.current?.focus({ preventScroll: true });
-    cvWasOpen.current = cvOpen;
-  }, [cvOpen]);
 
   useLayoutEffect(() => {
     window.addEventListener('keydown', onNavigationKeyDown);
@@ -652,7 +728,12 @@ export default function App() {
         : 0;
     const onOrientation = (event: DeviceOrientationEvent) => {
       if (document.visibilityState !== 'visible') return;
-      if (viewRef.current === 'screen' || mobileExpandedRef.current) return;
+      if (
+        viewRef.current === 'screen' ||
+        viewRef.current === 'portrait' ||
+        mobileExpandedRef.current
+      )
+        return;
       if (event.beta == null || event.gamma == null) return;
       if (!orientationBaseline.current) {
         orientationBaseline.current = { beta: event.beta, gamma: event.gamma };
@@ -696,12 +777,14 @@ export default function App() {
     };
   }, [motionStatus, resetMotionPose, updateRoomPose, wakeCamera]);
 
-  // Pointer navigation between the room, desk, and monitor. The short grace
-  // periods prevent the irregular projected edges from feeling like traps
-  // while keeping deliberate exits responsive.
+  // Pointer navigation between the room, desk, and both monitors. Short grace
+  // periods prevent irregular projected edges from feeling like traps, and a
+  // brief hover dwell on the portrait monitor avoids accidental zooms while
+  // sweeping toward the main screen.
   const monitorExitDelay = 280;
   const deskExitDelay = 180;
-  const scheduleExit = (from: 'desk' | 'screen') => {
+  const portraitHoverDelay = 220;
+  const scheduleExit = (from: 'desk' | 'screen' | 'portrait') => {
     if (exitTimer.current) return;
     exitTimer.current = setTimeout(
       () => {
@@ -710,20 +793,22 @@ export default function App() {
           viewRef.current !== from ||
           !camera.current.ready ||
           !pointer.current.active ||
-          mobileExpandedRef.current ||
-          cvOpenRef.current
+          mobileExpandedRef.current
         )
           return;
         const bounds =
           from === 'screen'
             ? stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect()
-            : deskRef.current?.getBoundingClientRect();
+            : from === 'portrait'
+              ? stageRef.current?.querySelector('.portrait-monitor')?.getBoundingClientRect()
+              : deskRef.current?.getBoundingClientRect();
         if (bounds && outside(pointer.current.x, pointer.current.y, bounds, 10)) {
           if (from === 'screen') leaveScreen();
+          else if (from === 'portrait') leavePortrait();
           else leaveDesk();
         }
       },
-      from === 'screen' ? monitorExitDelay : deskExitDelay,
+      from === 'desk' ? deskExitDelay : monitorExitDelay,
     );
   };
 
@@ -735,14 +820,19 @@ export default function App() {
       scheduleExit('screen');
   };
 
+  const onPortraitLeave = (event: PointerEvent<HTMLElement>) => {
+    if (event.pointerType !== 'mouse' || !pointer.current.active) return;
+    pointer.current.x = event.clientX;
+    pointer.current.y = event.clientY;
+    clearPortraitEnterTimer();
+    if (viewRef.current === 'portrait' && camera.current.ready && !mobileExpandedRef.current)
+      scheduleExit('portrait');
+  };
+
   const checkHover = () => {
-    if (
-      !pointer.current.active ||
-      !camera.current.ready ||
-      mobileExpandedRef.current ||
-      cvOpenRef.current
-    ) {
+    if (!pointer.current.active || !camera.current.ready || mobileExpandedRef.current) {
       clearExitTimer();
+      clearPortraitEnterTimer();
       return;
     }
     const { x, y } = pointer.current;
@@ -752,11 +842,48 @@ export default function App() {
       else clearExitTimer();
       return;
     }
+    if (viewRef.current === 'portrait') {
+      const portrait = stageRef.current
+        ?.querySelector('.portrait-monitor')
+        ?.getBoundingClientRect();
+      if (portrait && outside(x, y, portrait, 10)) scheduleExit('portrait');
+      else clearExitTimer();
+      return;
+    }
     if (viewRef.current === 'desk') {
       const screen = stageRef.current?.querySelector('.monitor-screen')?.getBoundingClientRect();
+      const portrait = stageRef.current
+        ?.querySelector('.portrait-monitor')
+        ?.getBoundingClientRect();
       if (screen && outside(x, y, screen)) hoverArmed.current = true;
+      if (portrait && outside(x, y, portrait)) {
+        portraitHoverArmed.current = true;
+        clearPortraitEnterTimer();
+      }
       if (hoverArmed.current && screen && !outside(x, y, screen)) {
+        clearPortraitEnterTimer();
         enterScreen();
+        return;
+      }
+      if (portraitHoverArmed.current && portrait && !outside(x, y, portrait)) {
+        clearExitTimer();
+        if (!portraitEnterTimer.current) {
+          portraitEnterTimer.current = setTimeout(() => {
+            portraitEnterTimer.current = null;
+            if (
+              viewRef.current !== 'desk' ||
+              !camera.current.ready ||
+              !pointer.current.active ||
+              mobileExpandedRef.current
+            )
+              return;
+            const currentPortrait = stageRef.current
+              ?.querySelector('.portrait-monitor')
+              ?.getBoundingClientRect();
+            if (currentPortrait && !outside(pointer.current.x, pointer.current.y, currentPortrait))
+              enterPortrait();
+          }, portraitHoverDelay);
+        }
         return;
       }
       const desk = deskRef.current?.getBoundingClientRect();
@@ -767,10 +894,11 @@ export default function App() {
   checkHoverRef.current = checkHover;
 
   const followCursor = (event: PointerEvent<HTMLElement>) => {
-    if (roomAsset.state !== 'ready' || cvOpenRef.current) return;
+    if (roomAsset.state !== 'ready') return;
     if (event.pointerType !== 'mouse') {
       pointer.current.active = false;
       clearExitTimer();
+      clearPortraitEnterTimer();
       if (
         event.pointerType === 'touch' &&
         viewRef.current === 'room' &&
@@ -828,18 +956,20 @@ export default function App() {
   };
 
   const mobileBackButton =
-    view === 'screen' && mobileExpanded ? (
+    (view === 'screen' || view === 'portrait') && mobileExpanded ? (
       <button
         ref={mobileBackRef}
         className="mobile-portfolio-back"
         type="button"
         onClick={handlePhoneBack}
-        aria-label={activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'}
+        aria-label={
+          view === 'screen' && activeApp === 'autorename' ? 'Back to portfolio' : 'Back to desk'
+        }
       >
         <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
           <path d="M8 4 2.5 10 8 16M3 10h14" />
         </svg>
-        <span>{activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
+        <span>{view === 'screen' && activeApp === 'autorename' ? 'Portfolio' : 'Back'}</span>
       </button>
     ) : null;
 
@@ -860,8 +990,8 @@ export default function App() {
       <div
         className="room-stage"
         ref={stageRef}
-        inert={roomAsset.state !== 'ready' || cvOpen}
-        aria-hidden={roomAsset.state !== 'ready' || cvOpen}
+        inert={roomAsset.state !== 'ready'}
+        aria-hidden={roomAsset.state !== 'ready'}
       >
         <div className="desk-camera">
           <img
@@ -874,25 +1004,27 @@ export default function App() {
           <aside
             className="portrait-monitor"
             aria-label="Angelo Palpalatoc CV"
-            aria-hidden={view === 'room'}
+            aria-hidden={view === 'room' || view === 'screen'}
+            onPointerLeave={onPortraitLeave}
           >
-            <img
-              className="portrait-monitor-image"
-              src={portraitMonitorImage}
-              alt=""
-              draggable={false}
-            />
+            <div className="portrait-surface">
+              <PortraitCvViewer
+                cvUrl={cvUrl}
+                active={view === 'portrait'}
+                windowRef={portraitWindowRef}
+                onClose={leavePortrait}
+                mobileBackButton={view === 'portrait' ? mobileBackButton : null}
+              />
+            </div>
             {view === 'desk' && (
               <button
                 ref={portraitMonitorRef}
                 className="portrait-monitor-hotspot"
                 type="button"
-                aria-label="View or download Angelo Palpalatoc's CV"
+                aria-label="Zoom into the portrait monitor to read or download Angelo Palpalatoc's CV"
                 onClick={() => {
                   pointer.current.active = false;
-                  clearExitTimer();
-                  setCvOpen(true);
-                  setStatus('CV preview open. Press Escape to close.');
+                  enterPortrait();
                 }}
               >
                 <span className="portrait-monitor-badge">VIEW CV</span>
@@ -1232,7 +1364,7 @@ export default function App() {
           </div>
         )}
 
-      {view === 'desk' && !cvOpen && (
+      {view === 'desk' && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>
           Back to room
         </button>
@@ -1255,52 +1387,6 @@ export default function App() {
           Approach the desk to inspect the monitors — portfolio on the right, CV on the left.
         </span>
       </section>
-
-      {cvOpen && (
-        <div
-          className="cv-modal-backdrop"
-          role="presentation"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) closeCvPreview();
-          }}
-        >
-          <section
-            className="cv-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Angelo Palpalatoc CV"
-          >
-            <header className="cv-modal-header">
-              <div className="cv-modal-title">
-                <span className="cv-modal-dot" aria-hidden="true" />
-                <strong>Angelo-Palpalatoc-CV.pdf</strong>
-              </div>
-              <div className="cv-modal-actions">
-                <a className="cv-modal-link" href={cvUrl} target="_blank" rel="noreferrer">
-                  Open in new tab
-                </a>
-                <a className="cv-modal-primary" href={cvUrl} download="Angelo-Palpalatoc-CV.pdf">
-                  Download PDF
-                </a>
-                <button
-                  ref={cvModalCloseRef}
-                  className="cv-modal-close"
-                  type="button"
-                  aria-label="Close CV preview"
-                  onClick={closeCvPreview}
-                >
-                  ×
-                </button>
-              </div>
-            </header>
-            <iframe
-              className="cv-modal-frame"
-              src={`${cvUrl}#view=FitH`}
-              title="Angelo Palpalatoc CV PDF"
-            />
-          </section>
-        </div>
-      )}
 
       {roomAsset.state !== 'ready' && (
         <div className="room-loading">

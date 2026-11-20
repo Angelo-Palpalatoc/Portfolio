@@ -72,7 +72,8 @@ Browser checks covered controlled 60/144 Hz animation, boundary cancellation, id
 
 | Resource                                            | Responsibility                                                                       |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [App.tsx](../src/App.tsx)                           | Camera state, room/desk/screen views, app window, focus, mobile controls             |
+| [App.tsx](../src/App.tsx)                           | Camera state, room/desk/screen/portrait views, app windows, focus, mobile controls   |
+| [PortraitCvViewer.tsx](../src/PortraitCvViewer.tsx) | In-monitor vector CV viewer projected onto the portrait display with PDF download    |
 | [LoadingState.tsx](../src/LoadingState.tsx)         | Image loading state and reusable loading/retry notice                                |
 | [portfolio](../src/portfolio/)                      | Arduino IDE components, typed content/state, Tailwind styles, and mobile scrolling   |
 | [AutoRenameDemo.tsx](../src/AutoRenameDemo.tsx)     | Guided, UI-only mobile app demo with fictional single and batch samples              |
@@ -89,7 +90,7 @@ The shared surface is laid out at 1280 logical pixels wide, with height derived 
 
 Pointer exits use short hysteresis delays: 280 ms from the monitor and 180 ms from the desk. Returning inside the active bounds cancels the pending exit.
 
-The portrait monitor now renders a crisp WebP preview of Angelo's public CV aligned to the vertical display beside the main monitor (`src/assets/portrait-monitor-cv.webp`). At the desk view, clicking or focusing the portrait monitor opens a dark-shell CV preview modal backed by `public/Angelo-Palpalatoc-CV.pdf` with Open in New Tab and Download PDF actions; Escape closes the modal before returning to the room.
+The portrait monitor now projects an interactive vector CV viewer (`src/PortraitCvViewer.tsx`) onto the vertical display beside the main monitor using the same `monitorProjection` math as the landscape desktop. At the desk view, hovering briefly (~220 ms dwell) or clicking the portrait monitor zooms the spring camera directly into the `portrait` view so visitors can scroll, click links, open, or download `public/Angelo-Palpalatoc-CV.pdf`; moving away or pressing Escape returns smoothly to the desk, and phones expand it into an upright full-screen reading view.
 
 ### Portfolio upgrades (2026-11-20)
 

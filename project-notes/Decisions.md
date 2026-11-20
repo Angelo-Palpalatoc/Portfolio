@@ -22,7 +22,7 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 - Add Sec Renamer as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.
 - Henry Heffernan's portfolio is the reference for the immersive interaction. Refer to his code when changing that experience: https://github.com/henryjeff/portfolio-website.
 - Use a 280 ms monitor exit grace period and 180 ms desk exit grace period so pointer movement across the irregular projected edges does not trigger premature exits. Preserve the existing 10 px boundary margin and re-entry cancellation.
-- Use the portrait monitor to display a crisp WebP preview of Angelo's public CV. When at the desk view, clicking or focusing the portrait monitor opens a dark-shell CV preview modal with Open in New Tab and Download PDF actions (`public/Angelo-Palpalatoc-CV.pdf`), keeping the main monitor as the interactive workspace.
+- Use the portrait monitor as a second zoomable display (`view = 'portrait'`) using the same `monitorProjection` math and spring camera as the main monitor. At the desk view, a short hover dwell (~220 ms) or click zooms directly into an in-monitor vector CV viewer (`src/PortraitCvViewer.tsx`) with scroll, clickable links, Open PDF, and Download PDF (`public/Angelo-Palpalatoc-CV.pdf`); moving outside or pressing Escape glides back to the desk, and phones expand it upright.
 - Keep the Room View entry immersive (no Skip button or `/?direct=1` bypass); communicate Angelo's identity, role, stack, and dual-monitor layout cleanly in the room caption.
 
 ## Ownership and scope
