@@ -19,11 +19,11 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 - Use Arduino teal (`#00979C`), white, and black/dark neutrals for new room-shell UI components.
 - Serve lossless WebP versions of the room, wallpaper, and icon; preserve the original image dimensions and decoded pixels.
 - Keep the existing Lighthouse project content unchanged. Its interactive demo remains withdrawn because it is company property.
-- Add Sec Rename as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.
+- Add Sec Renamer as a separate project with a guided mobile UI demo. Use fictional data and a prepared result; do not access visitor files or the camera.
 - Henry Heffernan's portfolio is the reference for the immersive interaction. Refer to his code when changing that experience: https://github.com/henryjeff/portfolio-website.
 - Use a 280 ms monitor exit grace period and 180 ms desk exit grace period so pointer movement across the irregular projected edges does not trigger premature exits. Preserve the existing 10 px boundary margin and re-entry cancellation.
-- Use the portrait monitor as a compact Project Explorer: profile signal, stack, project status, and personal/work labels. Keep it complementary to the detailed Arduino portfolio on the main monitor.
-- Use a generated static image for the portrait monitor's Explorer surface. Keep the portrait display decorative and leave the main monitor as the only interactive screen.
+- Use the portrait monitor to display a crisp WebP preview of Angelo's public CV. When at the desk view, clicking or focusing the portrait monitor opens a dark-shell CV preview modal with Open in New Tab and Download PDF actions (`public/Angelo-Palpalatoc-CV.pdf`), keeping the main monitor as the interactive workspace.
+- Keep the Room View entry immersive (no Skip button or `/?direct=1` bypass); communicate Angelo's identity, role, stack, and dual-monitor layout cleanly in the room caption.
 
 ## Ownership and scope
 

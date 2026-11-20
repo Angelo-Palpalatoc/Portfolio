@@ -17,7 +17,7 @@ export function PortfolioSection({
 }) {
   switch (id) {
     case 'main':
-      return <MainSection onExplore={() => onOpen('lighthouse')} />;
+      return <MainSection onExplore={() => onOpen('lighthouse')} onOpen={onOpen} />;
     case 'about':
       return <AboutSection />;
     case 'skills':
@@ -27,10 +27,10 @@ export function PortfolioSection({
     case 'contact':
       return <ContactSection />;
     case 'lighthouse':
-      return <LighthouseProject />;
+      return <LighthouseProject onOpen={onOpen} />;
     case 'autorename':
-      return <SecRenameProject onOpenDemo={onOpenSecRename} />;
+      return <SecRenameProject onOpenDemo={onOpenSecRename} onOpen={onOpen} />;
     case 'portfolio':
-      return <RoomPortfolioProject />;
+      return <RoomPortfolioProject onOpen={onOpen} />;
   }
 }

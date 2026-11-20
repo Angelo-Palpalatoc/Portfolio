@@ -1,15 +1,16 @@
-﻿import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
 import { lazy, Suspense } from 'react';
 import roomImage from './assets/room.webp';
-import monitorBackground from './assets/BackgroundDesktop.png';
-import portraitMonitorImage from './assets/portrait-monitor-explorer.png';
+import monitorBackground from './assets/desktop-background.webp';
+import portraitMonitorImage from './assets/portrait-monitor-cv.webp';
 import { monitorProjection } from './monitorProjection';
 import { LoadNotice, useImageAsset } from './LoadingState';
 import AutoRenameDemo from './AutoRenameDemo';
 const ArduinoPortfolio = lazy(() => import('./portfolio/ArduinoPortfolio'));
 
 const ideWidth = 1280;
+const cvUrl = '/Angelo-Palpalatoc-CV.pdf';
 const deskParallaxIntensity = 1.3;
 const deskBounds = { left: 0.28, top: 0.355, width: 0.59, height: 0.28 };
 const deskCenter = { x: 0.575, y: 0.495 };
@@ -60,6 +61,7 @@ export default function App() {
   const [windowMaximized, setWindowMaximized] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
+  const [cvOpen, setCvOpen] = useState(false);
   const [motionStatus, setMotionStatus] = useState<MotionStatus>('hidden');
   const roomAsset = useImageAsset(roomImage);
   const wallpaperAsset = useImageAsset(monitorBackground, roomAsset.state === 'ready');
@@ -67,6 +69,8 @@ export default function App() {
   const stageRef = useRef<HTMLDivElement>(null);
   const deskRef = useRef<HTMLButtonElement>(null);
   const hotspotRef = useRef<HTMLButtonElement>(null);
+  const portraitMonitorRef = useRef<HTMLButtonElement>(null);
+  const cvModalCloseRef = useRef<HTMLButtonElement>(null);
   const desktopAppRef = useRef<HTMLButtonElement>(null);
   const autoRenameRef = useRef<HTMLButtonElement>(null);
   const autoRenameWindowRef = useRef<HTMLElement>(null);
@@ -76,6 +80,8 @@ export default function App() {
   const reactPortfolioRef = useRef<HTMLDivElement>(null);
   const mobileExpandedRef = useRef(mobileExpanded);
   mobileExpandedRef.current = mobileExpanded;
+  const cvOpenRef = useRef(cvOpen);
+  cvOpenRef.current = cvOpen;
   const hoverArmed = useRef(true);
   const interacted = useRef(false);
   const viewRef = useRef<View>('room');
@@ -308,6 +314,13 @@ export default function App() {
     exitTimer.current = null;
   }, []);
 
+  // Focus returns to the portrait monitor from the layout effect below, after
+  // the room stage is no longer inert.
+  const closeCvPreview = useCallback(() => {
+    setCvOpen(false);
+    setStatus('Closed CV preview. Back at the desk.');
+  }, []);
+
   const enterDesk = () => {
     if (viewRef.current !== 'room') return;
     interacted.current = true;
@@ -333,13 +346,13 @@ export default function App() {
     setMobileExpanded(mobile);
     setStatus(
       mobile
-        ? `${activeApp === 'autorename' ? 'Sec Rename' : 'Arduino IDE'} open in phone reading view.`
-        : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'Sec Rename' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
+        ? `${activeApp === 'autorename' ? 'Sec Renamer' : 'Arduino IDE'} open in phone reading view.`
+        : `${activeApp === 'arduino' ? 'Arduino IDE' : activeApp === 'autorename' ? 'Sec Renamer' : 'Desktop'} open inside the monitor. Press Escape or move away to return to the desk.`,
     );
   };
 
   const closeApp = (app: AppName) => {
-    const name = app === 'autorename' ? 'Sec Rename' : 'Arduino IDE';
+    const name = app === 'autorename' ? 'Sec Renamer' : 'Arduino IDE';
     setOpenApps((current) => ({ ...current, [app]: false }));
     setActiveApp(null);
     setWindowMaximized(false);
@@ -350,7 +363,7 @@ export default function App() {
 
   const minimizeApp = () => {
     if (!activeApp) return;
-    const name = activeApp === 'autorename' ? 'Sec Rename' : 'Arduino IDE';
+    const name = activeApp === 'autorename' ? 'Sec Renamer' : 'Arduino IDE';
     setActiveApp(null);
     setStartMenuOpen(false);
     setStatus(`${name} minimized to the taskbar. Its current state is preserved.`);
@@ -361,7 +374,7 @@ export default function App() {
     setActiveApp(app);
     setWindowMaximized(false);
     setStartMenuOpen(false);
-    setStatus(`${app === 'autorename' ? 'Sec Rename' : 'Arduino IDE'} opened.`);
+    setStatus(`${app === 'autorename' ? 'Sec Renamer' : 'Arduino IDE'} opened.`);
   }, []);
 
   const activateTaskbarApp = (app: AppName) => {
@@ -450,13 +463,18 @@ export default function App() {
         return;
       }
       if (event.key !== 'Escape') return;
+      if (cvOpenRef.current) {
+        event.preventDefault();
+        closeCvPreview();
+        return;
+      }
       if (viewRef.current === 'screen' && mobileExpandedRef.current) {
         if (activeApp === 'autorename') openApp('arduino');
         else leaveScreen();
       } else if (viewRef.current === 'screen') leaveScreen();
       else if (viewRef.current === 'desk') leaveDesk();
     },
-    [activeApp, openApp, leaveScreen, leaveDesk, clearExitTimer, startMenuOpen],
+    [activeApp, openApp, leaveScreen, leaveDesk, clearExitTimer, closeCvPreview, startMenuOpen],
   );
 
   // Responsive measurements, keyboard navigation, and focus management.
@@ -510,6 +528,13 @@ export default function App() {
         ?.querySelector<HTMLButtonElement>('[role="menuitem"]')
         ?.focus({ preventScroll: true });
   }, [startMenuOpen]);
+
+  const cvWasOpen = useRef(false);
+  useLayoutEffect(() => {
+    if (cvOpen) cvModalCloseRef.current?.focus({ preventScroll: true });
+    else if (cvWasOpen.current) portraitMonitorRef.current?.focus({ preventScroll: true });
+    cvWasOpen.current = cvOpen;
+  }, [cvOpen]);
 
   useLayoutEffect(() => {
     window.addEventListener('keydown', onNavigationKeyDown);
@@ -685,7 +710,8 @@ export default function App() {
           viewRef.current !== from ||
           !camera.current.ready ||
           !pointer.current.active ||
-          mobileExpandedRef.current
+          mobileExpandedRef.current ||
+          cvOpenRef.current
         )
           return;
         const bounds =
@@ -710,7 +736,12 @@ export default function App() {
   };
 
   const checkHover = () => {
-    if (!pointer.current.active || !camera.current.ready || mobileExpandedRef.current) {
+    if (
+      !pointer.current.active ||
+      !camera.current.ready ||
+      mobileExpandedRef.current ||
+      cvOpenRef.current
+    ) {
       clearExitTimer();
       return;
     }
@@ -736,7 +767,7 @@ export default function App() {
   checkHoverRef.current = checkHover;
 
   const followCursor = (event: PointerEvent<HTMLElement>) => {
-    if (roomAsset.state !== 'ready') return;
+    if (roomAsset.state !== 'ready' || cvOpenRef.current) return;
     if (event.pointerType !== 'mouse') {
       pointer.current.active = false;
       clearExitTimer();
@@ -829,8 +860,8 @@ export default function App() {
       <div
         className="room-stage"
         ref={stageRef}
-        inert={roomAsset.state !== 'ready'}
-        aria-hidden={roomAsset.state !== 'ready'}
+        inert={roomAsset.state !== 'ready' || cvOpen}
+        aria-hidden={roomAsset.state !== 'ready' || cvOpen}
       >
         <div className="desk-camera">
           <img
@@ -842,7 +873,7 @@ export default function App() {
           />{' '}
           <aside
             className="portrait-monitor"
-            aria-label="Portfolio project explorer"
+            aria-label="Angelo Palpalatoc CV"
             aria-hidden={view === 'room'}
           >
             <img
@@ -851,6 +882,22 @@ export default function App() {
               alt=""
               draggable={false}
             />
+            {view === 'desk' && (
+              <button
+                ref={portraitMonitorRef}
+                className="portrait-monitor-hotspot"
+                type="button"
+                aria-label="View or download Angelo Palpalatoc's CV"
+                onClick={() => {
+                  pointer.current.active = false;
+                  clearExitTimer();
+                  setCvOpen(true);
+                  setStatus('CV preview open. Press Escape to close.');
+                }}
+              >
+                <span className="portrait-monitor-badge">VIEW CV</span>
+              </button>
+            )}
           </aside>
           <div className="monitor-screen" onPointerLeave={onMonitorLeave}>
             <div className="monitor-surface">
@@ -893,7 +940,7 @@ export default function App() {
                         alt=""
                         draggable={false}
                       />
-                      <span className="desktop-shortcut-label">Sec Rename</span>
+                      <span className="desktop-shortcut-label">Sec Renamer</span>
                     </button>
                   </div>
                 )}
@@ -931,13 +978,13 @@ export default function App() {
                       className={`taskbar-app${openApps.autorename ? ' is-running' : ''}${activeApp === 'autorename' ? ' is-active' : ''}`}
                       type="button"
                       aria-label={
-                        activeApp === 'autorename' ? 'Minimize Sec Rename' : 'Open Sec Rename'
+                        activeApp === 'autorename' ? 'Minimize Sec Renamer' : 'Open Sec Renamer'
                       }
                       aria-pressed={activeApp === 'autorename'}
                       onClick={() => activateTaskbarApp('autorename')}
                     >
                       <img src="/autorenamer-icon.svg" alt="" draggable={false} />
-                      <span className="taskbar-tooltip">Sec Rename</span>
+                      <span className="taskbar-tooltip">Sec Renamer</span>
                     </button>
                   </div>
                 </div>
@@ -975,7 +1022,7 @@ export default function App() {
                     >
                       <img src="/autorenamer-icon.svg" alt="" draggable={false} />
                       <span>
-                        <strong>Sec Rename</strong>
+                        <strong>Sec Renamer</strong>
                         <small>Mobile app demo</small>
                       </span>
                     </button>
@@ -1055,14 +1102,14 @@ export default function App() {
                   tabIndex={-1}
                   className={`autorename-window monitor-app-window${windowMaximized && activeApp === 'autorename' ? ' window-maximized' : ''}${activeApp !== 'autorename' ? ' is-minimized' : ''}`}
                   id="autorenamer-window"
-                  aria-label="Sec Rename interactive mobile demo"
+                  aria-label="Sec Renamer interactive mobile demo"
                   aria-hidden={view !== 'screen' || activeApp !== 'autorename'}
                   inert={view !== 'screen' || activeApp !== 'autorename'}
                 >
                   <header className="arduino-window-titlebar">
                     <img className="rename-window-mark" src="/autorenamer-icon.svg" alt="" />
                     <span className="window-title">
-                      Sec Rename <span>— interactive mobile demo</span>
+                      Sec Renamer <span>— interactive mobile demo</span>
                     </span>
                     <button
                       className="rename-return-button"
@@ -1071,12 +1118,12 @@ export default function App() {
                     >
                       Back to Portfolio
                     </button>
-                    <div className="window-controls" aria-label="Sec Rename window controls">
+                    <div className="window-controls" aria-label="Sec Renamer window controls">
                       <button
                         className="window-control"
                         type="button"
                         onClick={minimizeApp}
-                        aria-label="Minimize Sec Rename"
+                        aria-label="Minimize Sec Renamer"
                       >
                         —
                       </button>
@@ -1084,7 +1131,9 @@ export default function App() {
                         className="window-control"
                         type="button"
                         onClick={toggleMaximize}
-                        aria-label={windowMaximized ? 'Restore Sec Rename' : 'Maximize Sec Rename'}
+                        aria-label={
+                          windowMaximized ? 'Restore Sec Renamer' : 'Maximize Sec Renamer'
+                        }
                       >
                         {windowMaximized ? '▣' : '□'}
                       </button>
@@ -1092,7 +1141,7 @@ export default function App() {
                         className="window-control window-close"
                         type="button"
                         onClick={() => closeApp('autorename')}
-                        aria-label="Close Sec Rename"
+                        aria-label="Close Sec Renamer"
                       >
                         ×
                       </button>
@@ -1183,7 +1232,7 @@ export default function App() {
           </div>
         )}
 
-      {view === 'desk' && (
+      {view === 'desk' && !cvOpen && (
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>
           Back to room
         </button>
@@ -1193,16 +1242,65 @@ export default function App() {
         className="room-caption"
         aria-hidden={view !== 'room' || roomAsset.state !== 'ready'}
         inert={view !== 'room' || roomAsset.state !== 'ready'}
-        aria-label="Explore the computer setup"
+        aria-label="Angelo Palpalatoc portfolio overview"
       >
         <span className="caption-kicker">
-          <span className="caption-line" /> 01 / COMPUTER SETUP
+          <span className="caption-line" /> ANGELO PALPALATOC · FULL-STACK ENGINEER
         </span>
-        <span className="caption-title">Come on in. My work is on screen.</span>
+        <h1 className="caption-title">Come on in. My work is on screen.</h1>
+        <span className="caption-stack">
+          React · TypeScript · Python · FastAPI · PostgreSQL · AI Workflows
+        </span>
         <span className="caption-hint">
-          Explore the desk, then open the monitor to see my portfolio.
+          Approach the desk to inspect the monitors — portfolio on the right, CV on the left.
         </span>
       </section>
+
+      {cvOpen && (
+        <div
+          className="cv-modal-backdrop"
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeCvPreview();
+          }}
+        >
+          <section
+            className="cv-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Angelo Palpalatoc CV"
+          >
+            <header className="cv-modal-header">
+              <div className="cv-modal-title">
+                <span className="cv-modal-dot" aria-hidden="true" />
+                <strong>Angelo-Palpalatoc-CV.pdf</strong>
+              </div>
+              <div className="cv-modal-actions">
+                <a className="cv-modal-link" href={cvUrl} target="_blank" rel="noreferrer">
+                  Open in new tab
+                </a>
+                <a className="cv-modal-primary" href={cvUrl} download="Angelo-Palpalatoc-CV.pdf">
+                  Download PDF
+                </a>
+                <button
+                  ref={cvModalCloseRef}
+                  className="cv-modal-close"
+                  type="button"
+                  aria-label="Close CV preview"
+                  onClick={closeCvPreview}
+                >
+                  ×
+                </button>
+              </div>
+            </header>
+            <iframe
+              className="cv-modal-frame"
+              src={`${cvUrl}#view=FitH`}
+              title="Angelo Palpalatoc CV PDF"
+            />
+          </section>
+        </div>
+      )}
 
       {roomAsset.state !== 'ready' && (
         <div className="room-loading">

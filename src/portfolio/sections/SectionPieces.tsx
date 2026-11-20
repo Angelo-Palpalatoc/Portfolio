@@ -1,4 +1,9 @@
-import type { ArchitectureNode } from '../portfolio.types';
+import type {
+  ArchitectureNode,
+  ProjectMetric,
+  ProjectTradeoff,
+  SectionId,
+} from '../portfolio.types';
 
 export function SectionHeading({ file, title }: { file: string; title: string }) {
   return (
@@ -115,6 +120,85 @@ export function TechChips({ items }: { items: string[] }) {
         ))}
       </div>
     </div>
+  );
+}
+
+export function MetricStrip({
+  items,
+  label = 'SCOPE & IMPACT',
+}: {
+  items: ProjectMetric[];
+  label?: string;
+}) {
+  return (
+    <div className="mb-8">
+      <Eyebrow>{label}</Eyebrow>
+      <div className="grid grid-cols-4 gap-px border border-arduino-border bg-arduino-border max-[759px]:grid-cols-2">
+        {items.map((item) => (
+          <div key={item.label} className="bg-arduino-panel px-4 py-4">
+            <div className="font-arduino-code text-[22px] font-bold tracking-[-0.02em] text-arduino-teal">
+              {item.value}
+            </div>
+            <div className="mt-1 text-[12.5px] leading-[1.45] text-arduino-muted">{item.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function TradeoffCards({ items }: { items: ProjectTradeoff[] }) {
+  return (
+    <div className="mb-9">
+      <Eyebrow>ENGINEERING TRADE-OFFS</Eyebrow>
+      <div className="grid grid-cols-2 gap-px border border-arduino-border bg-arduino-border max-[759px]:grid-cols-1">
+        {items.map((item) => (
+          <div key={item.title} className="bg-arduino-panel p-5">
+            <div className="mb-2 text-[15px] font-semibold text-[#f2f2f2]">{item.title}</div>
+            <p className="text-pretty text-[14.5px] leading-[1.68]">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function ProjectPager({
+  prev,
+  next,
+  onOpen,
+}: {
+  prev?: { id: SectionId; name: string };
+  next?: { id: SectionId; name: string };
+  onOpen?: (id: SectionId) => void;
+}) {
+  if (!onOpen || (!prev && !next)) return null;
+  return (
+    <nav
+      aria-label="Project navigation"
+      className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-arduino-border pt-6"
+    >
+      {prev ? (
+        <button
+          type="button"
+          className="ide-secondary-button !h-10 !px-4 !text-[12px]"
+          onClick={() => onOpen(prev.id)}
+        >
+          ← {prev.name}
+        </button>
+      ) : (
+        <span />
+      )}
+      {next && (
+        <button
+          type="button"
+          className="ide-secondary-button !h-10 !px-4 !text-[12px]"
+          onClick={() => onOpen(next.id)}
+        >
+          Next: {next.name} →
+        </button>
+      )}
+    </nav>
   );
 }
 

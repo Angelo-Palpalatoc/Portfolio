@@ -1,4 +1,5 @@
 import { portfolioLinks } from '../portfolio.data';
+import { useCopyToClipboard } from '../useCopyToClipboard';
 import { CodePreview } from './SectionPieces';
 
 const lines = [
@@ -16,6 +17,8 @@ const lines = [
 ];
 
 export function ContactSection() {
+  const { copied, copy } = useCopyToClipboard(portfolioLinks.emailAddress);
+
   return (
     <div className="max-w-[720px]">
       <CodePreview lines={lines} />
@@ -29,6 +32,22 @@ export function ContactSection() {
       <div className="flex flex-wrap gap-3">
         <a href={portfolioLinks.email} className="ide-primary-button !h-[46px]">
           [ EMAIL ME ]
+        </a>
+        <button
+          type="button"
+          onClick={copy}
+          className="ide-secondary-button !h-[46px]"
+          aria-live="polite"
+        >
+          {copied ? '[ ✓ EMAIL COPIED ]' : '[ COPY EMAIL ]'}
+        </button>
+        <a
+          href={portfolioLinks.cv}
+          target="_blank"
+          rel="noreferrer"
+          className="ide-secondary-button !h-[46px]"
+        >
+          [ DOWNLOAD CV ]
         </a>
         <a
           href={portfolioLinks.linkedin}

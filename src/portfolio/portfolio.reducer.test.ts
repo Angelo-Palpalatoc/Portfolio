@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileEntries, sectionInfo } from './portfolio.data';
+import { featuredProjects, fileEntries, portfolioLinks, sectionInfo } from './portfolio.data';
 import { initialPortfolioState, portfolioReducer } from './portfolio.reducer';
 
 describe('portfolio state', () => {
@@ -74,5 +74,15 @@ describe('portfolio state', () => {
   it('has a typed Info panel entry for every navigable file', () => {
     expect(fileEntries).toHaveLength(8);
     expect(fileEntries.every((file) => sectionInfo[file.id].section === file.path)).toBe(true);
+    expect(fileEntries.find((file) => file.id === 'autorename')?.path).toBe(
+      'projects/sec_renamer.ino',
+    );
+  });
+
+  it('keeps featured projects, CV link, and NDA metadata consistent', () => {
+    const validIds = new Set(fileEntries.map((file) => file.id));
+    expect(featuredProjects.every((project) => validIds.has(project.id))).toBe(true);
+    expect(portfolioLinks.cv).toBe('/Angelo-Palpalatoc-CV.pdf');
+    expect(sectionInfo.lighthouse.meta).toContainEqual(['links', 'Private (NDA)']);
   });
 });

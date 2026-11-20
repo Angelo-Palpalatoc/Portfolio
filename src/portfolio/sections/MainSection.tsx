@@ -1,5 +1,6 @@
-import { heroStack, portfolioLinks } from '../portfolio.data';
-import { CodePreview } from './SectionPieces';
+import { featuredProjects, heroStack, portfolioLinks } from '../portfolio.data';
+import type { SectionId } from '../portfolio.types';
+import { CodePreview, Eyebrow } from './SectionPieces';
 
 const codeLines = [
   <span className="text-[#6a9955]">// main.ino</span>,
@@ -51,11 +52,17 @@ const codeLines = [
   '}',
 ];
 
-export function MainSection({ onExplore }: { onExplore: () => void }) {
+export function MainSection({
+  onExplore,
+  onOpen,
+}: {
+  onExplore: () => void;
+  onOpen: (id: SectionId) => void;
+}) {
   return (
     <>
       <CodePreview lines={codeLines} />
-      <div className="mt-9 max-w-[680px]">
+      <div className="mt-9 max-w-[740px]">
         <h1 className="mb-[6px] text-[38px] font-bold leading-[1.15] tracking-[-0.02em] text-[#f2f2f2]">
           Angelo Palpalatoc
         </h1>
@@ -71,7 +78,7 @@ export function MainSection({ onExplore }: { onExplore: () => void }) {
           complex workflows easy to understand and use.
         </p>
         <div className="mt-6 flex flex-wrap gap-[10px]">
-          {['FULL-STACK', 'AI DOCUMENT WORKFLOWS', 'RESPONSIVE WEBSITE'].map((item, index) => (
+          {['FULL-STACK', 'AI DOCUMENT WORKFLOWS', 'RESPONSIVE WEB & MOBILE'].map((item, index) => (
             <div
               key={item}
               className={`min-w-[130px] flex-[1_1_150px] border-l-2 pl-[10px] ${index === 0 ? 'border-arduino-teal text-arduino-teal' : 'border-arduino-border'}`}
@@ -84,6 +91,14 @@ export function MainSection({ onExplore }: { onExplore: () => void }) {
           <button type="button" className="ide-primary-button !px-5" onClick={onExplore}>
             [ EXPLORE PROJECTS ]
           </button>
+          <a
+            href={portfolioLinks.cv}
+            target="_blank"
+            rel="noreferrer"
+            className="ide-secondary-button !px-[18px]"
+          >
+            [ DOWNLOAD CV ]
+          </a>
           <a
             href={portfolioLinks.email}
             className="ide-secondary-button !px-[18px] !tracking-normal"
@@ -102,6 +117,37 @@ export function MainSection({ onExplore }: { onExplore: () => void }) {
           ))}
         </div>
       </div>
+
+      <section className="mt-10 max-w-[880px]" aria-label="Featured projects">
+        <Eyebrow>FEATURED PROJECTS</Eyebrow>
+        <div className="grid grid-cols-3 gap-px border border-arduino-border bg-arduino-border max-[819px]:grid-cols-1">
+          {featuredProjects.map((project) => (
+            <button
+              key={project.id}
+              type="button"
+              onClick={() => onOpen(project.id)}
+              className="group flex flex-col items-start justify-between bg-arduino-panel p-5 text-left transition-colors hover:bg-[#2a2d2e]"
+            >
+              <div>
+                <div
+                  className={`mb-2 font-arduino-code text-[10.5px] tracking-[0.1em] ${project.work ? 'text-[#d19a66]' : 'text-[#4ec9b0]'}`}
+                >
+                  {project.tag}
+                </div>
+                <div className="text-[16px] font-semibold text-[#f2f2f2] group-hover:text-arduino-teal">
+                  {project.name}
+                </div>
+                <p className="mt-2 font-arduino-ui text-[13.5px] leading-[1.55] text-arduino-text">
+                  {project.summary}
+                </p>
+              </div>
+              <span className="mt-4 font-arduino-code text-[11px] text-arduino-teal">
+                Open {project.file} →
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

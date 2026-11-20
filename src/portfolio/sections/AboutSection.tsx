@@ -25,7 +25,7 @@ export function AboutSection() {
           <br />
           College introduced me to programming and robotics. Seeing sensors collect data and code
           turn it into useful action made me want to build things myself. I committed long study
-          days to web fundamentals: HTML, CSS, JavaScript, React, and TypeScript and grew that
+          days to web fundamentals: HTML, CSS, JavaScript, React, and TypeScript, and grew that
           curiosity into full-stack web and mobile projects.
           <br />
           <br />

@@ -39,6 +39,25 @@ export type ExperienceEntry = {
   bullets: string[];
 };
 
+export type FeaturedProject = {
+  id: Extract<SectionId, 'lighthouse' | 'autorename' | 'portfolio'>;
+  file: string;
+  name: string;
+  tag: string;
+  summary: string;
+  work?: boolean;
+};
+
+export type ProjectMetric = {
+  value: string;
+  label: string;
+};
+
+export type ProjectTradeoff = {
+  title: string;
+  text: string;
+};
+
 export type SerialLine = {
   time: string;
   message: string;

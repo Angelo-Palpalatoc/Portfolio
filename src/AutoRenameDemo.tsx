@@ -27,7 +27,7 @@ const renamedFile = (name: string) => `${name.trim().replace(/[. ]+$/, '')}.pdf`
 
 function AppMark() {
   return (
-    <svg className="rename-mark" viewBox="0 0 108 108" role="img" aria-label="SEC Rename icon">
+    <svg className="rename-mark" viewBox="0 0 108 108" role="img" aria-label="Sec Renamer icon">
       <rect width="108" height="108" fill="#0054a4" />
       <path d="M30 20h33l15 15v53H30Z" fill="#fff" />
       <path d="M30 20h7v68h-7Z" fill="#b51f32" />
@@ -81,7 +81,7 @@ export default function AutoRenameDemo() {
     <div className="rename-demo">
       <div className="rename-demo-aside">
         <span className="rename-demo-label">INTERACTIVE MOBILE DEMO</span>
-        <h2>See Sec Rename in action</h2>
+        <h2>See Sec Renamer in action</h2>
         <p>
           Try the single-document or batch flow with fictional certificates. The screens mirror the
           Android app; the results and saved copies are simulated.
@@ -96,7 +96,7 @@ export default function AutoRenameDemo() {
         </button>
       </div>
 
-      <div className="rename-phone" aria-label="Sec Rename Android app demo">
+      <div className="rename-phone" aria-label="Sec Renamer Android app demo">
         <div className="rename-phone-status" aria-hidden="true">
           <span>9:41</span>
           <span>●●● ▰</span>
@@ -114,7 +114,7 @@ export default function AutoRenameDemo() {
           )}
           <AppMark />
           <div className="rename-app-heading">
-            <strong>SEC Rename</strong>
+            <strong>SEC Renamer</strong>
             <span>Scan · Review · Save a copy</span>
           </div>
           <span className="rename-demo-tag">DEMO</span>

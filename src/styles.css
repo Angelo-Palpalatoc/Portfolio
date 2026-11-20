@@ -1,4 +1,4 @@
-﻿/* Base document */
+/* Base document */
 :root {
   color-scheme: dark;
   font-family:
@@ -73,19 +73,65 @@ button {
   overflow: hidden;
   container-type: inline-size;
   clip-path: polygon(1% 0, 99% 1.7%, 100% 99%, 0 100%);
-  color: #eaf6f7;
-  background: #121b1e;
+  background: #f6f7f8;
   box-shadow: inset 0 0 0 1px #00979c66;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
   pointer-events: none;
   transform: translateZ(0);
+}
+.experience[data-view='desk'] .portrait-monitor {
+  pointer-events: auto;
 }
 .portrait-monitor-image {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
+  object-position: top center;
   user-select: none;
+}
+.portrait-monitor-hotspot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 4% 6%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+.portrait-monitor-hotspot:hover,
+.portrait-monitor-hotspot:focus-visible {
+  background: #00979c24;
+  box-shadow: inset 0 0 0 2px #28c6c4;
+  outline: none;
+}
+.portrait-monitor-badge {
+  padding: 3px 6px;
+  border: 1px solid #28c6c4;
+  color: #f4fbfb;
+  background: #0b1112e6;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(6px, 11cqw, 10px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transform: translateY(3px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+.portrait-monitor-hotspot:hover .portrait-monitor-badge,
+.portrait-monitor-hotspot:focus-visible .portrait-monitor-badge {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (hover: none), (pointer: coarse) {
+  .portrait-monitor-badge {
+    opacity: 0.92;
+    transform: none;
+  }
 }
 .desk-camera {
   position: absolute;
@@ -600,17 +646,25 @@ button {
   position: absolute;
   z-index: 3;
   left: clamp(18px, 4vw, 58px);
-  bottom: clamp(20px, 5vh, 60px);
+  bottom: clamp(20px, 5vh, 56px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 7px;
-  max-width: min(360px, 80vw);
+  gap: 8px;
+  max-width: min(460px, 84vw);
   color: #fff;
   text-shadow:
-    0 2px 3px #000,
-    0 0 14px #000;
+    0 2px 4px #000,
+    0 0 18px #000c;
   transition: opacity 500ms ease;
+}
+.room-caption::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -28px -36px -24px -32px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 24% 72%, #080b0fd1 0%, #080b0f80 48%, transparent 78%);
 }
 .experience[data-view='desk'] .room-caption,
 .experience[data-view='screen'] .room-caption {
@@ -621,26 +675,142 @@ button {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #fff;
+  color: #28c6c4;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
 }
 .caption-line {
   width: 24px;
   height: 2px;
-  background: #fff;
-  box-shadow: 0 1px 4px #000;
+  background: #28c6c4;
+  box-shadow: 0 1px 6px #000;
 }
 .caption-title {
-  font-size: clamp(22px, 2.7vw, 36px);
+  margin: 0;
+  font-size: clamp(24px, 2.8vw, 38px);
   font-weight: 750;
-  line-height: 1.07;
+  line-height: 1.08;
   letter-spacing: -0.035em;
 }
+.caption-stack {
+  color: #dff5f5;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: clamp(11px, 0.95vw, 12.5px);
+  letter-spacing: 0.02em;
+}
 .caption-hint {
-  color: #fff;
-  font-size: clamp(12px, 1.1vw, 15px);
+  color: #eef3f4;
+  font-size: clamp(12.5px, 1.08vw, 14.5px);
+  line-height: 1.4;
+}
+
+/* CV modal opened from the portrait monitor */
+.cv-modal-backdrop {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 28px);
+  background: #070b0ed9;
+  backdrop-filter: blur(6px);
+}
+.cv-modal {
+  display: flex;
+  width: min(920px, 100%);
+  height: min(88svh, 960px);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #00979c88;
+  background: #14191b;
+  box-shadow: 0 24px 64px #000b;
+}
+.cv-modal-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #2b3438;
+  background: #1a2124;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.cv-modal-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f2f7f7;
+  font-size: 12.5px;
+}
+.cv-modal-dot {
+  width: 8px;
+  height: 8px;
+  background: #00979c;
+}
+.cv-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cv-modal-link,
+.cv-modal-primary {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11.5px;
+  text-decoration: none;
+}
+.cv-modal-link {
+  border: 1px solid #3c4a4f;
+  color: #d7e4e6;
+  background: transparent;
+}
+.cv-modal-link:hover,
+.cv-modal-link:focus-visible {
+  border-color: #28c6c4;
+  color: #28c6c4;
+  outline: none;
+}
+.cv-modal-primary {
+  border: 1px solid #00979c;
+  color: #071718;
+  background: #28c6c4;
+  font-weight: 700;
+}
+.cv-modal-primary:hover,
+.cv-modal-primary:focus-visible {
+  background: #57d4d1;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.cv-modal-close {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #3c4a4f;
+  color: #f2f7f7;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+.cv-modal-close:hover,
+.cv-modal-close:focus-visible {
+  border-color: #e34b4b;
+  background: #e34b4b;
+  outline: none;
+}
+.cv-modal-frame {
+  width: 100%;
+  flex: 1 1 auto;
+  border: 0;
+  background: #2b2f33;
 }
 
 .motion-prompt {
@@ -890,7 +1060,7 @@ button {
     transform-origin: center;
   }
 
-  /* Sec Rename is a phone app; keep its demo upright instead of using the
+  /* Sec Renamer is a phone app; keep its demo upright instead of using the
      landscape reading canvas reserved for the Arduino portfolio. */
   .experience[data-expanded='true'] #autorenamer-window {
     top: env(safe-area-inset-top, 0px);

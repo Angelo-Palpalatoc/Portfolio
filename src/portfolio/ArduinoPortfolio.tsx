@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { fileEntries, sectionInfo, sourceLineNumber } from './portfolio.data';
+import { fileEntries, portfolioLinks, sectionInfo, sourceLineNumber } from './portfolio.data';
 import { initialPortfolioState, portfolioReducer } from './portfolio.reducer';
 import type { SectionId } from './portfolio.types';
 import { ActivityBar } from './components/ActivityBar';
@@ -128,13 +128,41 @@ export default function ArduinoPortfolio({ onOpenSecRename, onReady }: ArduinoPo
         <span className="font-arduino-code text-[11px] text-arduino-muted">Angelo Palpalatoc</span>
       </header>
       {!narrow && (
-        <div className="flex h-6 shrink-0 items-center border-b border-arduino-border bg-arduino-panel px-[6px] font-arduino-code text-[12px] text-arduino-muted">
-          {['File', 'Edit', 'View', 'Run', 'Help'].map((item) => (
-            <span key={item} className="px-2">
-              {item}
-            </span>
-          ))}
-        </div>
+        <nav
+          aria-label="IDE menu"
+          className="flex h-6 shrink-0 items-center gap-1 border-b border-arduino-border bg-arduino-panel px-[6px] font-arduino-code text-[12px] text-arduino-muted"
+        >
+          <a
+            href={portfolioLinks.cv}
+            target="_blank"
+            rel="noreferrer"
+            className="px-2 py-[2px] text-arduino-muted hover:bg-[#2a2d2e] hover:text-[#f2f2f2]"
+            title="Open CV PDF"
+          >
+            File (CV)
+          </a>
+          <button
+            type="button"
+            className="bg-transparent px-2 py-[2px] text-arduino-muted hover:bg-[#2a2d2e] hover:text-[#f2f2f2]"
+            onClick={() => dispatch({ type: 'toggle-serial' })}
+          >
+            View
+          </button>
+          <button
+            type="button"
+            className="bg-transparent px-2 py-[2px] text-arduino-muted hover:bg-[#2a2d2e] hover:text-[#f2f2f2]"
+            onClick={runCompile}
+          >
+            Run
+          </button>
+          <button
+            type="button"
+            className="bg-transparent px-2 py-[2px] text-arduino-muted hover:bg-[#2a2d2e] hover:text-[#f2f2f2]"
+            onClick={() => openFile('contact')}
+          >
+            Help
+          </button>
+        </nav>
       )}
       <div className="flex h-11 shrink-0 items-center gap-2 border-b border-arduino-border bg-arduino-panel px-[10px]">
         {narrow && (
@@ -187,9 +215,9 @@ export default function ArduinoPortfolio({ onOpenSecRename, onReady }: ArduinoPo
             <path d="M8.5 4 L13 8 L8.5 12" />
           </svg>
         </button>
-        <div className="flex h-7 min-w-[210px] max-w-[280px] items-center justify-between gap-[10px] overflow-hidden rounded-[14px] border border-[#3a3a3a] bg-[#1a1a1a] px-[8px] pl-[14px] font-arduino-code text-[12px]">
+        <div className="flex h-7 min-w-[210px] max-w-[290px] items-center gap-2 overflow-hidden rounded-[14px] border border-[#3a3a3a] bg-[#1a1a1a] px-[12px] font-arduino-code text-[12px]">
+          <span className="size-[6px] shrink-0 rounded-full bg-arduino-teal" aria-hidden="true" />
           <span className="truncate">Software Engineer · Full-Stack</span>
-          <span className="text-[9px] text-arduino-muted">▼</span>
         </div>
         <span
           className={`truncate font-arduino-code text-[11px] ${state.compile === 'success' ? 'text-[#6a9955]' : 'text-arduino-muted'}`}

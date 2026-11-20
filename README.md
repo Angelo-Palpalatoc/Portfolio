@@ -1,6 +1,6 @@
 # Angelo's room portfolio
 
-An interactive room → desk → monitor experience built with React, TypeScript, and Vite. The landscape monitor contains a desktop and an Arduino-style portfolio app that opens by default. The portrait monitor remains decorative.
+An interactive room â†’ desk â†’ monitor experience built with React, TypeScript, and Vite. The landscape monitor contains a desktop and an Arduino-style portfolio app that opens by default. The portrait monitor remains decorative.
 
 The surrounding experience takes inspiration from [Henry Heffernan's portfolio](https://github.com/henryjeff/portfolio-website). The Arduino portfolio is maintained as readable React, TypeScript, and Tailwind source; its approved content originated in the preserved Claude Design export.
 
@@ -79,7 +79,7 @@ Graphify uses local code-only extraction; no model API is configured. Generated 
 
 Dependencies, build output, Graphify output, and its local Python environment are generated and ignored by Git. Project Explorer settings hide these folders so the active source stays easy to navigate.
 
-Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The public Sec Rename showcase uses only fictional, predefined data.
+Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The public Sec Renamer showcase uses only fictional, predefined data.
 
 ## Cleanup tools
 

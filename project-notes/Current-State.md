@@ -10,35 +10,35 @@ Updated from the source on 2026-11-20. See [[Decisions]] for constraints and [[N
 
 The Arduino portfolio now runs directly from the React, TypeScript, and Tailwind implementation under `src/portfolio/`. The approved room-shell preview became the production implementation after visual approval. The development-only `/portfolio-preview` route remains useful for focused component review.
 
-Milestones M0–M5 are complete. Automated M6 checks cover desktop and phone viewports, keyboard focus, Escape handling, reduced motion, rotated portrait scrolling, room-shell integration, minimize/restore continuity, and close/reopen reset. Physical verification on the S23 Ultra remains a post-cutover device check. See [[Arduino-Portfolio-React-Migration]] for evidence.
+Milestones M0â€“M5 are complete. Automated M6 checks cover desktop and phone viewports, keyboard focus, Escape handling, reduced motion, rotated portrait scrolling, room-shell integration, minimize/restore continuity, and close/reopen reset. Physical verification on the S23 Ultra remains a post-cutover device check. See [[Arduino-Portfolio-React-Migration]] for evidence.
 
 ## Visitor experience
 
 1. The visitor starts looking into Angelo's room.
 2. Entering the computer setup approaches the desk.
 3. Entering the landscape monitor approaches the screen.
-4. A Windows-style desktop contains **Portfolio** and **Sec Rename** shortcuts. The Arduino-style portfolio opens by default.
+4. A Windows-style desktop contains **Portfolio** and **Sec Renamer** shortcuts. The Arduino-style portfolio opens by default.
 5. Minimizing a window keeps it mounted and preserves its state; closing it resets that app. Taskbar indicators distinguish running and active apps.
-6. The Sec Rename project entry in the Arduino portfolio opens a guided mobile demo. Visitors can try a single fictional document or a batch of three fictional documents, review suggested names, and simulate saving copies individually.
-7. The monitor desktop includes a simulated Windows taskbar and Start menu for the Portfolio and Sec Rename apps. Taskbar indicators, minimize/restore behavior, outside-click dismissal, Escape, and Windows-key menu toggling are handled by the room shell; Lighthouse is not exposed as a runnable app.
+6. The Sec Renamer project entry in the Arduino portfolio opens a guided mobile demo. Visitors can try a single fictional document or a batch of three fictional documents, review suggested names, and simulate saving copies individually.
+7. The monitor desktop includes a simulated Windows taskbar and Start menu for the Portfolio and Sec Renamer apps. Taskbar indicators, minimize/restore behavior, outside-click dismissal, Escape, and Windows-key menu toggling are handled by the room shell; Lighthouse is not exposed as a runnable app.
 
-The Lighthouse project entry now presents a recruiter-facing system architecture overview: React/TypeScript web app, Portal API, PostgreSQL/object storage, AI extraction with retrieval context, and an LLM assistant with streaming chat. Internal decision and orchestration layers are intentionally omitted from the public portfolio view.
-The Sec Rename and Room Portfolio project entries now include compact, technology-based architecture overviews. Sec Rename shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, typed React portfolio state, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
+The Lighthouse project entry now presents a recruiter-facing system architecture overview: React/TypeScript web app, Portal API, PostgreSQL/object storage, AI extraction with Retrieval Augmented Generation(RAG), and an LLM assistant with streaming chat. Internal decision and orchestration layers are intentionally omitted from the public portfolio view.
+The Sec Renamer and Room Portfolio project entries now include compact, technology-based architecture overviews. Sec Renamer shows Compose Multiplatform/Kotlin, ViewModel/StateFlow, Android ContentResolver with on-device OCR, company matching and SEC filename rules, coroutines with batch coordination, and safe export. The portfolio shows React/TypeScript/Vite, camera pose and projection math, CSS transforms with responsive interaction, typed React portfolio state, and embedded React demos. Each relationship is labeled with the responsibility or data flow it represents.
 
 Pointer movement drives the desktop approach and departure. Touch/keyboard controls provide alternate entry. Escape backs out through the views. Reduced-motion preference bypasses the camera animation. Phones have a larger reading view; in portrait it rotates to landscape proportions, then returns to a wide reading view when the phone is turned.
 
 ### Reliability and recruiter access (2026-11-12)
 
-- The room invitation now uses white type and a compact dark shadow so its section label, title, and instruction remain readable over the grey floor. Motion prompts and mobile Back controls use the shared Arduino teal, white, and dark-shell palette; the Back control has a dark translucent surface so it remains legible over both the dark portfolio and light Sec Rename demo.
-- Monitor shortcuts use one shared logical icon box and label cell for Portfolio and Sec Rename, while taskbar icons use a smaller shared box that follows desktop taskbar proportions. Asset artwork cannot change either layout's dimensions.
+- The room invitation now uses white type and a compact dark shadow so its section label, title, and instruction remain readable over the grey floor. Motion prompts and mobile Back controls use the shared Arduino teal, white, and dark-shell palette; the Back control has a dark translucent surface so it remains legible over both the dark portfolio and light Sec Renamer demo.
+- Monitor shortcuts use one shared logical icon box and label cell for Portfolio and Sec Renamer, while taskbar icons use a smaller shared box that follows desktop taskbar proportions. Asset artwork cannot change either layout's dimensions.
 - Phone motion distinguishes permission, calibration, active, denied, unavailable, and off states. Browsers that expose orientation without a permission gesture begin calibration automatically; browsers that require consent retain the explicit enable control. Motion becomes active only after usable orientation samples arrive, and a three-second no-data timeout returns visitors to the touch fallback.
 - Device orientation uses the current screen rotation, shortest-angle deltas, a two-degree neutral zone, and explicit **Recenter** and **Turn off** controls. Touch movement stops competing with the sensor while motion is calibrating or active.
 - Portrait portfolio scrolling chooses the nearest visible scrollable ancestor under the visitor's finger. The fallback considers visible scroll area as well as scroll range. Its short glide is based on recent swipe velocity.
-- Minimized apps remain mounted. Restoring Portfolio or Sec Rename from the taskbar preserves the current section, scroll position, and demo state; closing still starts a fresh app session.
+- Minimized apps remain mounted. Restoring Portfolio or Sec Renamer from the taskbar preserves the current section, scroll position, and demo state; closing still starts a fresh app session.
 - Start menu focus enters the first item when opened. Arrow keys, Home, End, and Escape work within the menu, and Escape returns focus to Start. The taskbar remains visible on touch-sized screens.
 - The desktop wallpaper begins loading after the room image is ready so it does not compete with the initial room image. The deployed page now includes canonical, favicon, Open Graph, Twitter card, robots, and sitemap metadata.
 - GitHub Actions runs the existing project checks and production build for pushes to `main` and pull requests.
-- Browser verification covered desktop minimize/restore state, the unchanged calibrated polygon, Start-menu focus, 390 × 844 expanded reading bounds, simulated portrait scrolling with momentum, and simulated orientation events. Real sensor behavior still requires physical Android/iOS testing.
+- Browser verification covered desktop minimize/restore state, the unchanged calibrated polygon, Start-menu focus, 390 Ã— 844 expanded reading bounds, simulated portrait scrolling with momentum, and simulated orientation events. Real sensor behavior still requires physical Android/iOS testing.
 
 ### Loading and mobile continuity (2026-11-09)
 
@@ -46,21 +46,21 @@ Pointer movement drives the desktop approach and departure. Touch/keyboard contr
 - Room and wallpaper loads show quiet pending/error feedback with retry controls. The React portfolio is code-split from the initial room bundle and its Serial Monitor starts collapsed.
 - A load still pending after 15 seconds offers retry; it may still finish normally. No automatic reload loop is used.
 - On phones, entering the monitor opens the existing app directly in the full-screen reading view; no separate control strip or orientation prompt takes space. In portrait, the app rotates to landscape proportions, and turning the phone sideways keeps the expanded state and restores the regular wide layout. Touch drags in portrait use the dominant finger axis to control the portfolio content scroller, with a short ease-out glide; landscape uses native touch scrolling.
-- Sec Rename keeps its mobile demo upright in portrait phone view, using the available viewport without the Arduino portfolio's landscape rotation. Its desktop and landscape layouts remain unchanged.
-- A compact, upright **Back** control is anchored to the expanded app's top-right corner with a transparent fill, so it follows the app when the portrait reading canvas rotates. It uses the Arduino teal accent consistently across the Arduino and Sec Rename apps so it remains readable on both dark and light surfaces. Sec Rename returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The React portfolio remains mounted during its full-screen reading view, preserving its active section and scroll position.
+- Sec Renamer keeps its mobile demo upright in portrait phone view, using the available viewport without the Arduino portfolio's landscape rotation. Its desktop and landscape layouts remain unchanged.
+- A compact, upright **Back** control is anchored to the expanded app's top-right corner with a transparent fill, so it follows the app when the portrait reading canvas rotates. It uses the Arduino teal accent consistently across the Arduino and Sec Renamer apps so it remains readable on both dark and light surfaces. Sec Renamer returns to the Arduino portfolio, then Back returns to the desk. At the desk, a touch-friendly **Back to room** control completes the route. The React portfolio remains mounted during its full-screen reading view, preserving its active section and scroll position.
 - The boot screen no longer shows a **Skip** button, so it cannot overlap the phone Back control; the boot sequence continues automatically.
 - The Arduino IDE Serial Monitor starts collapsed; users can still open it from the IDE toolbar.
 - Phone expansion temporarily flattens the surrounding CSS layers so the app can fill the available viewport. Normal monitor calibration and projection are retained and restored on return, including a resize beyond the phone breakpoint.
-- Browser checks covered failed-request retry, monitor fit, shared-document/scroll continuity, phone reading rotation at 390 × 844 and 844 × 390, simulated portrait touch scrolling, and return navigation to desk and room. Physical phones and Safari remain to be checked.
+- Browser checks covered failed-request retry, monitor fit, shared-document/scroll continuity, phone reading rotation at 390 Ã— 844 and 844 Ã— 390, simulated portrait touch scrolling, and return navigation to desk and room. Physical phones and Safari remain to be checked.
 
-Responsive check 2026-11-11: touch-sized landscape viewports now remove the desktop 450px minimum scene height, preventing page overflow below short phone screens. Verified 320 × 568, 390 × 844, and 844 × 390 expanded reading views with the app and Back control inside the viewport.
+Responsive check 2026-11-11: touch-sized landscape viewports now remove the desktop 450px minimum scene height, preventing page overflow below short phone screens. Verified 320 Ã— 568, 390 Ã— 844, and 844 Ã— 390 expanded reading views with the app and Back control inside the viewport.
 
 ### Transition behavior (updated 2026-11-08)
 
 - Camera zoom and desk tilt share one animation loop. Desk parallax uses elapsed time so its response remains consistent across display refresh rates.
-- Room POV tracking now pans up to ±18/±12 scene pixels (horizontal/vertical) for a more noticeable cursor-following camera response without changing the room zoom.
-- On supported phones, an optional Device Orientation view maps calibrated beta/gamma tilt to room movement with a 0.8 multiplier, reaching full response after the neutral zone near 18° of tilt. Desk tilt uses a gentler 0.65 multiplier, while touch movement remains the fallback and motion pauses when an app is open.
-- Desk parallax intensity is 1.3 times the original: pan up to ±28.6/±16.9 scene pixels (horizontal/vertical), and tilt up to ±4.16°/±3.12° (left-right/up-down). Cursor smoothing is unchanged.
+- Room POV tracking now pans up to Â±18/Â±12 scene pixels (horizontal/vertical) for a more noticeable cursor-following camera response without changing the room zoom.
+- On supported phones, an optional Device Orientation view maps calibrated beta/gamma tilt to room movement with a 0.8 multiplier, reaching full response after the neutral zone near 18Â° of tilt. Desk tilt uses a gentler 0.65 multiplier, while touch movement remains the fallback and motion pauses when an app is open.
+- Desk parallax intensity is 1.3 times the original: pan up to Â±28.6/Â±16.9 scene pixels (horizontal/vertical), and tilt up to Â±4.16Â°/Â±3.12Â° (left-right/up-down). Cursor smoothing is unchanged.
 - Automatic exits wait for camera arrival, then allow a 150 ms desk grace period or 110 ms monitor grace period, with a 10 px boundary margin. Returning inside cancels the pending exit.
 - On camera arrival, hover is rechecked for a stationary mouse. Keyboard and explicit click/touch entry remain stable until deliberate mouse movement resumes.
 - The animation loop stops when the camera and parallax settle, and resumes for movement or a new camera target.
@@ -89,7 +89,16 @@ The shared surface is laid out at 1280 logical pixels wide, with height derived 
 
 Pointer exits use short hysteresis delays: 280 ms from the monitor and 180 ms from the desk. Returning inside the active bounds cancels the pending exit.
 
-The portrait monitor now renders a generated static Project Explorer image aligned to the physical vertical display beside the main monitor. It uses the shared Arduino teal, white, and dark-neutral palette and does not alter the main portfolio app.
+The portrait monitor now renders a crisp WebP preview of Angelo's public CV aligned to the vertical display beside the main monitor (`src/assets/portrait-monitor-cv.webp`). At the desk view, clicking or focusing the portrait monitor opens a dark-shell CV preview modal backed by `public/Angelo-Palpalatoc-CV.pdf` with Open in New Tab and Download PDF actions; Escape closes the modal before returning to the room.
+
+### Portfolio upgrades (2026-11-20)
+
+- Unified project naming to **Sec Renamer** (`projects/sec_renamer.ino`) across the desktop shortcut, Start menu, window title, project page, demo UI, and About card.
+- Upgraded Room View first impression with Angelo's name, role, core stack, dual-monitor spatial hint, and a subtle floor-edge legibility gradient (keeping the immersive room entry intact without a skip bypass).
+- Published a sanitized 2-page public CV PDF (`public/Angelo-Palpalatoc-CV.pdf`) with personal phone number and character reference email removed, linked from the portrait monitor modal, `main.ino`, `contact.ino`, `InfoPanel`, and the IDE `File (CV)` menu.
+- Added Featured Projects cards on `main.ino`, Prev/Next project navigation, 1-click Copy Email in `contact.ino` and `InfoPanel`, interactive IDE top menu actions, and GitHub links for Sec Renamer and Room Portfolio.
+- Added verified, NDA-safe metrics and engineering trade-offs for Lighthouse (highlighting Generative AI LLM assistance + RAG grounded in uploaded claim documents), Sec Renamer, and Room Portfolio, and synced `experience.ino` dates (`Janâ€“Aug 2026` Ally Public Adjusting, `Aug 2026â€“Present` Independent, `Intern` labels for Hooli 2023/2024).
+- Converted `BackgroundDesktop.png` (3.6 MB) and the portrait monitor asset (1.39 MB) to WebP (~453 KB combined, >90% reduction), archived originals under `.archive/source-assets/`, and added a `1200Ã—630` Open Graph preview card (`public/og-preview.jpg`).
 
 ## Run locally
 

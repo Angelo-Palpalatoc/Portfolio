@@ -1,7 +1,10 @@
 import { portfolioLinks } from '../portfolio.data';
 import type { SectionInfo } from '../portfolio.types';
+import { useCopyToClipboard } from '../useCopyToClipboard';
 
 export function InfoPanel({ info }: { info: SectionInfo }) {
+  const { copied, copy } = useCopyToClipboard(portfolioLinks.emailAddress, 1800);
+
   return (
     <aside className="w-[280px] shrink-0 overflow-y-auto border-l border-arduino-border bg-arduino-panel px-[18px] py-4 font-arduino-code">
       <div className="mb-[14px] text-[11px] tracking-[0.14em] text-arduino-muted">INFO</div>
@@ -22,15 +25,37 @@ export function InfoPanel({ info }: { info: SectionInfo }) {
             key={label}
             className="flex justify-between gap-[10px] border-b border-[#2a2a2a] pb-2 text-[11.5px]"
           >
-            <dt className="text-arduino-muted">{label}</dt>
-            <dd className="text-right">{value}</dd>
+            <dt className="shrink-0 text-arduino-muted">{label}</dt>
+            <dd className="min-w-0 break-words text-right">{value}</dd>
           </div>
         ))}
       </dl>
       <div className="mt-[26px] flex flex-col gap-[10px] border-t border-arduino-border pt-4 text-[11.5px]">
-        <a className="text-arduino-muted hover:text-arduino-teal" href={portfolioLinks.email}>
-          ✉ palpalatocangelo@gmail.com
+        <a
+          className="text-arduino-teal hover:underline"
+          href={portfolioLinks.cv}
+          target="_blank"
+          rel="noreferrer"
+        >
+          ↓ Download CV (PDF)
         </a>
+        <div className="flex items-center justify-between gap-2">
+          <a
+            className="min-w-0 truncate text-arduino-muted hover:text-arduino-teal"
+            href={portfolioLinks.email}
+            title={portfolioLinks.emailAddress}
+          >
+            ✉ {portfolioLinks.emailAddress}
+          </a>
+          <button
+            type="button"
+            onClick={copy}
+            className="shrink-0 border border-arduino-border px-[6px] py-[2px] text-[10px] text-arduino-muted hover:border-arduino-teal hover:text-arduino-teal"
+            aria-label="Copy email address"
+          >
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
         <a
           className="text-arduino-muted hover:text-arduino-teal"
           href={portfolioLinks.github}
