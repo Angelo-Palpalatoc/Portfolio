@@ -75,7 +75,7 @@ export const featuredProjects: FeaturedProject[] = [
 export const sectionInfo: Record<SectionId, SectionInfo> = {
   main: {
     section: 'main.ino',
-    tech: ['React', 'TypeScript', 'Python', 'FastAPI', 'PostgreSQL', 'AI integration'],
+    tech: ['React', 'TypeScript', 'Python', 'FastAPI', 'PostgreSQL', 'GenAI / RAG'],
     meta: [
       ['role', 'Full-Stack Software Engineer'],
       ['location', 'Santa Maria, PH'],
@@ -164,6 +164,7 @@ export const heroStack = [
   'Python',
   'FastAPI',
   'PostgreSQL',
+  'GenAI / RAG',
   'Tailwind',
   'Kotlin',
   'ML Kit OCR',
@@ -236,18 +237,19 @@ export const roomPortfolioStack = [
   'CSS',
   'Vite',
   'Vitest',
+  'Web Audio API',
   'Projective transforms',
   'Responsive interaction',
 ];
 
 export const roomPortfolioTradeoffs: ProjectTradeoff[] = [
   {
-    title: 'CSS 3D projective homography over Three.js / WebGL',
-    text: 'Mapping a 1280px logical desktop onto the four calibrated physical monitor corners with a 3D matrix keeps real DOM text sharp, scrolling native, and keyboard accessibility intact while avoiding a heavy WebGL runtime.',
+    title: 'Dual-monitor CSS 3D homography over Three.js / WebGL',
+    text: 'Projecting a 1280px desktop and a live interactive portrait CV onto calibrated physical monitor corners with CSS 3D matrices keeps real DOM text razor-sharp, scrolling native, and keyboard accessibility intact without a heavy WebGL runtime.',
   },
   {
-    title: 'Optimized WebP staging & lazy IDE split',
-    text: 'Converting the room, desktop wallpaper, and portrait CV preview to WebP and code-splitting the Arduino IDE keeps the initial room frame responsive while deferring heavier monitor assets until the room is ready.',
+    title: 'Staged WebP assets, code splitting & synthesized Web Audio',
+    text: 'Converting the room and desktop wallpaper to WebP, lazy-loading the Arduino IDE, and synthesizing tactile UI clicks with the Web Audio API (zero external audio files) keep initial load light while preserving a responsive, tactile desk experience.',
   },
 ];
 
@@ -268,7 +270,7 @@ export const lighthouseArchitecture: ArchitectureNode[] = [
     relation: 'provides evidence context',
   },
   {
-    label: 'AI extraction + Retrieval Augmented Generation(RAG)',
+    label: 'AI extraction + Retrieval-Augmented Generation (RAG)',
     detail: 'Grounded document evidence',
     relation: 'streams assistant responses',
   },
@@ -398,6 +400,24 @@ export const experienceEntries: ExperienceEntry[] = [
     ],
   },
 ];
+
+export const honorsAndCertifications = [
+  {
+    kicker: 'ACADEMIC HONOR',
+    title: 'Cum Laude — B.S. Computer Engineering',
+    detail: 'Polytechnic University of the Philippines (2021–2025)',
+  },
+  {
+    kicker: 'ROBOTICS AWARDS',
+    title: '2× Arduino Crafting Winner',
+    detail: 'Champion (2025) & 1st Place (2024)',
+  },
+  {
+    kicker: 'CERTIFICATIONS',
+    title: 'Passed ISC2 Cybersecurity',
+    detail: 'Civil Service Eligible (Professional)',
+  },
+] as const;
 
 export const aboutProjects = [
   {

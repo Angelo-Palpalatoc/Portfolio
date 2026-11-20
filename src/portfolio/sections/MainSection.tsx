@@ -1,4 +1,4 @@
-import { featuredProjects, heroStack, portfolioLinks } from '../portfolio.data';
+import { featuredProjects, getEmailLinkProps, heroStack, portfolioLinks } from '../portfolio.data';
 import type { SectionId } from '../portfolio.types';
 import { CodePreview, Eyebrow } from './SectionPieces';
 
@@ -70,15 +70,15 @@ export function MainSection({
           Full-Stack Software Engineer
         </div>
         <div className="mt-2 font-arduino-code text-[12.5px] text-arduino-muted">
-          React / TypeScript • Python / FastAPI • PostgreSQL • AI document workflows
+          React / TypeScript • Python / FastAPI • PostgreSQL • Generative AI (LLM &amp; RAG)
         </div>
         <p className="mt-[22px] text-pretty text-[16.5px] leading-[1.65]">
-          I build clear, reliable software across the full stack, from responsive interfaces to
-          APIs, PostgreSQL data flows, and AI-assisted document processing. I focus on making
-          complex workflows easy to understand and use.
+          I build clear, reliable software across the full stack — from responsive React interfaces
+          to FastAPI services, PostgreSQL data flows, and RAG-grounded Generative AI workflows. I
+          focus on making complex, document-heavy products fast and easy to trust.
         </p>
         <div className="mt-6 flex flex-wrap gap-[10px]">
-          {['FULL-STACK', 'AI DOCUMENT WORKFLOWS', 'RESPONSIVE WEB & MOBILE'].map((item, index) => (
+          {['FULL-STACK', 'GENERATIVE AI & RAG', 'RESPONSIVE WEB & MOBILE'].map((item, index) => (
             <div
               key={item}
               className={`min-w-[130px] flex-[1_1_150px] border-l-2 pl-[10px] ${index === 0 ? 'border-arduino-teal text-arduino-teal' : 'border-arduino-border'}`}
@@ -99,11 +99,8 @@ export function MainSection({
           >
             [ DOWNLOAD CV ]
           </a>
-          <a
-            href={portfolioLinks.email}
-            className="ide-secondary-button !px-[18px] !tracking-normal"
-          >
-            palpalatocangelo@gmail.com
+          <a {...getEmailLinkProps()} className="ide-secondary-button !px-[18px] !tracking-normal">
+            {portfolioLinks.emailAddress}
           </a>
         </div>
         <div className="mt-[30px] flex flex-wrap gap-[10px]">

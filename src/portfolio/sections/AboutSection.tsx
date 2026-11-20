@@ -1,5 +1,5 @@
 import headshot from '../assets/headshot.webp';
-import { aboutProjects } from '../portfolio.data';
+import { aboutProjects, honorsAndCertifications } from '../portfolio.data';
 import { Eyebrow, SectionHeading } from './SectionPieces';
 
 export function AboutSection() {
@@ -43,6 +43,24 @@ export function AboutSection() {
           I brought to Lighthouse, where clear navigation, responsive layouts, and visible
           document-processing status helped users understand what was happening behind the scenes.
         </p>
+      </div>
+      <div className="mb-[30px]">
+        <Eyebrow>HONORS &amp; CERTIFICATIONS</Eyebrow>
+        <div className="grid grid-cols-3 gap-px border border-arduino-border bg-arduino-border max-[699px]:grid-cols-1">
+          {honorsAndCertifications.map((item) => (
+            <div key={item.title} className="bg-arduino-panel p-4">
+              <div className="mb-1.5 font-arduino-code text-[10px] tracking-[0.12em] text-arduino-teal">
+                {item.kicker}
+              </div>
+              <div className="text-[14.5px] font-semibold leading-[1.35] text-[#f2f2f2]">
+                {item.title}
+              </div>
+              <div className="mt-1 text-[13px] leading-[1.45] text-arduino-muted">
+                {item.detail}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-px border border-arduino-border bg-arduino-border">
         {aboutProjects.map((item) => (
