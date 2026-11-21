@@ -8,7 +8,7 @@ Related: [[Home]], [[Current-State]], [[Next-Steps]]. These summarize the user's
 
 ## Experience
 
-- Keep the visitor's point of view in the room: **room → computer setup/desk → monitor**.
+- Keep the visitor's point of view grounded in the room: **mobile starts at `room` → `desk` → monitor** (where the 3:4 room photo fills portrait screens naturally), while **desktop starts directly at the full-bleed `desk` view** (both monitors immediately visible with zero side pillarbox bars, staying at the desk on exit).
 - Keep the portfolio inside the landscape monitor, with working scrolling.
 - The Arduino-style portfolio is the actual portfolio. The separate web portfolio was removed.
 - Keep the desktop wallpaper and an app that can close and reopen. Open the Arduino portfolio by default.

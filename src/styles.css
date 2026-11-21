@@ -1079,6 +1079,34 @@ button {
   line-height: 1.4;
 }
 
+.desk-hint {
+  position: fixed;
+  z-index: 4;
+  bottom: 18px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid #00979c4d;
+  border-radius: 999px;
+  color: #e2f1f2;
+  background: #0b1112cc;
+  box-shadow: 0 8px 24px #0007;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.desk-hint-sep {
+  color: #28c6c4;
+}
+
 .motion-prompt {
   position: absolute;
   z-index: 4;
@@ -1263,6 +1291,10 @@ button {
   }
 
   .experience[data-expanded='true'] .sound-toggle {
+    display: none;
+  }
+
+  .desk-hint {
     display: none;
   }
 

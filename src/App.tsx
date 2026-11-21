@@ -34,6 +34,9 @@ type OrientationEventConstructor = typeof DeviceOrientationEvent & {
   requestPermission?: () => Promise<'granted' | 'denied'>;
 };
 const initialPose = { x: 0, y: 0, scale: 1 };
+const isPhoneViewport = () =>
+  typeof window !== 'undefined' && window.matchMedia(phoneQuery).matches;
+const getInitialView = (): View => (isPhoneViewport() ? 'room' : 'desk');
 const interactiveSelector =
   'button:not(:disabled), a[href], input, [role="tab"], [role="menuitem"]';
 const isInteractiveTarget = (target: EventTarget | null) =>
@@ -62,7 +65,7 @@ const screenRelativeTilt = (beta: number, gamma: number) => {
 };
 
 export default function App() {
-  const [view, setView] = useState<View>('room');
+  const [view, setView] = useState<View>(getInitialView);
   const [activeApp, setActiveApp] = useState<AppWindow>('arduino');
   const [openApps, setOpenApps] = useState<Record<AppName, boolean>>({
     arduino: true,
@@ -94,7 +97,7 @@ export default function App() {
   const portraitHoverArmed = useRef(true);
   const lastZoomedView = useRef<'screen' | 'portrait' | null>(null);
   const interacted = useRef(false);
-  const viewRef = useRef<View>('room');
+  const viewRef = useRef<View>(view);
   const poses = useRef<Record<View, CameraPose>>({
     room: initialPose,
     desk: initialPose,
@@ -108,7 +111,7 @@ export default function App() {
     frame: 0,
     lastTime: 0,
     frequency: 8,
-    destination: 'room' as View,
+    destination: view as View,
     initialized: false,
     ready: true,
   });
@@ -311,8 +314,11 @@ export default function App() {
         (window.innerHeight * 0.94) / portraitHeight,
       ),
     );
+    const minDesktopCoverZoom = isPhoneViewport()
+      ? 1
+      : (window.innerWidth * 0.52) / (width * (1 - deskCenter.x));
     const deskZoom = Math.max(
-      1,
+      minDesktopCoverZoom,
       Math.min(
         (window.innerWidth * 0.84) / (width * deskBounds.width),
         (window.innerHeight * 0.86) / (height * deskBounds.height),
@@ -341,14 +347,18 @@ export default function App() {
       },
     };
     if (!camera.current.initialized) {
-      camera.current.current = { ...poses.current.room };
-      camera.current.target = { ...poses.current.room };
+      const startPose = poses.current[viewRef.current];
+      camera.current.current = { ...startPose };
+      camera.current.target = { ...startPose };
+      camera.current.destination = viewRef.current;
       camera.current.initialized = true;
+      deskMotion.current.blend = viewRef.current === 'desk' ? 1 : 0;
+      paintDesk();
       paintCamera(camera.current.current);
     } else {
       aimCamera(poses.current[viewRef.current], viewRef.current);
     }
-  }, [aimCamera, paintCamera]);
+  }, [aimCamera, paintCamera, paintDesk]);
 
   // View and desktop-window actions.
   const clearExitTimer = useCallback(() => {
@@ -511,7 +521,7 @@ export default function App() {
   };
 
   const leaveDesk = useCallback(() => {
-    if (viewRef.current !== 'desk') return;
+    if (viewRef.current !== 'desk' || !isPhoneViewport()) return;
     interacted.current = true;
     clearExitTimer();
     clearPortraitEnterTimer();
@@ -533,20 +543,6 @@ export default function App() {
       // Keyboard navigation remains stable until the mouse is deliberately moved.
       pointer.current.active = false;
       clearExitTimer();
-      if (event.key === 'Meta' || event.key === 'OS') {
-        if (viewRef.current === 'screen' && !mobileExpandedRef.current) {
-          event.preventDefault();
-          setStartMenuOpen((value) => !value);
-        }
-        return;
-      }
-      if (event.altKey && event.key === 'Tab') {
-        if (viewRef.current === 'screen' && !mobileExpandedRef.current) {
-          event.preventDefault();
-          openApp(activeApp === 'arduino' ? 'autorename' : 'arduino');
-        }
-        return;
-      }
       if (startMenuOpen && event.key === 'Escape') {
         event.preventDefault();
         setStartMenuOpen(false);
@@ -593,7 +589,14 @@ export default function App() {
     measureScene();
     const phone = window.matchMedia(phoneQuery);
     const restoreMonitor = () => {
-      if (!phone.matches) setMobileExpanded(false);
+      if (!phone.matches) {
+        setMobileExpanded(false);
+        if (viewRef.current === 'room') {
+          viewRef.current = 'desk';
+          setView('desk');
+          aimCamera(poses.current.desk, 'desk');
+        }
+      }
     };
     phone.addEventListener('change', restoreMonitor);
     window.addEventListener('resize', restoreMonitor);
@@ -601,7 +604,7 @@ export default function App() {
       phone.removeEventListener('change', restoreMonitor);
       window.removeEventListener('resize', restoreMonitor);
     };
-  }, [mobileExpanded, measureScene]);
+  }, [mobileExpanded, measureScene, aimCamera]);
 
   useLayoutEffect(() => {
     measureScene();
@@ -918,9 +921,13 @@ export default function App() {
         }
         return;
       }
-      const desk = deskRef.current?.getBoundingClientRect();
-      if (desk && outside(x, y, desk, 10)) scheduleExit('desk');
-      else clearExitTimer();
+      if (isPhoneViewport()) {
+        const desk = deskRef.current?.getBoundingClientRect();
+        if (desk && outside(x, y, desk, 10)) scheduleExit('desk');
+        else clearExitTimer();
+      } else {
+        clearExitTimer();
+      }
     }
   };
   checkHoverRef.current = checkHover;
@@ -1444,6 +1451,16 @@ export default function App() {
         <button className="mobile-room-button" type="button" onClick={leaveDesk}>
           Back to room
         </button>
+      )}
+
+      {view === 'desk' && roomAsset.state === 'ready' && (
+        <p className="desk-hint" aria-hidden="true">
+          <span>CV on the left</span>
+          <span className="desk-hint-sep">·</span>
+          <span>Portfolio on the right</span>
+          <span className="desk-hint-sep">—</span>
+          <span>hover or click either monitor</span>
+        </p>
       )}
 
       <section
