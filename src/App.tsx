@@ -1454,13 +1454,22 @@ export default function App() {
       )}
 
       {view === 'desk' && roomAsset.state === 'ready' && (
-        <p className="desk-hint" aria-hidden="true">
-          <span>CV on the left</span>
-          <span className="desk-hint-sep">·</span>
-          <span>Portfolio on the right</span>
-          <span className="desk-hint-sep">—</span>
-          <span>hover or click either monitor</span>
-        </p>
+        <>
+          <div className="desk-identity" aria-hidden="true">
+            <span className="desk-identity-bar" />
+            <div className="desk-identity-text">
+              <span className="desk-identity-name">Angelo Palpalatoc</span>
+              <span className="desk-identity-role">FULL-STACK &amp; AI ENGINEER</span>
+            </div>
+          </div>
+          <p className="desk-hint" aria-hidden="true">
+            <span>CV on the left</span>
+            <span className="desk-hint-sep">·</span>
+            <span>Portfolio on the right</span>
+            <span className="desk-hint-sep">—</span>
+            <span>hover or click either monitor</span>
+          </p>
+        </>
       )}
 
       <section
