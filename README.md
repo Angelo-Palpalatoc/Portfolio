@@ -1,89 +1,61 @@
-# Angelo's room portfolio
+# Angelo Palpalatoc — Interactive Room Portfolio
 
-An interactive room â†’ desk â†’ monitor experience built with React, TypeScript, and Vite. The landscape monitor contains a desktop and an Arduino-style portfolio app that opens by default. The portrait monitor remains decorative.
+**Live site:** [angelo-palpalatoc.vercel.app](https://angelo-palpalatoc.vercel.app/)
 
-The surrounding experience takes inspiration from [Henry Heffernan's portfolio](https://github.com/henryjeff/portfolio-website). The Arduino portfolio is maintained as readable React, TypeScript, and Tailwind source; its approved content originated in the preserved Claude Design export.
+![Angelo Palpalatoc Interactive Room Portfolio Preview](./public/og-preview.jpg)
 
-## Start locally
+An interactive dual-monitor room portfolio built with **React**, **TypeScript**, **Tailwind CSS**, and **Vite**. Visitors explore a real desk setup with two live projected displays: a simulated Windows desktop running an **Arduino IDE–inspired portfolio** on the main landscape monitor, and an interactive **vector CV viewer** on the portrait monitor.
 
-Use Node.js 22.12 or later and npm. From the project root:
+Inspired by [Henry Heffernan's portfolio](https://github.com/henryjeff/portfolio-website), engineered from scratch with CSS 3D projective transforms instead of WebGL so DOM text stays sharp, scrolling remains native, and keyboard/mobile accessibility works cleanly.
 
-```powershell
-npm.cmd ci
-npm.cmd run dev
+## Highlights
+
+- **Dual-monitor CSS 3D homography:** Maps a `1280px` logical desktop and a `440px` portrait CV onto calibrated physical monitor corners (`src/monitorProjection.ts`) using a spring-damped camera with cursor parallax.
+- **Responsive entry & phone reading view:** Desktop opens directly into the full-bleed dual-monitor desk; phones start in the portrait room view and expand apps or the CV into full-screen reading layouts with optional device-orientation tilt.
+- **Arduino IDE portfolio (`src/portfolio/`):** Typed content, file explorer, tabbed navigation, collapsible Serial Monitor, compile verification flow, and showcases for **Lighthouse** (GenAI / LLM & RAG workspace), **Sec Renamer** (offline-first Kotlin & ML Kit OCR Android app with interactive UI demo), and this portfolio.
+- **Zero-dependency Web Audio (`src/sound.ts`):** Synthesized tactile mouse press/release clicks, mechanical key thocks, subtle camera glides, and completion chimes with a persisted mute toggle.
+- **Automated quality gates:** TypeScript strict checking (`tsc`), unused-code detection (`knip`), formatting (`prettier`), unit tests (`vitest`), and GitHub Actions CI.
+
+## Run Locally
+
+Requires Node.js 22.12+ and npm:
+
+```bash
+npm ci
+npm run dev
 ```
 
-Open the URL printed by Vite, normally http://127.0.0.1:5173/.
+Open the local URL printed by Vite (typically `http://127.0.0.1:5173/`).
 
-## Commands
+## Scripts
 
-| Command                    | Purpose                                                 |
-| -------------------------- | ------------------------------------------------------- |
-| `npm.cmd run dev`          | Start the local development server                      |
-| `npm.cmd run check`        | Check types, unused source/dependencies, and formatting |
-| `npm.cmd run build`        | Type-check and generate the static site in `dist/`      |
-| `npm.cmd run test`         | Run focused portfolio state and content tests           |
-| `npm.cmd run preview`      | Preview the generated build locally                     |
-| `npm.cmd run format`       | Format maintained source and project configuration      |
-| `npm.cmd run check:unused` | Run Knip's unused-code/dependency check                 |
+| Command                | Purpose                                               |
+| ---------------------- | ----------------------------------------------------- |
+| `npm run dev`          | Start the Vite development server                     |
+| `npm run check`        | Run TypeScript, Knip unused-code, and Prettier checks |
+| `npm test`             | Run Vitest unit tests                                 |
+| `npm run build`        | Type-check and build the production site into `dist/` |
+| `npm run preview`      | Preview the production build locally                  |
+| `npm run format`       | Format source and project configuration with Prettier |
+| `npm run check:unused` | Run Knip's unused-file and dependency check           |
 
-Publish the contents of `dist/` when a static deployment is requested.
-
-## Active project structure
+## Project Structure
 
 ```text
 src/
-  assets/               Room photograph and desktop wallpaper
-  App.tsx               Camera, view navigation, app shell, focus, and phone controls
-  LoadingState.tsx      Image loading, slow-load feedback, and retry UI
-  portfolio/            Arduino IDE portfolio components, typed content, state, and Tailwind styles
-  monitorProjection.ts  Four-corner desktop-to-monitor mapping
-  styles.css            Organized styles for the surrounding experience
-  main.tsx              React entry point
-  vite-env.d.ts         Vite asset types
+  assets/               WebP room photograph and desktop wallpaper
+  portfolio/            Arduino IDE components, typed data/state, Tailwind styles, and tests
+  App.tsx               Spring camera, room/desk/monitor views, desktop shell, and mobile controls
+  PortraitCvViewer.tsx  Interactive portrait-monitor CV reader with PDF open/download
+  AutoRenameDemo.tsx    Guided UI-only mobile demo for Sec Renamer (fictional sample data)
+  monitorProjection.ts  Four-corner CSS matrix3d projective homography helper
+  sound.ts              Synthesized Web Audio micro-sounds and mute state
+  LoadingState.tsx      Staged asset loader with slow-load retry feedback
+  styles.css            Scene layout, calibrated monitor polygons, and responsive styles
 public/
-  arduino-portfolio.html  Preserved legacy export for temporary rollback only
-  portfolio-logo.webp    Supplied ACP app icon, losslessly encoded
-project-notes/           Obsidian notebook: current state, decisions, and tooling
-scripts/                 Local Graphify query and refresh commands
-.vscode/                 Preview, build, and check tasks; Explorer preferences
+  Angelo-Palpalatoc-CV.pdf  Sanitized public 2-page CV
+  og-preview.jpg            Open Graph / social link preview card (1200x630)
+  portfolio-logo.webp       ACP desktop & favicon icon
+  autorenamer-icon.svg      Sec Renamer app icon
+  robots.txt, sitemap.xml   Search engine metadata
 ```
-
-Project configuration lives in the root: [package.json](./package.json), [tsconfig.json](./tsconfig.json), [knip.json](./knip.json), and [.prettierrc.json](./.prettierrc.json). [AGENTS.md](./AGENTS.md) records editing constraints for coding assistants.
-
-## Experience and editing boundaries
-
-- Move into the computer setup to approach the desk, then into the monitor to use the portfolio. Buttons support click, touch, and keyboard entry.
-- Escape returns through the expanded phone view, monitor, desk, and room.
-- The portfolio window can minimize, maximize, close, and reopen from the Portfolio shortcut. Minimize keeps the app mounted; close resets it.
-- Phones enter a full-screen reading view from the monitor. Phone orientation changes keep the same React app session, while closing and reopening starts a fresh session.
-- The room, wallpaper, and logo use lossless WebP with unchanged dimensions and pixels. Their original PNGs are preserved locally in `.archive/source-assets/`.
-- Room and wallpaper loading failures have retry controls. Loads still pending after 15 seconds offer a retry without cancelling the original request.
-- Desk parallax is **30% above its original intensity**. Optional phone motion starts automatically where the browser permits it, requests a tap only where browser consent is required, confirms sensor readings before activation, and provides recenter, off, and touch fallback controls. Reduced motion disables the animated camera approach and desk tilt.
-- The shared desktop is rendered at **1280 logical pixels wide** before projection to preserve sharpness.
-- The monitor's calibrated polygon lives in one `.monitor-screen` rule in [styles.css](./src/styles.css). Preserve it unless a fit adjustment is requested.
-- Leave [the legacy Arduino export](./public/arduino-portfolio.html) unchanged. It is retained temporarily for rollback and is excluded from formatting.
-
-## Project knowledge and code map
-
-Start with [project-notes/Home.md](./project-notes/Home.md), or open `project-notes` as an Obsidian vault.
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Graphify.ps1 query monitor
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Refresh-CodeMap.ps1
-```
-
-Graphify uses local code-only extraction; no model API is configured. Generated graph notes live in `project-notes/Code-Map`. See [Tooling.md](./project-notes/Tooling.md) for setup and limitations.
-
-## Generated files and local originals
-
-Dependencies, build output, Graphify output, and its local Python environment are generated and ignored by Git. Project Explorer settings hide these folders so the active source stays easy to navigate.
-
-Original uploads, earlier comparison screenshots, the original design export, the superseded milestone, and the Sec-AutoRenamer APK are preserved locally in [.archive/](./.archive/README.md). They are not imported by the website, formatted, or included in Git. Back up that archive separately if those originals need to travel to another machine. The public Sec Renamer showcase uses only fictional, predefined data.
-
-## Cleanup tools
-
-- [Knip](https://github.com/webpro-nl/knip) checks unused TypeScript files, exports, and dependencies.
-- [Prettier](https://github.com/prettier/prettier) keeps maintained source and configuration consistently formatted.
-
-Knip is scoped to `src`. Dynamic public files and CSS still require manual review. No auto-delete or auto-fix command is part of the checks.
