@@ -21,7 +21,7 @@ const codeLines = [
   <>
     {'    '}
     <span className="text-[#dcdcaa]">role</span>:{' '}
-    <span className="text-[#ce9178]">"Full-Stack Software Engineer"</span>,
+    <span className="text-[#ce9178]">"Full-Stack &amp; AI Engineer"</span>,
   </>,
   <>
     {'    '}
@@ -67,7 +67,7 @@ export function MainSection({
           Angelo Palpalatoc
         </h1>
         <div className="font-arduino-code text-[13px] tracking-[0.04em] text-arduino-teal">
-          Full-Stack Software Engineer
+          Full-Stack &amp; AI Engineer
         </div>
         <div className="mt-2 font-arduino-code text-[12.5px] text-arduino-muted">
           React / TypeScript • Python / FastAPI • PostgreSQL • Generative AI (LLM &amp; RAG)

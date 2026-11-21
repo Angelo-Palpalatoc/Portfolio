@@ -1453,11 +1453,11 @@ export default function App() {
         aria-label="Angelo Palpalatoc portfolio overview"
       >
         <span className="caption-kicker">
-          <span className="caption-line" /> ANGELO PALPALATOC · FULL-STACK ENGINEER
+          <span className="caption-line" /> ANGELO PALPALATOC · FULL-STACK &amp; AI ENGINEER
         </span>
         <h1 className="caption-title">Come on in. My work is on screen.</h1>
         <span className="caption-stack">
-          React · TypeScript · Python · FastAPI · PostgreSQL · AI Workflows
+          React · TypeScript · Python · FastAPI · PostgreSQL · LLM &amp; RAG
         </span>
         <span className="caption-hint">
           Approach the desk to inspect the monitors — portfolio on the right, CV on the left.

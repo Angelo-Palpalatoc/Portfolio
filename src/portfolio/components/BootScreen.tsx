@@ -8,13 +8,6 @@ const loadingLabels = [
   'Connecting to GitHub..',
 ];
 
-const wordmark = ` █████╗ ███╗   ██╗ ██████╗ ███████╗██╗      ██████╗
-██╔══██╗████╗  ██║██╔════╝ ██╔════╝██║     ██╔═══██╗
-███████║██╔██╗ ██║██║  ███╗█████╗  ██║     ██║   ██║
-██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║     ██║   ██║
-██║  ██║██║ ╚████║╚██████╔╝███████╗███████╗╚██████╔╝
-╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝`;
-
 export function BootScreen({
   phase,
   step,
@@ -39,21 +32,23 @@ export function BootScreen({
           <span className="ide-caret inline-block h-4 w-2 bg-arduino-teal align-[-3px]" />
         </div>
       ) : (
-        <div className="my-auto flex flex-col items-center gap-7">
-          {narrow ? (
-            <div className="pl-[0.22em] font-arduino-code text-[40px] font-bold tracking-[0.22em]">
-              ANGELO
-            </div>
-          ) : (
-            <pre className="m-0 whitespace-pre font-arduino-code text-[12px] leading-[1.15] text-arduino-teal">
-              {wordmark}
-            </pre>
-          )}
-          <div className="text-center font-arduino-code text-[13px] leading-[1.9] text-arduino-muted">
-            <div className="text-arduino-text">Software Engineer</div>
-            <div>Full-Stack • React / TypeScript • Python / FastAPI • AI workflows</div>
+        <div className="my-auto flex max-w-[760px] flex-col items-center gap-6 px-2 text-center">
+          <div className="font-arduino-code text-[12px] font-bold tracking-[0.16em] text-[#28c6c4]">
+            ANGELO PALPALATOC · FULL-STACK &amp; AI ENGINEER
           </div>
-          <div className="flex flex-wrap justify-center gap-3">
+          <h1
+            className={`m-0 text-balance font-arduino-ui font-bold leading-[1.24] tracking-[-0.025em] text-[#f4f6f7] ${
+              narrow ? 'text-[26px]' : 'text-[36px]'
+            }`}
+          >
+            <span className="font-medium text-[#b4bec2]">“Everyone can write code now,</span>
+            <br />
+            but few can <span className="text-[#28c6c4]">solve real-world problems</span>.”
+          </h1>
+          <div className="font-arduino-code text-[12.5px] leading-[1.85] text-arduino-muted">
+            React / TypeScript • Python / FastAPI • PostgreSQL • LLM &amp; RAG
+          </div>
+          <div className="mt-1 flex flex-wrap justify-center gap-3">
             <button type="button" className="ide-primary-button" onClick={onRun}>
               [ RUN PORTFOLIO ]
             </button>

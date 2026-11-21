@@ -222,7 +222,7 @@ export default function ArduinoPortfolio({ onOpenSecRename, onReady }: ArduinoPo
         </button>
         <div className="flex h-7 min-w-[210px] max-w-[290px] items-center gap-2 overflow-hidden rounded-[14px] border border-[#3a3a3a] bg-[#1a1a1a] px-[12px] font-arduino-code text-[12px]">
           <span className="size-[6px] shrink-0 rounded-full bg-arduino-teal" aria-hidden="true" />
-          <span className="truncate">Software Engineer · Full-Stack</span>
+          <span className="truncate">Full-Stack &amp; AI Engineer</span>
         </div>
         <span
           className={`truncate font-arduino-code text-[11px] ${state.compile === 'success' ? 'text-[#6a9955]' : 'text-arduino-muted'}`}

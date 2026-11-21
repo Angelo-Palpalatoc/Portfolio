@@ -77,7 +77,7 @@ export const sectionInfo: Record<SectionId, SectionInfo> = {
     section: 'main.ino',
     tech: ['React', 'TypeScript', 'Python', 'FastAPI', 'PostgreSQL', 'GenAI / RAG'],
     meta: [
-      ['role', 'Full-Stack Software Engineer'],
+      ['role', 'Full-Stack & AI Engineer'],
       ['location', 'Santa Maria, PH'],
       ['status', 'Available'],
     ],
