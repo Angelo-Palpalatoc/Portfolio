@@ -61,6 +61,12 @@ button {
   will-change: transform;
 }
 
+.room-stage[data-desk-motion] {
+  transform: translate3d(var(--camera-x, -50%), var(--camera-y, -50%), 0)
+    scale(var(--camera-scale, 1)) perspective(1100px) rotateX(var(--desk-tilt-x, 0deg))
+    rotateY(var(--desk-tilt-y, 0deg)) translate3d(var(--desk-pan-x, 0px), var(--desk-pan-y, 0px), 0) !important;
+}
+
 .room-image {
   display: block;
   width: 100%;
@@ -444,11 +450,6 @@ button {
   transform-origin: 57.5% 49.5%;
   transform: none;
   transition: none;
-}
-
-.room-stage[data-desk-motion] .desk-camera {
-  transform: perspective(1100px) rotateX(var(--desk-tilt-x, 0deg)) rotateY(var(--desk-tilt-y, 0deg))
-    translate3d(var(--desk-pan-x, 0px), var(--desk-pan-y, 0px), 0);
 }
 
 .desk-hotspot {
